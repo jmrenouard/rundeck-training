@@ -1,0 +1,52 @@
+# L'identifiant unique du job. Peut être un UUID. Il est recommandé de le définir.
+- id: 2a7d1a7b-8e1c-4f5a-b2d9-4b6c7d8e9f0a
+  # Le nom du job qui sera affiché dans l'interface de Rundeck.
+  name: "Template Job Bash"
+  # La description du job, pour expliquer son rôle.
+  description: "Un template de job pour exécuter des commandes shell bash avec 3 étapes et une notification."
+  # Le niveau de log pour les exécutions du job (DEBUG, VERBOSE, INFO, WARN, ERROR).
+  loglevel: INFO
+  # La définition du workflow, c'est-à-dire la séquence des étapes à exécuter.
+  sequence:
+    # 'keepgoing' à 'false' signifie que le workflow s'arrête à la première étape qui échoue.
+    keepgoing: false
+    # La stratégie d'exécution sur les nœuds. 'sequential' exécute chaque étape sur tous les nœuds avant de passer à la suivante.
+    strategy: sequential
+    # La liste des commandes ou étapes du workflow.
+    commands:
+      # Première étape : exécution d'une commande shell.
+      - exec: "echo 'Première étape du script Bash'"
+        # Description de l'étape.
+        description: "Étape 1"
+      # Deuxième étape : une autre commande shell.
+      - exec: "echo 'Deuxième étape du script Bash'"
+        description: "Étape 2"
+      # Troisième étape : dernière commande shell.
+      - exec: "echo 'Troisième étape du script Bash'"
+        description: "Étape 3"
+  # La section pour définir les notifications.
+  notification:
+    # Déclenché lorsque le job se termine avec succès.
+    onsuccess:
+      # Le type de notification à envoyer. 'email' est un plugin standard.
+      - type: email
+        # La configuration pour la notification par email.
+        config:
+          # La liste des destinataires de l'email.
+          recipients: "admin@example.com"
+          # Le sujet de l'email. Des variables comme ${job.name} peuvent être utilisées.
+          subject: "Succès du Job Rundeck : ${job.name}"
+          # Le corps du message de l'email.
+          message: "Le job '${job.name}' s'est terminé avec succès."
+    # Déclenché lorsque le job échoue.
+    onfailure:
+      # Le type de notification à envoyer.
+      - type: email
+        # La configuration pour la notification par email.
+        config:
+          # La liste des destinataires.
+          recipients: "admin@example.com"
+          # Le sujet de l'email.
+          subject: "Échec du Job Rundeck : ${job.name}"
+          # Le corps du message.
+          message: "Le job '${job.name}' a échoué. Consulter les logs pour plus de détails."

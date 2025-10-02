@@ -1,0 +1,63 @@
+# L'identifiant unique du job.
+- id: 4c9f3c9d-0a3e-6h7c-d4f1-6d8e9f0a2c2c
+  # Le nom du job.
+  name: "Template Job Ansible"
+  # La description du job.
+  description: "Un template de job pour exécuter un playbook Ansible avec une notification."
+  # Le niveau de log.
+  loglevel: INFO
+  # La définition du workflow.
+  sequence:
+    # Arrêter en cas d'échec.
+    keepgoing: false
+    # Stratégie d'exécution. Pour Ansible, 'node-first' est souvent pertinent pour exécuter le playbook complet sur chaque nœud ciblé.
+    strategy: node-first
+    # La liste des étapes du workflow.
+    commands:
+      # Étape pour exécuter un playbook Ansible.
+      # Le type 'ansible-playbook' est fourni par le plugin Ansible pour Rundeck.
+      - type: ansible-playbook
+        # La configuration pour l'étape Ansible.
+        config:
+          # Chemin vers le playbook Ansible sur le serveur Rundeck.
+          # Ce chemin doit être accessible par l'utilisateur Rundeck.
+          ansible-playbook: "/etc/ansible/playbooks/my-playbook.yml"
+          # Spécifier le fichier d'inventaire Ansible.
+          # Si non défini, l'inventaire par défaut d'Ansible sera utilisé.
+          ansible-inventory: "/etc/ansible/hosts"
+          # Spécifier l'utilisateur pour la connexion SSH.
+          ansible-user: "rundeck"
+          # Chemin vers la clé privée SSH pour l'authentification.
+          ansible-ssh-private-key-file: "/var/lib/rundeck/.ssh/id_rsa"
+          # Activer l'escalade de privilèges (équivalent à 'become: yes').
+          ansible-become: "true"
+          # Méthode d'escalade de privilèges (sudo, su, etc.).
+          ansible-become-method: "sudo"
+          # Utilisateur pour l'escalade de privilèges.
+          ansible-become-user: "root"
+  # La section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      # Type de notification : email.
+      - type: email
+        # Configuration de l'email.
+        config:
+          # Destinataires.
+          recipients: "admin@example.com"
+          # Sujet de l'email.
+          subject: "Succès du Job Rundeck : ${job.name}"
+          # Corps du message.
+          message: "Le job Ansible '${job.name}' s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      # Type de notification : email.
+      - type: email
+        # Configuration de l'email.
+        config:
+          # Destinataires.
+          recipients: "admin@example.com"
+          # Sujet de l'email.
+          subject: "Échec du Job Rundeck : ${job.name}"
+          # Corps du message.
+          message: "Le job Ansible '${job.name}' a échoué. Consulter les logs pour plus de détails."

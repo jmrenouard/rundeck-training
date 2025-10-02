@@ -1,0 +1,58 @@
+# L'identifiant unique du job.
+- id: 3b8e2b8c-9f2d-5g6b-c3e0-5c7d8e9f0a1b
+  # Le nom du job.
+  name: "Template Job Python"
+  # La description du job.
+  description: "Un template de job pour exécuter un script Python avec 3 étapes et une notification."
+  # Le niveau de log.
+  loglevel: INFO
+  # La définition du workflow.
+  sequence:
+    # Arrêter en cas d'échec.
+    keepgoing: false
+    # Stratégie d'exécution séquentielle.
+    strategy: sequential
+    # La liste des étapes du workflow.
+    commands:
+      # Première étape : exécution d'un script Python.
+      - script: |
+          #!/usr/bin/env python
+          print("Première étape du script Python")
+        # Description de l'étape.
+        description: "Étape 1"
+      # Deuxième étape : une autre commande Python.
+      - script: |
+          #!/usr/bin/env python
+          print("Deuxième étape du script Python")
+        description: "Étape 2"
+      # Troisième étape : dernière commande Python.
+      - script: |
+          #!/usr/bin/env python
+          print("Troisième étape du script Python")
+        description: "Étape 3"
+  # La section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      # Type de notification : email.
+      - type: email
+        # Configuration de l'email.
+        config:
+          # Destinataires.
+          recipients: "admin@example.com"
+          # Sujet de l'email.
+          subject: "Succès du Job Rundeck : ${job.name}"
+          # Corps du message.
+          message: "Le job '${job.name}' s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      # Type de notification : email.
+      - type: email
+        # Configuration de l'email.
+        config:
+          # Destinataires.
+          recipients: "admin@example.com"
+          # Sujet de l'email.
+          subject: "Échec du Job Rundeck : ${job.name}"
+          # Corps du message.
+          message: "Le job '${job.name}' a échoué. Consulter les logs pour plus de détails."
