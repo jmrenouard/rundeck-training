@@ -21,7 +21,7 @@
     dest: /etc/nginx/sites-available/rundeck
   notify: "validate and reload nginx"
 
-# Activation du site Rundee
+# Activation du site Rundeck
 - name: "Activation du site Rundeck"
   file:
     src: /etc/nginx/sites-available/rundeck
