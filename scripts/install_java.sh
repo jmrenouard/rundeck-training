@@ -67,9 +67,10 @@ success "Java version 11 est correctement installée."
 
 # --- Configuration de JAVA_HOME ---
 info "Configuration de la variable d'environnement JAVA_HOME..."
-JAVA_HOME_PATH=$(update-java-alternatives -l | grep '1.11' | awk '{print $3}')
-if [ -z "$JAVA_HOME_PATH" ]; then
-    error "Impossible de trouver le chemin d'installation de Java 11."
+JAVA_BIN_PATH=$(readlink -f "$(which java)")
+JAVA_HOME_PATH=$(dirname "$(dirname "$JAVA_BIN_PATH")")
+if [ -z "$JAVA_HOME_PATH" ] || [ ! -d "$JAVA_HOME_PATH" ]; then
+    error "Impossible de déterminer le chemin d'installation de Java 11 via readlink."
 fi
 
 if ! grep -q "export JAVA_HOME=" /etc/environment; then
