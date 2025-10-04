@@ -10,8 +10,9 @@ keycloak_http_port: 8080
 
 # Identifiants de l'administrateur initial de Keycloak.
 # IMPORTANT : Changez ces valeurs pour un environnement de production.
+# Il est fortement recommandé de définir ce mot de passe via Ansible Vault ou une gestion sécurisée des variables.
 keycloak_admin_user: "admin"
-keycloak_admin_password: "admin"
+keycloak_admin_password: "CHANGEME"  # À remplacer et à sécuriser via Ansible Vault !
 
 # Nom du réseau Docker à utiliser.
 # Utiliser un réseau dédié est une bonne pratique.
