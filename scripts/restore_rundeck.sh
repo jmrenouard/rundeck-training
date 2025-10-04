@@ -71,15 +71,29 @@ tar -xzf "$BACKUP_FILE" -C "$EXTRACT_DIR" || {
     systemctl start rundeckd
     exit 1
 }
-DB_BACKUP_FILE=$(find "$EXTRACT_DIR" -name "*.sql" -type f)
-if [ ! -f "$DB_BACKUP_FILE" ]; then
-    error "Aucun fichier de sauvegarde SQL trouvé dans l'archive."
+# --- Vérification du fichier de sauvegarde SQL ---
+info "Vérification du fichier de sauvegarde SQL dans l'archive..."
+SQL_FILES=$(find "$EXTRACT_DIR" -name "*.sql" -type f)
+NUM_SQL_FILES=$(echo "$SQL_FILES" | wc -w)
+
+if [ "$NUM_SQL_FILES" -eq 0 ]; then
+    error "Aucun fichier de sauvegarde SQL (*.sql) n'a été trouvé dans l'archive."
+    rm -rf "$EXTRACT_DIR"
+    info "Tentative de redémarrage du service Rundeck..."
+    systemctl start rundeckd
+    exit 1
+elif [ "$NUM_SQL_FILES" -gt 1 ]; then
+    error "Plusieurs fichiers de sauvegarde SQL ont été trouvés dans l'archive. Restauration annulée."
+    warn "Fichiers trouvés :"
+    echo "$SQL_FILES"
     rm -rf "$EXTRACT_DIR"
     info "Tentative de redémarrage du service Rundeck..."
     systemctl start rundeckd
     exit 1
 fi
-success "Archive extraite avec succès dans '$EXTRACT_DIR'."
+
+DB_BACKUP_FILE="$SQL_FILES"
+success "Fichier de sauvegarde SQL unique trouvé : $DB_BACKUP_FILE"
 
 # --- Restauration de la base de données ---
 info "Restauration de la base de données MySQL '$DB_NAME'..."
@@ -117,17 +131,19 @@ for dir in "${REQUIRED_DIRS[@]}"; do
     fi
 done
 info "Tous les répertoires requis sont présents dans la sauvegarde extraite."
-info "Suppression des anciens répertoires de données Rundeck..."
-rm -rf /var/lib/rundeck/logs /var/lib/rundeck/keystore /var/lib/rundeck/projects /etc/rundeck
-success "Anciens répertoires supprimés."
+info "Restauration des fichiers de Rundeck..."
+warn "Cette opération fusionne les fichiers de la sauvegarde avec les fichiers existants."
+warn "Les fichiers de la sauvegarde écraseront les fichiers existants en cas de conflit."
+warn "Aucun fichier existant non présent dans la sauvegarde ne sera supprimé."
 
-info "Restauration des nouveaux répertoires..."
-mv "$EXTRACT_DIR/logs" /var/lib/rundeck/
-mv "$EXTRACT_DIR/keystore" /var/lib/rundeck/
-mv "$EXTRACT_DIR/projects" /var/lib/rundeck/
-info "Fusion des fichiers restaurés dans /etc/rundeck (les fichiers existants seront écrasés si présents)..."
-rsync -a "$EXTRACT_DIR/rundeck/" /etc/rundeck/
-success "Nouveaux répertoires restaurés et fusionnés dans /etc/rundeck."
+# Utilisation de rsync pour une restauration plus sûre qui ne supprime pas de fichiers inattendus.
+info "Restauration des répertoires de données..."
+rsync -a "$EXTRACT_DIR/logs/" /var/lib/rundeck/logs/ || error "Échec de la restauration du répertoire 'logs'."
+rsync -a "$EXTRACT_DIR/keystore/" /var/lib/rundeck/keystore/ || error "Échec de la restauration du répertoire 'keystore'."
+rsync -a "$EXTRACT_DIR/projects/" /var/lib/rundeck/projects/ || error "Échec de la restauration du répertoire 'projects'."
+info "Restauration et fusion du répertoire de configuration..."
+rsync -a "$EXTRACT_DIR/rundeck/" /etc/rundeck/ || error "Échec de la restauration du répertoire de configuration 'rundeck'."
+success "Restauration des fichiers terminée."
 
 # --- Rétablissement des permissions ---
 info "Rétablissement des permissions pour les fichiers Rundeck..."
