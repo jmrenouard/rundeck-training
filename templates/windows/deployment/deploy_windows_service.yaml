@@ -32,11 +32,8 @@
       - exec: "sc.exe delete \"@option.service_name@\""
         description: "Suppression du service existant (si présent)"
         # On ignore l'échec car le service peut ne pas exister.
-        plugins:
-          orchestrator:
-            - type: "fail-on-non-zero-exit-code"
-              config:
-                fail: false
+        errorhandler:
+          exec: "echo 'Ignorer l\'échec de suppression du service (il se peut qu\'il n\'existe pas)'"
       # Étape 3 : Créer le nouveau service.
       - exec: "sc.exe create \"@option.service_name@\" binPath= \"@option.service_exe_path@\" DisplayName= \"@option.display_name@\" start= auto"
         description: "Création du nouveau service"
