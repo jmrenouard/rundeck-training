@@ -75,7 +75,7 @@ sed -i "s|dataSource.username =.*|dataSource.username = $DB_USER|" "$RUNDECK_CON
 sed -i "s|dataSource.password =.*|dataSource.password = $DB_PASS|" "$RUNDECK_CONFIG"
 # Ajout du driver si absent
 if ! grep -q "dataSource.driverClassName" "$RUNDECK_CONFIG"; then
-    echo "dataSource.driverClassName = com.mysql.jdbc.Driver" >> "$RUNDECK_CONFIG"
+    echo "dataSource.driverClassName = com.mysql.cj.jdbc.Driver" >> "$RUNDECK_CONFIG"
 fi
 success "La configuration de la base de données dans '$RUNDECK_CONFIG' a été mise à jour."
 
