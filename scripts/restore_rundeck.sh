@@ -138,11 +138,11 @@ warn "Aucun fichier existant non présent dans la sauvegarde ne sera supprimé."
 
 # Utilisation de rsync pour une restauration plus sûre qui ne supprime pas de fichiers inattendus.
 info "Restauration des répertoires de données..."
-rsync -a "$EXTRACT_DIR/logs/" /var/lib/rundeck/logs/
-rsync -a "$EXTRACT_DIR/keystore/" /var/lib/rundeck/keystore/
-rsync -a "$EXTRACT_DIR/projects/" /var/lib/rundeck/projects/
+rsync -a "$EXTRACT_DIR/logs/" /var/lib/rundeck/logs/ || error "Échec de la restauration du répertoire 'logs'."
+rsync -a "$EXTRACT_DIR/keystore/" /var/lib/rundeck/keystore/ || error "Échec de la restauration du répertoire 'keystore'."
+rsync -a "$EXTRACT_DIR/projects/" /var/lib/rundeck/projects/ || error "Échec de la restauration du répertoire 'projects'."
 info "Restauration et fusion du répertoire de configuration..."
-rsync -a "$EXTRACT_DIR/rundeck/" /etc/rundeck/
+rsync -a "$EXTRACT_DIR/rundeck/" /etc/rundeck/ || error "Échec de la restauration du répertoire de configuration 'rundeck'."
 success "Restauration des fichiers terminée."
 
 # --- Rétablissement des permissions ---
