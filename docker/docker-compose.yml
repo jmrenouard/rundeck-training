@@ -1,0 +1,71 @@
+# Fichier docker-compose pour le déploiement de Rundeck avec une base de données MySQL.
+# Version de la syntaxe docker-compose.
+version: '3.7'
+
+services:
+  # Service pour l'application Rundeck.
+  rundeck:
+    # Image Docker à utiliser pour Rundeck.
+    image: rundeck/rundeck:4.17.6
+    # Nom du conteneur.
+    container_name: rundeck
+    # Redémarre toujours le conteneur s'il s'arrête.
+    restart: always
+    # Variables d'environnement pour configurer Rundeck.
+    environment:
+      # URL publique de Rundeck, utilisée pour générer les URLs.
+      RUNDECK_GRAILS_URL: ${RUNDECK_GRAILS_URL}
+      # -- Configuration de la base de données --
+      # Driver JDBC pour MySQL.
+      RUNDECK_DATABASE_DRIVER: org.mariadb.jdbc.Driver
+      # URL de connexion à la base de données MySQL.
+      RUNDECK_DATABASE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?autoReconnect=true&useSSL=false
+      # Nom d'utilisateur pour la base de données.
+      RUNDECK_DATABASE_USERNAME: ${MYSQL_USER}
+      # Mot de passe pour la base de données.
+      RUNDECK_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+    # Mappage des ports. Le port 4440 du conteneur est mappé au port RUNDECK_PORT de l'hôte.
+    ports:
+      - "${RUNDECK_PORT}:4440"
+    # Dépend du service 'db', donc 'db' sera démarré avant 'rundeck'.
+    depends_on:
+      - db
+    # Volumes pour la persistance des données.
+    volumes:
+      # Mappe le répertoire local RUNDECK_DATA_DIR aux données de Rundeck dans le conteneur.
+      - ${RUNDECK_DATA_DIR}:/home/rundeck/server/data
+      # Vous pouvez ajouter d'autres volumes pour les projets, les clés, etc.
+      # - ./projects:/home/rundeck/projects
+      # - ./keys:/home/rundeck/var/lib/rundeck/.ssh
+
+  # Service pour la base de données MySQL.
+  db:
+    # Image Docker à utiliser pour MySQL.
+    image: mysql:8.0
+    # Nom du conteneur.
+    container_name: mysql-db
+    # Redémarre toujours le conteneur s'il s'arrête.
+    restart: always
+    # Variables d'environnement pour configurer MySQL.
+    environment:
+      # Mot de passe root pour MySQL.
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      # Nom de la base de données à créer au démarrage.
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      # Nom d'utilisateur à créer.
+      MYSQL_USER: ${MYSQL_USER}
+      # Mot de passe pour l'utilisateur.
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # Mappage des ports. Le port 3306 du conteneur est mappé au port MYSQL_PORT de l'hôte.
+    ports:
+        - "${MYSQL_PORT}:3306"
+    # Volume pour la persistance des données de la base de données.
+    volumes:
+      # Mappe le répertoire local MYSQL_DATA_DIR aux données de MySQL dans le conteneur.
+      - ${MYSQL_DATA_DIR}:/var/lib/mysql
+
+# Définition des volumes nommés pour une gestion plus facile.
+# Si vous n'utilisez pas de chemins locaux (comme ci-dessus), vous pouvez définir des volumes ici.
+# volumes:
+#   rundeck-data:
+#   mysql-data:

@@ -1,0 +1,2 @@
+# Ignore Docker environment file
+docker/.env
