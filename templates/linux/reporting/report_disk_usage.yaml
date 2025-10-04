@@ -28,6 +28,8 @@
       - exec: "df -h > @option.report_dir@/disk_usage_report.txt"
         description: "Génération du rapport d'utilisation du disque"
       # Étape 2 : Envoyer le rapport par email.
+      # ATTENTION : La commande 'mail' nécessite qu'un agent de transfert de courrier (MTA) soit correctement configuré sur le système.
+      # Si ce n'est pas le cas, l'envoi par email pourrait échouer silencieusement.
       - exec: "mail -s \"Rapport d'utilisation du disque pour ${node.name}\" @option.email_recipient@ < @option.report_dir@/disk_usage_report.txt"
         description: "Envoi du rapport par email"
   # Section pour les notifications.
@@ -44,5 +46,5 @@
       - type: email
         config:
           recipients: "admin@example.com"
-          subject: "Échec de la génération du rapport d'utilisation du disque pour ${node.name}"
-          message: "La génération du rapport d'utilisation du disque pour le nœud ${node.name} a échoué."
+          subject: "Échec de génération ou d'envoi du rapport d'utilisation du disque pour ${node.name}"
+          message: "La génération ou l'envoi du rapport d'utilisation du disque pour le nœud ${node.name} a échoué. Vérifiez la configuration du MTA ou consultez les journaux pour plus d'informations."

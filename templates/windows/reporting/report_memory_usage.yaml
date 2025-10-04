@@ -15,6 +15,10 @@
     - name: "email_recipient"
       description: "Adresse email pour envoyer le rapport."
       required: false
+    - name: "smtp_server"
+      description: "Adresse du serveur SMTP pour l'envoi d'email."
+      required: false
+      value: "smtp.example.com"
   # La définition du workflow.
   sequence:
     # Le workflow s'arrête en cas d'échec.
@@ -27,7 +31,7 @@
       - exec: "powershell -Command \"Get-WmiObject -Class Win32_OperatingSystem | Select-Object @{Name='TotalVisibleMemorySize (GB)';Expression={[math]::Round($_.TotalVisibleMemorySize/1MB,2)}}, @{Name='FreePhysicalMemory (GB)';Expression={[math]::Round($_.FreePhysicalMemory/1MB,2)}} | Format-List | Out-File -FilePath '@option.report_path@'\""
         description: "Génération du rapport d'utilisation de la mémoire"
       # Étape 2 : Envoyer le rapport par email (si une adresse est fournie).
-      - exec: "powershell -Command \"Send-MailMessage -To '@option.email_recipient@' -Subject 'Rapport d''utilisation de la mémoire pour ${node.name}' -Body (Get-Content -Path '@option.report_path@' | Out-String) -SmtpServer 'smtp.example.com'\""
+      - exec: "powershell -Command \"Send-MailMessage -To '@option.email_recipient@' -Subject 'Rapport d''utilisation de la mémoire pour ${node.name}' -Body (Get-Content -Path '@option.report_path@' | Out-String) -SmtpServer '@option.smtp_server@'\""
         description: "Envoi du rapport par email"
         # Cette étape n'est exécutée que si une adresse email est fournie.
         if:
