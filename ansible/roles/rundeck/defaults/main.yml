@@ -14,7 +14,7 @@ rundeck_server_url: "http://{{ ansible_default_ipv4.address }}:{{ rundeck_port }
 # Ces valeurs sont utilisées pour configurer la connexion de Rundeck à la base de données.
 rundeck_db_name: "rundeck"
 rundeck_db_user: "rundeckuser"
-rundeck_db_password: "rundeckpassword" # À CHANGER pour la production.
+# rundeck_db_password must be set securely via Ansible Vault or group_vars/host_vars. No default is provided for security reasons.
 rundeck_db_host: "localhost"
 
 # Configuration de la JVM pour Rundeck.
