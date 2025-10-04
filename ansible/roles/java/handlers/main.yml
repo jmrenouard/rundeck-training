@@ -33,8 +33,8 @@
     - name: "Configurer la variable JAVA_HOME dans /etc/environment"
       ansible.builtin.lineinfile:
         path: /etc/environment
-        regexp: '^export JAVA_HOME='
-        line: 'export JAVA_HOME={{ java_home_path }}'
+        regexp: '^JAVA_HOME='
+        line: 'JAVA_HOME={{ java_home_path }}'
         state: present
         create: yes
   listen: "Set JAVA_HOME"
