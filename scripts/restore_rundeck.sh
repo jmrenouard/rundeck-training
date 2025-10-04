@@ -79,13 +79,25 @@ success "Archive extraite avec succès dans '$EXTRACT_DIR'."
 
 # --- Restauration de la base de données ---
 info "Restauration de la base de données MySQL '$DB_NAME'..."
-mysql --user="$DB_USER" --password="$DB_PASS" "$DB_NAME" < "$DB_BACKUP_FILE" || {
+# Créer un fichier temporaire pour les identifiants MySQL
+MYSQL_CNF=$(mktemp)
+chmod 600 "$MYSQL_CNF"
+cat > "$MYSQL_CNF" <<EOF
+[client]
+user=$DB_USER
+password=$DB_PASS
+database=$DB_NAME
+EOF
+
+mysql --defaults-extra-file="$MYSQL_CNF" "$DB_NAME" < "$DB_BACKUP_FILE" || {
     error "La restauration de la base de données a échoué."
     rm -rf "$EXTRACT_DIR"
+    rm -f "$MYSQL_CNF"
     info "Tentative de redémarrage du service Rundeck..."
     systemctl start rundeckd
     exit 1
 }
+rm -f "$MYSQL_CNF"
 success "Base de données restaurée avec succès."
 
 # --- Restauration des fichiers ---
