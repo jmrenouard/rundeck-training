@@ -15,6 +15,10 @@
     - name: "email_recipient"
       description: "Adresse email pour envoyer le rapport."
       required: false
+    - name: "smtp_server"
+      description: "Adresse du serveur SMTP pour l'envoi d'email."
+      required: false
+      value: "smtp.example.com"
   # La définition du workflow.
   sequence:
     # Le workflow s'arrête en cas d'échec.
@@ -27,7 +31,7 @@
       - exec: "powershell -Command \"Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, @{Name='Size (GB)';Expression={[math]::Round($_.Size/1GB,2)}}, @{Name='FreeSpace (GB)';Expression={[math]::Round($_.FreeSpace/1GB,2)}} | Format-Table | Out-File -FilePath '@option.report_path@'\""
         description: "Génération du rapport d'utilisation du disque"
       # Étape 2 : Envoyer le rapport par email (si une adresse est fournie).
-      - exec: "powershell -Command \"Send-MailMessage -To '@option.email_recipient@' -Subject 'Rapport d''utilisation du disque pour ${node.name}' -Body (Get-Content -Path '@option.report_path@' | Out-String) -SmtpServer 'smtp.example.com'\""
+      - exec: "powershell -Command \"Send-MailMessage -To '@option.email_recipient@' -Subject 'Rapport d''utilisation du disque pour ${node.name}' -Body (Get-Content -Path '@option.report_path@' | Out-String) -SmtpServer '@option.smtp_server@'\""
         description: "Envoi du rapport par email"
         # Cette étape n'est exécutée que si une adresse email est fournie.
         if:

@@ -31,7 +31,12 @@
       - exec: "mkdir -p @option.backup_dir@"
         description: "Création du répertoire de sauvegarde"
       # Étape 2 : Créer l'archive de sauvegarde.
-      - exec: "tar -czf @option.backup_dir@/@option.backup_filename@.tar.gz @option.source_paths@"
+      - script: |-
+          #!/bin/bash
+          # $1: backup_dir, $2: backup_filename, $@: source_paths
+          set -e
+          tar -czf "$1/$2.tar.gz" "${@:3}"
+        args: "@option.backup_dir@ @option.backup_filename@ @option.source_paths@"
         description: "Création de l'archive de sauvegarde"
   # Section pour les notifications.
   notification:

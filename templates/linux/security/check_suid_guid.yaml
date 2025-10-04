@@ -20,11 +20,11 @@
     strategy: sequential
     # La liste des commandes.
     commands:
-      # Étape 1 : Rechercher les fichiers SUID.
-      - exec: "sudo find @option.search_path@ -type f -perm /4000"
+      # Étape 1 : Rechercher les fichiers SUID et sauvegarder les résultats.
+      - exec: "sudo find @option.search_path@ -type f -perm /4000 > /tmp/suid_files.txt"
         description: "Recherche des fichiers SUID"
-      # Étape 2 : Rechercher les fichiers GUID.
-      - exec: "sudo find @option.search_path@ -type f -perm /2000"
+      # Étape 2 : Rechercher les fichiers GUID et sauvegarder les résultats.
+      - exec: "sudo find @option.search_path@ -type f -perm /2000 > /tmp/guid_files.txt"
         description: "Recherche des fichiers GUID"
   # Section pour les notifications.
   notification:
@@ -34,11 +34,19 @@
         config:
           recipients: "admin@example.com"
           subject: "Rapport SUID/GUID pour ${node.name}"
-          message: "La recherche de fichiers SUID/GUID sur le nœud ${node.name} s'est terminée."
+          message: "La recherche de fichiers SUID/GUID sur le nœud ${node.name} s'est terminée. Les rapports sont en pièces jointes."
+          # Joindre les fichiers de résultats.
+          attach:
+            - "/tmp/suid_files.txt"
+            - "/tmp/guid_files.txt"
     # Notification en cas d'échec.
     onfailure:
       - type: email
         config:
           recipients: "admin@example.com"
           subject: "Échec de la recherche de fichiers SUID/GUID sur ${node.name}"
-          message: "La recherche de fichiers SUID/GUID sur le nœud ${node.name} a échoué."
+          message: "La recherche de fichiers SUID/GUID sur le nœud ${node.name} a échoué. Consultez les pièces jointes pour un éventuel rapport partiel."
+          # Joindre les fichiers de résultats (même en cas d'échec, ils peuvent contenir des informations utiles).
+          attach:
+            - "/tmp/suid_files.txt"
+            - "/tmp/guid_files.txt"
