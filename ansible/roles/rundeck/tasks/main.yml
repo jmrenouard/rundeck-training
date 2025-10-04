@@ -3,8 +3,18 @@
 ---
 # Tâche pour ajouter le référentiel (repository) officiel de Rundeck.
 # Utilise le script de configuration fourni par Rundeck.
-- name: "Ajouter le référentiel Rundeck"
-  ansible.builtin.shell: "curl -s https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-setup.sh | bash"
+- name: "Télécharger le script de configuration du référentiel Rundeck"
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-setup.sh
+    dest: /tmp/deb-setup.sh
+    mode: '0755'
+  become: yes
+  tags:
+    - rundeck
+    - package
+
+- name: "Exécuter le script de configuration du référentiel Rundeck"
+  ansible.builtin.shell: "bash /tmp/deb-setup.sh"
   args:
     creates: /etc/apt/sources.list.d/rundeck.list
   become: yes
