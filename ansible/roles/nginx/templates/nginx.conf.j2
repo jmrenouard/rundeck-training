@@ -4,7 +4,7 @@ server {
     listen {{ nginx_listen_port }};
 
     # Nom du serveur (peut être une adresse IP ou un nom de domaine)
-    server_name {{ ansible_fqdn }};
+    server_name {{ nginx_server_name }};
 
     # Emplacement pour la racine du serveur
     location / {

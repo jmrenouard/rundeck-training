@@ -6,3 +6,6 @@ nginx_listen_port: 80
 
 # Port sur lequel Rundeck est exécuté
 rundeck_port: 4440
+
+# Nom du serveur pour Nginx
+nginx_server_name: "{{ ansible_fqdn }}"
