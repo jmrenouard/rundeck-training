@@ -8,6 +8,12 @@
     state: present
     update_cache: yes
 
+# S'assurer que le service Nginx est activé et démarré
+- name: "Activer et démarrer le service Nginx"
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
 # Copie du fichier de configuration de Nginx pour Rundeck
 - name: "Copie du fichier de configuration de Nginx pour Rundeck"
   template:
