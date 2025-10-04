@@ -38,8 +38,23 @@
       - exec: "mkdir -p @option.backup_dir@"
         description: "Création du répertoire de sauvegarde"
       # Étape 2 : Exécuter mysqldump pour sauvegarder la base de données.
-      - exec: "mysqldump -u @option.db_user@ -p@option.db_password@ @option.db_name@ > @option.backup_dir@/@option.backup_filename@.sql"
-        description: "Exécution de mysqldump"
+      # Étape 2 : Créer un fichier temporaire de configuration MySQL sécurisé contenant les identifiants.
+      - exec: |
+          cat > /tmp/.my.cnf-${job.execid} <<EOF
+          [client]
+          user=@option.db_user@
+          password=@option.db_password@
+          EOF
+        description: "Création d'un fichier de configuration temporaire pour MySQL"
+      # Étape 3 : Restreindre les permissions du fichier de configuration.
+      - exec: "chmod 600 /tmp/.my.cnf-${job.execid}"
+        description: "Restriction des permissions du fichier de configuration"
+      # Étape 4 : Exécuter mysqldump en utilisant le fichier de configuration sécurisé.
+      - exec: "mysqldump --defaults-extra-file=/tmp/.my.cnf-${job.execid} @option.db_name@ > @option.backup_dir@/@option.backup_filename@.sql"
+        description: "Exécution de mysqldump avec fichier de configuration sécurisé"
+      # Étape 5 : Supprimer le fichier de configuration temporaire.
+      - exec: "rm -f /tmp/.my.cnf-${job.execid}"
+        description: "Suppression du fichier de configuration temporaire"
   # Section pour les notifications.
   notification:
     # Notification en cas de succès.
