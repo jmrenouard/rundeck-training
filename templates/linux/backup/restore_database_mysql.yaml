@@ -30,7 +30,17 @@
     # La liste des commandes.
     commands:
       # Étape 1 : Exécuter la commande mysql pour restaurer la base de données.
-      - exec: "mysql -u @option.db_user@ -p@option.db_password@ @option.db_name@ < @option.backup_file@"
+      - exec: |
+          TMP_CNF=$(mktemp)
+          chmod 600 "$TMP_CNF"
+          cat > "$TMP_CNF" <<EOF
+          [client]
+          user=@option.db_user@
+          password=@option.db_password@
+          host=localhost
+          EOF
+          mysql --defaults-extra-file="$TMP_CNF" @option.db_name@ < @option.backup_file@
+          rm -f "$TMP_CNF"
         description: "Exécution de la restauration"
   # Section pour les notifications.
   notification:
