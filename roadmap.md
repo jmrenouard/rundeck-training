@@ -46,3 +46,22 @@ Ce document présente une feuille de route pour les évolutions futures de ce d�
 25. **Créer un site de documentation avec MkDocs ou Docusaurus** : Générer un site web statique à partir des fichiers Markdown pour une navigation plus aisée.
 26. **Traduire la documentation en anglais** : Rendre le projet accessible à une audience plus large.
 27. **Documenter l'architecture globale** : Créer des diagrammes d'architecture (par exemple avec `draw.io` ou `PlantUML`) pour visualiser les interactions entre les différents composants.
+
+## VII. Infrastructure Web et Accès
+
+28. **Mettre en place un frontal Nginx avec HTTPS** : Configurer Nginx en tant que reverse proxy pour Rundeck et Keycloak, avec génération automatique de certificats SSL/TLS via Let's Encrypt.
+29. **Créer un rôle Ansible pour Nginx** : Automatiser l'installation et la configuration du reverse proxy Nginx.
+
+## VIII. Client en Ligne de Commande (CLI) et Scripts API
+
+30. **Développer un client en ligne de commande (CLI)** : Créer un outil CLI dédié (en Python, Go, ou Bash) pour simplifier les interactions avec Rundeck et les autres services de la stack.
+31. **Fournir des exemples de scripts pour l'API Rundeck** : Rédiger des scripts (avec `curl`, Python) montrant comment déclencher des jobs, récupérer des logs et gérer des projets via l'API REST de Rundeck.
+
+## IX. Catalogue de Jobs Rundeck
+
+32. **Créer 40 templates de jobs Rundeck** : Développer une bibliothèque riche et variée de templates de jobs pour différentes plateformes (Linux, Windows) et cas d'usage :
+    *   Déploiement d'applications (WAR, JAR, Docker).
+    *   Maintenance système (mises à jour, nettoyage).
+    *   Opérations de sauvegarde et de restauration.
+    *   Reporting et audits de conformité.
+    *   Gestion des utilisateurs et des permissions.
