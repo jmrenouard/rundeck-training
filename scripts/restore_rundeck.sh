@@ -26,10 +26,14 @@ fi
 BACKUP_FILE="$1"
 
 # --- Variables de Configuration (doivent correspondre à install_mysql.sh) ---
-DB_NAME="rundeck"
-DB_USER="rundeckuser"
-DB_PASS="rundeckpassword"
+DB_NAME="${RUNDECK_DB_NAME}"
+DB_USER="${RUNDECK_DB_USER}"
+DB_PASS="${RUNDECK_DB_PASS}"
 
+# Vérification que les variables d'environnement sont définies
+if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ]; then
+    error "Les variables d'environnement RUNDECK_DB_NAME, RUNDECK_DB_USER et RUNDECK_DB_PASS doivent être définies."
+fi
 # --- Répertoire Temporaire pour l'Extraction ---
 EXTRACT_DIR="/tmp/rundeck_restore_$$"
 
