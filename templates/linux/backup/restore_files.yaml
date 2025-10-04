@@ -1,0 +1,44 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-backup-restore"
+  # Le nom du job.
+  name: "Linux - Restauration de fichiers et de répertoires"
+  # La description du job.
+  description: "Restaure des fichiers et répertoires à partir d'une archive compressée (tar.gz)."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "backup_file"
+      description: "Chemin complet de l'archive de sauvegarde à restaurer."
+      required: true
+    - name: "restore_dir"
+      description: "Répertoire de destination pour la restauration."
+      required: true
+      value: "/"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Extraire l'archive de sauvegarde dans le répertoire de destination.
+      - exec: "tar -xzf @option.backup_file@ -C @option.restore_dir@"
+        description: "Extraction de l'archive de sauvegarde"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la restauration de fichiers sur ${node.name}"
+          message: "La restauration de fichiers sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la restauration de fichiers sur ${node.name}"
+          message: "La restauration de fichiers sur le nœud ${node.name} a échoué."

@@ -1,0 +1,35 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-security-check-open-ports"
+  # Le nom du job.
+  name: "Windows - Vérifier les ports ouverts"
+  # La description du job.
+  description: "Vérifie les ports TCP ouverts sur un système Windows."
+  # Le niveau de log.
+  loglevel: INFO
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Lister les connexions TCP et les ports en écoute.
+      - exec: "netstat -an | findstr \"LISTENING\""
+        description: "Vérification des ports en écoute"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Rapport des ports ouverts pour ${node.name}"
+          message: "La vérification des ports ouverts sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la vérification des ports ouverts sur ${node.name}"
+          message: "La vérification des ports ouverts sur le nœud ${node.name} a échoué."

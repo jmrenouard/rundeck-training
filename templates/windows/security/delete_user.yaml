@@ -1,0 +1,40 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-security-delete-user"
+  # Le nom du job.
+  name: "Windows - Supprimer un utilisateur local"
+  # La description du job.
+  description: "Supprime un utilisateur local d'un système Windows."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "username"
+      description: "Nom d'utilisateur à supprimer."
+      required: true
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Supprimer l'utilisateur.
+      - exec: "powershell -Command \"Remove-LocalUser -Name '@option.username@'\""
+        description: "Suppression de l'utilisateur local"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Suppression de l'utilisateur @option.username@ réussie sur ${node.name}"
+          message: "L'utilisateur local @option.username@ a été supprimé avec succès sur le nœud ${node.name}."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la suppression de l'utilisateur @option.username@ sur ${node.name}"
+          message: "La suppression de l'utilisateur local @option.username@ sur le nœud ${node.name} a échoué."

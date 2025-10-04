@@ -1,0 +1,66 @@
+# L'identifiant unique du job. Il est recommandé de le définir.
+- id: "uuid-linux-deploy-docker"
+  # Le nom du job qui sera affiché dans l'interface de Rundeck.
+  name: "Linux - Déploiement d'un conteneur Docker"
+  # La description du job.
+  description: "Un template de job pour déployer une application conteneurisée avec Docker sur un serveur Linux."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    # Option pour le nom de l'image Docker.
+    - name: "docker_image"
+      description: "Nom de l'image Docker à déployer (ex: 'ubuntu:latest')."
+      required: true
+    # Option pour le nom du conteneur.
+    - name: "container_name"
+      description: "Nom à donner au nouveau conteneur."
+      required: true
+      value: "my-app-container"
+    # Option pour les ports à mapper.
+    - name: "port_mapping"
+      description: "Mapping des ports (ex: '8080:80')."
+      required: false
+    # Option pour les volumes à monter.
+    - name: "volume_mapping"
+      description: "Mapping des volumes (ex: '/data:/app/data')."
+      required: false
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête à la première étape qui échoue.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Pull de la dernière version de l'image.
+      - exec: "docker pull @option.docker_image@"
+        description: "Pull de la dernière image Docker"
+      # Étape 2 : Arrêter le conteneur existant (s'il existe).
+      - exec: "docker stop @option.container_name@ || true"
+        description: "Arrêt du conteneur existant (ignore l'erreur si non existant)"
+      # Étape 3 : Supprimer le conteneur existant (s'il existe).
+      - exec: "docker rm @option.container_name@ || true"
+        description: "Suppression du conteneur existant (ignore l'erreur si non existant)"
+      # Étape 4 : Démarrer un nouveau conteneur.
+      - exec: "docker run -d --name @option.container_name@ -p @option.port_mapping@ -v \"@option.volume_mapping@\" @option.docker_image@"
+        description: "Démarrage du nouveau conteneur"
+      # Étape 5 : Vérifier que le conteneur est bien en cours d'exécution.
+      - exec: "docker ps -f name=@option.container_name@"
+        description: "Vérification du statut du conteneur"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès du déploiement Docker : ${job.name}"
+          message: "Le déploiement du conteneur '@option.container_name@' sur ${node.name} s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du déploiement Docker : ${job.name}"
+          message: "Le déploiement du conteneur '@option.container_name@' sur ${node.name} a échoué. Consulter les logs pour plus de détails."

@@ -1,0 +1,38 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-maintenance-update"
+  # Le nom du job.
+  name: "Windows - Installation des mises à jour système"
+  # La description du job.
+  description: "Recherche, télécharge et installe les mises à jour Windows via PowerShell."
+  # Le niveau de log.
+  loglevel: INFO
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Installer le module PowerShell pour les mises à jour Windows.
+      - exec: "powershell -Command Install-Module PSWindowsUpdate -Force -AcceptLicense"
+        description: "Installation du module PSWindowsUpdate"
+      # Étape 2 : Rechercher et installer les mises à jour.
+      - exec: "powershell -Command Get-WindowsUpdate -AcceptAll -Install"
+        description: "Recherche et installation des mises à jour"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de l'installation des mises à jour Windows sur ${node.name}"
+          message: "L'installation des mises à jour Windows sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de l'installation des mises à jour Windows sur ${node.name}"
+          message: "L'installation des mises à jour Windows sur le nœud ${node.name} a échoué."

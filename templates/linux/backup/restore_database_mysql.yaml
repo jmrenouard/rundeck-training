@@ -1,0 +1,60 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-restore-db-mysql"
+  # Le nom du job.
+  name: "Linux - Restauration d'une base de données MySQL"
+  # La description du job.
+  description: "Restaure une base de données MySQL à partir d'un fichier de sauvegarde SQL."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "db_name"
+      description: "Nom de la base de données à restaurer."
+      required: true
+    - name: "db_user"
+      description: "Utilisateur de la base de données."
+      required: true
+    - name: "db_password"
+      description: "Mot de passe de l'utilisateur de la base de données."
+      required: true
+      secure: true
+    - name: "backup_file"
+      description: "Chemin complet du fichier de sauvegarde SQL."
+      required: true
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Exécuter la commande mysql pour restaurer la base de données.
+      - exec: |
+          TMP_CNF=$(mktemp)
+          chmod 600 "$TMP_CNF"
+          cat > "$TMP_CNF" <<EOF
+          [client]
+          user=@option.db_user@
+          password=@option.db_password@
+          host=localhost
+          EOF
+          mysql --defaults-extra-file="$TMP_CNF" @option.db_name@ < @option.backup_file@
+          rm -f "$TMP_CNF"
+        description: "Exécution de la restauration"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la restauration de la base de données ${option.db_name} sur ${node.name}"
+          message: "La restauration de la base de données ${option.db_name} sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la restauration de la base de données ${option.db_name} sur ${node.name}"
+          message: "La restauration de la base de données ${option.db_name} sur le nœud ${node.name} a échoué."

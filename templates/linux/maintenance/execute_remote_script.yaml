@@ -1,0 +1,49 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-maintenance-execute-script"
+  # Le nom du job.
+  name: "Linux - Exécuter un script distant"
+  # La description du job.
+  description: "Télécharge et exécute un script sur un nœud Linux."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "script_url"
+      description: "URL du script à télécharger et exécuter."
+      required: true
+    - name: "script_args"
+      description: "Arguments à passer au script."
+      required: false
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Télécharger le script.
+      - exec: "curl -o /tmp/remote_script.sh @option.script_url@"
+        description: "Téléchargement du script"
+      # Étape 2 : Rendre le script exécutable.
+      - exec: "chmod +x /tmp/remote_script.sh"
+        description: "Rendre le script exécutable"
+      # Étape 3 : Exécuter le script.
+      - exec: "/tmp/remote_script.sh @option.script_args@"
+        description: "Exécution du script"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Exécution du script distant réussie sur ${node.name}"
+          message: "L'exécution du script distant sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de l'exécution du script distant sur ${node.name}"
+          message: "L'exécution du script distant sur le nœud ${node.name} a échoué."

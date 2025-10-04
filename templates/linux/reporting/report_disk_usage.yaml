@@ -1,0 +1,48 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-reporting-disk-usage"
+  # Le nom du job.
+  name: "Linux - Rapport d'utilisation de l'espace disque"
+  # La description du job.
+  description: "Génère un rapport sur l'utilisation de l'espace disque et l'envoie par email."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "report_dir"
+      description: "Répertoire pour stocker le rapport temporairement."
+      required: true
+      value: "/tmp"
+    - name: "email_recipient"
+      description: "Adresse email pour envoyer le rapport."
+      required: true
+      value: "admin@example.com"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Générer le rapport d'utilisation du disque.
+      - exec: "df -h > @option.report_dir@/disk_usage_report.txt"
+        description: "Génération du rapport d'utilisation du disque"
+      # Étape 2 : Envoyer le rapport par email.
+      - exec: "mail -s \"Rapport d'utilisation du disque pour ${node.name}\" @option.email_recipient@ < @option.report_dir@/disk_usage_report.txt"
+        description: "Envoi du rapport par email"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Rapport d'utilisation du disque généré pour ${node.name}"
+          message: "Le rapport d'utilisation du disque pour le nœud ${node.name} a été généré et envoyé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la génération du rapport d'utilisation du disque pour ${node.name}"
+          message: "La génération du rapport d'utilisation du disque pour le nœud ${node.name} a échoué."

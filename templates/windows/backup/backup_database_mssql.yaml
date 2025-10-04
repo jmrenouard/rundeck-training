@@ -1,0 +1,55 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-backup-db-mssql"
+  # Le nom du job.
+  name: "Windows - Sauvegarde d'une base de données MS SQL"
+  # La description du job.
+  description: "Effectue une sauvegarde d'une base de données Microsoft SQL Server."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "db_name"
+      description: "Nom de la base de données à sauvegarder."
+      required: true
+    - name: "backup_dir"
+      description: "Répertoire de destination pour la sauvegarde (doit être accessible par SQL Server)."
+      required: true
+      value: "C:\\Backups\\SQL"
+    - name: "backup_filename"
+      description: "Nom du fichier de sauvegarde (ex: 'my_db.bak')."
+      required: true
+      value: "db_backup-${job.execid}.bak"
+    - name: "sql_server_instance"
+      description: "Nom de l'instance SQL Server (ex: 'SQLEXPRESS')."
+      required: true
+      value: "SQLEXPRESS"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Créer le répertoire de sauvegarde s'il n'existe pas.
+      - exec: "powershell -Command New-Item -Path '@option.backup_dir@' -ItemType Directory -Force"
+        description: "Création du répertoire de sauvegarde"
+      # Étape 2 : Exécuter la commande de sauvegarde SQL.
+      - exec: "sqlcmd -S .\\@option.sql_server_instance@ -E -Q \"BACKUP DATABASE [@option.db_name@] TO DISK = N'@option.backup_dir@\\@option.backup_filename@' WITH NOFORMAT, NOINIT, NAME = N'@option.db_name@-Full Database Backup', SKIP, NOREWIND, NOUNLOAD, STATS = 10\""
+        description: "Exécution de la sauvegarde de la base de données"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la sauvegarde de la base de données ${option.db_name} sur ${node.name}"
+          message: "La sauvegarde de la base de données ${option.db_name} sur le nœud ${node.name} s'est terminée avec succès. Fichier : @option.backup_dir@\\@option.backup_filename@"
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la sauvegarde de la base de données ${option.db_name} sur ${node.name}"
+          message: "La sauvegarde de la base de données ${option.db_name} sur le nœud ${node.name} a échoué."

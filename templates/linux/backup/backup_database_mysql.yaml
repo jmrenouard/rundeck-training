@@ -1,0 +1,73 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-backup-db-mysql"
+  # Le nom du job.
+  name: "Linux - Sauvegarde d'une base de données MySQL"
+  # La description du job.
+  description: "Effectue une sauvegarde d'une base de données MySQL en utilisant mysqldump."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "db_name"
+      description: "Nom de la base de données à sauvegarder."
+      required: true
+    - name: "db_user"
+      description: "Utilisateur de la base de données."
+      required: true
+    - name: "db_password"
+      description: "Mot de passe de l'utilisateur de la base de données."
+      required: true
+      secure: true
+    - name: "backup_dir"
+      description: "Répertoire de destination pour la sauvegarde."
+      required: true
+      value: "/mnt/backups/mysql"
+    - name: "backup_filename"
+      description: "Nom du fichier de sauvegarde (sans extension)."
+      required: true
+      value: "db_backup-${job.execid}"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Créer le répertoire de sauvegarde s'il n'existe pas.
+      - exec: "mkdir -p @option.backup_dir@"
+        description: "Création du répertoire de sauvegarde"
+      # Étape 2 : Exécuter mysqldump pour sauvegarder la base de données.
+      # Étape 2 : Créer un fichier temporaire de configuration MySQL sécurisé contenant les identifiants.
+      - exec: |
+          cat > /tmp/.my.cnf-${job.execid} <<EOF
+          [client]
+          user=@option.db_user@
+          password=@option.db_password@
+          EOF
+        description: "Création d'un fichier de configuration temporaire pour MySQL"
+      # Étape 3 : Restreindre les permissions du fichier de configuration.
+      - exec: "chmod 600 /tmp/.my.cnf-${job.execid}"
+        description: "Restriction des permissions du fichier de configuration"
+      # Étape 4 : Exécuter mysqldump en utilisant le fichier de configuration sécurisé.
+      - exec: "mysqldump --defaults-extra-file=/tmp/.my.cnf-${job.execid} @option.db_name@ > @option.backup_dir@/@option.backup_filename@.sql"
+        description: "Exécution de mysqldump avec fichier de configuration sécurisé"
+      # Étape 5 : Supprimer le fichier de configuration temporaire.
+      - exec: "rm -f /tmp/.my.cnf-${job.execid}"
+        description: "Suppression du fichier de configuration temporaire"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la sauvegarde de la base de données ${option.db_name} sur ${node.name}"
+          message: "La sauvegarde de la base de données ${option.db_name} sur le nœud ${node.name} s'est terminée avec succès. Fichier : @option.backup_dir@/@option.backup_filename@.sql"
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la sauvegarde de la base de données ${option.db_name} sur ${node.name}"
+          message: "La sauvegarde de la base de données ${option.db_name} sur le nœud ${node.name} a échoué."

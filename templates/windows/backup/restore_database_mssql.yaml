@@ -1,0 +1,53 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-restore-db-mssql"
+  # Le nom du job.
+  name: "Windows - Restauration d'une base de données MS SQL"
+  # La description du job.
+  description: "Restaure une base de données Microsoft SQL Server à partir d'un fichier de sauvegarde."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "db_name"
+      description: "Nom de la base de données à restaurer."
+      required: true
+    - name: "backup_file"
+      description: "Chemin complet du fichier de sauvegarde (.bak)."
+      required: true
+    - name: "sql_server_instance"
+      description: "Nom de l'instance SQL Server (ex: 'SQLEXPRESS')."
+      required: true
+      value: "SQLEXPRESS"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Mettre la base de données en mode mono-utilisateur pour la restauration.
+      - exec: "sqlcmd -S .\\@option.sql_server_instance@ -E -Q \"ALTER DATABASE [@option.db_name@] SET SINGLE_USER WITH ROLLBACK IMMEDIATE\""
+        description: "Mise en mode mono-utilisateur"
+      # Étape 2 : Exécuter la commande de restauration SQL.
+      - exec: "sqlcmd -S .\\@option.sql_server_instance@ -E -Q \"RESTORE DATABASE [@option.db_name@] FROM DISK = N'@option.backup_file@' WITH FILE = 1, NOUNLOAD, REPLACE, STATS = 5\""
+        description: "Exécution de la restauration de la base de données"
+      # Étape 3 : Remettre la base de données en mode multi-utilisateur.
+      - exec: "sqlcmd -S .\\@option.sql_server_instance@ -E -Q \"ALTER DATABASE [@option.db_name@] SET MULTI_USER\""
+        description: "Mise en mode multi-utilisateur"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la restauration de la base de données ${option.db_name} sur ${node.name}"
+          message: "La restauration de la base de données ${option.db_name} sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la restauration de la base de données ${option.db_name} sur ${node.name}"
+          message: "La restauration de la base de données ${option.db_name} sur le nœud ${node.name} a échoué."

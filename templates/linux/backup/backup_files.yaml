@@ -1,0 +1,51 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-backup-files"
+  # Le nom du job.
+  name: "Linux - Sauvegarde de fichiers et de répertoires"
+  # La description du job.
+  description: "Crée une archive compressée (tar.gz) des fichiers et répertoires spécifiés."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "source_paths"
+      description: "Chemins des fichiers/répertoires à sauvegarder (séparés par des espaces)."
+      required: true
+    - name: "backup_dir"
+      description: "Répertoire de destination pour la sauvegarde."
+      required: true
+      value: "/mnt/backups"
+    - name: "backup_filename"
+      description: "Nom du fichier de sauvegarde (sans extension)."
+      required: true
+      value: "backup-${job.execid}"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Créer le répertoire de sauvegarde s'il n'existe pas.
+      - exec: "mkdir -p @option.backup_dir@"
+        description: "Création du répertoire de sauvegarde"
+      # Étape 2 : Créer l'archive de sauvegarde.
+      - exec: "tar -czf @option.backup_dir@/@option.backup_filename@.tar.gz @option.source_paths@"
+        description: "Création de l'archive de sauvegarde"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la sauvegarde de fichiers sur ${node.name}"
+          message: "La sauvegarde de fichiers sur le nœud ${node.name} s'est terminée avec succès. Fichier : @option.backup_dir@/@option.backup_filename@.tar.gz"
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la sauvegarde de fichiers sur ${node.name}"
+          message: "La sauvegarde de fichiers sur le nœud ${node.name} a échoué."

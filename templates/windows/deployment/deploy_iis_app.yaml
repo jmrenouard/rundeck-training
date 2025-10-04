@@ -1,0 +1,53 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-deploy-iis"
+  # Le nom du job.
+  name: "Windows - Déploiement d'une application web IIS"
+  # La description du job.
+  description: "Déploie une application web sur un serveur IIS sous Windows."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "source_path"
+      description: "Chemin des fichiers de l'application à déployer."
+      required: true
+    - name: "iis_site_name"
+      description: "Nom du site IIS."
+      required: true
+    - name: "destination_path"
+      description: "Chemin de destination pour les fichiers de l'application."
+      required: true
+      value: "C:\\inetpub\\wwwroot\\my-app"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Arrêter le site IIS.
+      - exec: "powershell -Command Stop-Website -Name '@option.iis_site_name@'"
+        description: "Arrêt du site IIS"
+      # Étape 2 : Copier les fichiers de l'application.
+      - exec: "powershell -Command Copy-Item -Path '@option.source_path@\\*' -Destination '@option.destination_path@' -Recurse -Force"
+        description: "Copie des fichiers de l'application"
+      # Étape 3 : Démarrer le site IIS.
+      - exec: "powershell -Command Start-Website -Name '@option.iis_site_name@'"
+        description: "Démarrage du site IIS"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès du déploiement IIS sur ${node.name}"
+          message: "Le déploiement de l'application sur le site IIS '@option.iis_site_name@' sur le nœud ${node.name} s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du déploiement IIS sur ${node.name}"
+          message: "Le déploiement de l'application sur le site IIS '@option.iis_site_name@' sur le nœud ${node.name} a échoué."

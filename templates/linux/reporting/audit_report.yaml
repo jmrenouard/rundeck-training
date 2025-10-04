@@ -1,0 +1,48 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-reporting-audit-report"
+  # Le nom du job.
+  name: "Linux - Rapport d'audit de sécurité"
+  # La description du job.
+  description: "Génère un rapport d'audit de sécurité de base, y compris les mises à jour de sécurité disponibles."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "report_dir"
+      description: "Répertoire pour stocker le rapport temporairement."
+      required: true
+      value: "/tmp"
+    - name: "email_recipient"
+      description: "Adresse email pour envoyer le rapport."
+      required: true
+      value: "admin@example.com"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Vérifier les mises à jour de sécurité disponibles.
+      - exec: "sudo unattended-upgrade --dry-run -d > @option.report_dir@/security_audit_report.txt"
+        description: "Vérification des mises à jour de sécurité"
+      # Étape 2 : Envoyer le rapport par email.
+      - exec: "mail -s \"Rapport d'audit de sécurité pour ${node.name}\" @option.email_recipient@ < @option.report_dir@/security_audit_report.txt"
+        description: "Envoi du rapport par email"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Rapport d'audit de sécurité généré pour ${node.name}"
+          message: "Le rapport d'audit de sécurité pour le nœud ${node.name} a été généré et envoyé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la génération du rapport d'audit de sécurité pour ${node.name}"
+          message: "La génération du rapport d'audit de sécurité pour le nœud ${node.name} a échoué."

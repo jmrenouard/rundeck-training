@@ -1,0 +1,60 @@
+# L'identifiant unique du job. Il est recommandé de le définir.
+- id: "uuid-linux-deploy-war"
+  # Le nom du job qui sera affiché dans l'interface de Rundeck.
+  name: "Linux - Déploiement d'une application WAR"
+  # La description du job, pour expliquer son rôle.
+  description: "Un template de job pour déployer une application web (WAR) sur un serveur d'applications Java (ex: Tomcat) sous Linux."
+  # Le niveau de log pour les exécutions du job.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    # Option pour le chemin du fichier WAR.
+    - name: "war_path"
+      description: "Chemin complet du fichier WAR à déployer."
+      required: true
+    # Option pour le répertoire de déploiement de Tomcat.
+    - name: "tomcat_webapps_dir"
+      description: "Répertoire 'webapps' de Tomcat."
+      required: true
+      value: "/opt/tomcat/webapps"
+    # Option pour le nom du service Tomcat.
+    - name: "tomcat_service"
+      description: "Nom du service systemd ou init.d de Tomcat."
+      required: true
+      value: "tomcat"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête à la première étape qui échoue.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Copier le fichier WAR dans le répertoire de déploiement.
+      - exec: "cp @option.war_path@ @option.tomcat_webapps_dir@/"
+        description: "Copie du fichier WAR vers le répertoire webapps"
+      # Étape 2 : Attendre que Tomcat déploie l'application.
+      - exec: "sleep 15"
+        description: "Attente du déploiement par Tomcat"
+      # Étape 3 : Redémarrer Tomcat pour s'assurer que l'application est chargée.
+      - exec: "sudo systemctl restart @option.tomcat_service@"
+        description: "Redémarrage du service Tomcat"
+      # Étape 4 : Vérifier le statut de Tomcat.
+      - exec: "sudo systemctl status @option.tomcat_service@"
+        description: "Vérification du statut de Tomcat"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès du déploiement WAR : ${job.name}"
+          message: "Le déploiement de l'application WAR '${job.name}' sur ${node.name} s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du déploiement WAR : ${job.name}"
+          message: "Le déploiement de l'application WAR '${job.name}' sur ${node.name} a échoué. Consulter les logs pour plus de détails."
