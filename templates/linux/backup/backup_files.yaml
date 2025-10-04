@@ -33,10 +33,10 @@
       # Étape 2 : Créer l'archive de sauvegarde.
       - script: |-
           #!/bin/bash
-          # Les chemins sources sont passés en arguments, ce qui gère correctement les espaces.
+          # $1: backup_dir, $2: backup_filename, $@: source_paths
           set -e
-          tar -czf "@option.backup_dir@/@option.backup_filename@.tar.gz" "$@"
-        args: "@option.source_paths@"
+          tar -czf "$1/$2.tar.gz" "${@:3}"
+        args: "@option.backup_dir@ @option.backup_filename@ @option.source_paths@"
         description: "Création de l'archive de sauvegarde"
   # Section pour les notifications.
   notification:
