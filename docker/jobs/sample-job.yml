@@ -1,0 +1,44 @@
+# Fichier d'exemple de définition de job Rundeck au format YAML.
+# Ce fichier peut être importé dans un projet Rundeck.
+
+# Chaque document YAML (séparé par ---) représente un job.
+-
+  # Nom du job.
+  name: "Exemple de Job - Dire Bonjour"
+  # Description du job, visible dans l'interface de Rundeck.
+  description: "Un simple job qui affiche 'Bonjour le monde'."
+  # Niveau de log pour l'exécution du job (INFO, DEBUG, etc.).
+  loglevel: "INFO"
+  # Séquence des étapes à exécuter.
+  sequence:
+    # Continue l'exécution même si une étape échoue.
+    keepgoing: false
+    # Stratégie d'exécution des étapes (séquentielle par défaut).
+    strategy: "node-first"
+    # Liste des commandes à exécuter.
+    commands:
+      -
+        # Commande shell à exécuter.
+        exec: "echo 'Bonjour le monde, depuis Rundeck !'"
+  # Contexte du job (sur quels nœuds s'exécute-t-il ?).
+  nodefilters:
+    # Filtre pour sélectionner les nœuds.
+    filter: ".*" # Exécute sur tous les nœuds.
+  # Options du job (paramètres d'entrée).
+  options:
+    -
+      # Nom de l'option.
+      name: "nom_utilisateur"
+      # Label affiché dans l'interface.
+      label: "Nom de l'utilisateur"
+      # Description de l'option.
+      description: "Entrez un nom d'utilisateur à saluer."
+      # Valeur par défaut.
+      defaultValue: "Admin"
+      # Est-ce que l'option est requise ?
+      required: true
+# Vous pouvez ajouter d'autres jobs ci-dessous, séparés par ---
+# ---
+# -
+#   name: "Un autre Job"
+#   ...

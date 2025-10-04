@@ -1,0 +1,68 @@
+# Fichier de configuration pour le déploiement de Rundeck en mode Docker Swarm.
+# Ce fichier est destiné à être utilisé avec la commande 'docker stack deploy'.
+version: '3.7'
+
+services:
+  # Service pour l'application Rundeck.
+  rundeck:
+    # Image Docker à utiliser pour Rundeck.
+    image: rundeck/rundeck:4.17.6
+    # Variables d'environnement lues à partir du fichier .env.
+    # Assurez-vous que les variables sont disponibles sur le manager Swarm.
+    environment:
+      RUNDECK_GRAILS_URL: ${RUNDECK_GRAILS_URL}
+      RUNDECK_DATABASE_DRIVER: org.mariadb.jdbc.Driver
+      RUNDECK_DATABASE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE}?autoReconnect=true&useSSL=false
+      RUNDECK_DATABASE_USERNAME: ${MYSQL_USER}
+      RUNDECK_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+    # Mappage des ports.
+    ports:
+      - "${RUNDECK_PORT}:4440"
+    # Dépendances de service.
+    depends_on:
+      - db
+    # Volumes pour la persistance des données.
+    volumes:
+      - rundeck-data:/home/rundeck/server/data
+    # Configuration du déploiement pour le mode Swarm.
+    deploy:
+      # Mode de réplication : un seul réplica pour cette configuration simple.
+      mode: replicated
+      replicas: 1
+      # Contraintes de placement : peut être utilisé pour déployer sur des nœuds spécifiques.
+      placement:
+        constraints: [node.role == manager] # Exemple : déployer sur un nœud manager.
+      # Politique de redémarrage en cas d'échec.
+      restart_policy:
+        condition: on-failure
+
+  # Service pour la base de données MySQL.
+  db:
+    # Image Docker pour MySQL.
+    image: mysql:8.0
+    # Variables d'environnement pour MySQL.
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # Volumes pour la persistance des données.
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # Configuration du déploiement pour le mode Swarm.
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager] # Déployer sur le même nœud que Rundeck pour cet exemple.
+      restart_policy:
+        condition: on-failure
+
+# Volumes pour la persistance des données en mode Swarm.
+# Ces volumes seront gérés par Docker Swarm.
+volumes:
+  rundeck-data:
+    # Driver de volume (local par défaut).
+    driver: local
+  mysql-data:
+    driver: local
