@@ -15,8 +15,8 @@ dataSource.driverClassName = com.mysql.cj.jdbc.Driver
 
 # URL de connexion JDBC à la base de données MySQL.
 # Le paramètre 'autoReconnect=true' est recommandé pour la résilience.
-# 'useSSL=false' peut être utilisé pour le développement, mais SSL est recommandé en production.
-dataSource.url = jdbc:mysql://{{ rundeck_db_host }}/{{ rundeck_db_name }}?autoReconnect=true&useSSL=false
+# 'useSSL' doit être à 'true' en production pour sécuriser la connexion. Rendez-le configurable via Ansible.
+dataSource.url = jdbc:mysql://{{ rundeck_db_host }}/{{ rundeck_db_name }}?autoReconnect=true&useSSL={{ rundeck_db_use_ssl | default('true') }}
 
 # Nom d'utilisateur pour la connexion à la base de données.
 dataSource.username = {{ rundeck_db_user }}
