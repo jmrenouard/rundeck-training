@@ -121,8 +121,9 @@ info "Restauration des nouveaux répertoires..."
 mv "$EXTRACT_DIR/logs" /var/lib/rundeck/
 mv "$EXTRACT_DIR/keystore" /var/lib/rundeck/
 mv "$EXTRACT_DIR/projects" /var/lib/rundeck/
-mv "$EXTRACT_DIR/rundeck" /etc/
-success "Nouveaux répertoires restaurés."
+info "Fusion des fichiers restaurés dans /etc/rundeck (les fichiers existants seront écrasés si présents)..."
+rsync -a "$EXTRACT_DIR/rundeck/" /etc/rundeck/
+success "Nouveaux répertoires restaurés et fusionnés dans /etc/rundeck."
 
 # --- Rétablissement des permissions ---
 info "Rétablissement des permissions pour les fichiers Rundeck..."
