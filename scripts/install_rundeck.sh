@@ -114,9 +114,19 @@ fi
 if ! ss -tuln | grep -q ":$RUNDECK_PORT"; then
     error "Rundeck n'écoute pas sur le port $RUNDECK_PORT."
 fi
-if ! curl -s -I "http://localhost:$RUNDECK_PORT/user/login" | grep -q "HTTP/1.1 200 OK"; then
-    error "La réponse de Rundeck sur localhost:$RUNDECK_PORT est inattendue. Le service est peut-être encore en cours de démarrage."
-fi
+MAX_RETRIES=10
+RETRY_DELAY=5
+RETRY_COUNT=0
+while true; do
+    if curl -s -I "http://localhost:$RUNDECK_PORT/user/login" | grep -q "HTTP/1.1 200 OK"; then
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT+1))
+    if [ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]; then
+        error "La réponse de Rundeck sur localhost:$RUNDECK_PORT est inattendue après $MAX_RETRIES tentatives. Le service est peut-être encore en cours de démarrage ou rencontre un problème."
+    fi
+    sleep $RETRY_DELAY
+done
 success "Rundeck est actif et répond correctement sur http://$SERVER_IP:$RUNDECK_PORT (login: admin, pass: admin)."
 
 end_success "Installation et configuration de Rundeck terminées avec succès."
