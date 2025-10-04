@@ -1,0 +1,11 @@
+# Fichier de handlers pour le rôle rundeck
+
+---
+# Handler pour redémarrer le service Rundeck.
+# Ce handler est notifié par les tâches qui modifient la configuration de Rundeck.
+- name: "Restart Rundeck"
+  ansible.builtin.service:
+    name: "{{ rundeck_service }}"
+    state: restarted
+  become: yes
+  listen: "Restart Rundeck"

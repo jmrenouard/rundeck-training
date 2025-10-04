@@ -1,0 +1,15 @@
+# Fichier de variables par défaut pour le rôle mysql
+
+---
+# Nom du paquet du serveur MySQL à installer.
+mysql_package: "mysql-server"
+
+# Nom du service MySQL.
+mysql_service: "mysql"
+
+# Configuration de la base de données pour Rundeck.
+# Il est fortement recommandé de changer le mot de passe en production.
+db_name: "rundeck"
+db_user: "rundeckuser"
+db_password: "" # DOIT être défini de manière sécurisée, par exemple via Ansible Vault ou une variable d'environnement.
+db_host: "localhost"

@@ -1,0 +1,40 @@
+# Fichier de handlers pour le rôle java
+
+---
+# Ce handler est déclenché par la tâche d'installation de Java.
+# Il configure la variable d'environnement JAVA_HOME pour tout le système.
+- name: "Set JAVA_HOME"
+  become: yes
+  block:
+      # Tâche pour trouver le chemin de l'exécutable 'java'.
+      # La commande 'which' est utilisée pour localiser le binaire.
+    - name: "Trouver le chemin de l'exécutable java"
+      ansible.builtin.command: "which java"
+      register: java_which_result
+      changed_when: false
+      check_mode: no
+
+      # Tâche pour résoudre le lien symbolique et obtenir le chemin canonique.
+      # 'readlink -f' suit tous les liens symboliques pour trouver le fichier réel.
+    - name: "Obtenir le chemin réel de l'exécutable java"
+      ansible.builtin.command: "readlink -f {{ java_which_result.stdout }}"
+      register: java_readlink_result
+      changed_when: false
+      check_mode: no
+
+      # Tâche pour déterminer le répertoire JAVA_HOME.
+      # On remonte de deux niveaux depuis le binaire java (ex: /usr/lib/jvm/java-11/bin/java -> /usr/lib/jvm/java-11).
+    - name: "Déterminer le chemin JAVA_HOME"
+      ansible.builtin.set_fact:
+        java_home_path: "{{ java_readlink_result.stdout | dirname | dirname }}"
+
+      # Tâche pour s'assurer que la variable JAVA_HOME est définie dans /etc/environment.
+      # 'lineinfile' est utilisé pour ajouter ou modifier la ligne de manière idempotente.
+    - name: "Configurer la variable JAVA_HOME dans /etc/environment"
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: '^JAVA_HOME='
+        line: 'JAVA_HOME={{ java_home_path }}'
+        state: present
+        create: yes
+  listen: "Set JAVA_HOME"

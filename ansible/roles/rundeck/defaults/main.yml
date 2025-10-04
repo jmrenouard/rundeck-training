@@ -1,0 +1,24 @@
+# Fichier de variables par défaut pour le rôle rundeck
+
+---
+# Version de Rundeck à installer.
+rundeck_version: "5.3.0.20240813-1" # Spécifiez une version pour la prévisibilité
+
+# Configuration du port et de l'URL de Rundeck.
+# 'ansible_default_ipv4.address' récupère l'adresse IP principale de l'hôte.
+rundeck_port: "4440"
+rundeck_address: "0.0.0.0" # Écoute sur toutes les interfaces
+rundeck_server_url: "http://{{ ansible_default_ipv4.address }}:{{ rundeck_port }}"
+
+# Configuration de la base de données (doit correspondre au rôle mysql).
+# Ces valeurs sont utilisées pour configurer la connexion de Rundeck à la base de données.
+rundeck_db_name: "rundeck"
+rundeck_db_user: "rundeckuser"
+# rundeck_db_password must be set securely via Ansible Vault or group_vars/host_vars. No default is provided for security reasons.
+rundeck_db_host: "localhost"
+
+# Configuration de la JVM pour Rundeck.
+rundeck_jvm_settings: "-Xmx1024m -Xms256m -server"
+
+# Nom du service Rundeck.
+rundeck_service: "rundeckd"

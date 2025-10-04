@@ -1,0 +1,67 @@
+# Fichier de tâches principal pour le rôle keycloak
+
+---
+# Tâche pour installer les paquets requis pour Docker.
+# 'docker.io' est le paquet pour le moteur Docker et 'python3-docker' est la librairie Python
+# nécessaire pour les modules Ansible de gestion de Docker.
+- name: "Installer les paquets Docker"
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - python3-docker
+    state: present
+    update_cache: yes
+  become: yes
+  tags:
+    - keycloak
+    - docker
+    - package
+
+# Tâche pour s'assurer que le service Docker est démarré et activé.
+- name: "Démarrer et activer le service Docker"
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+  tags:
+    - keycloak
+    - docker
+    - service
+
+# Tâche pour créer un réseau Docker dédié pour Keycloak.
+# Isoler les conteneurs dans leurs propres réseaux est une bonne pratique de sécurité et d'organisation.
+- name: "Créer un réseau Docker pour Keycloak"
+  community.docker.docker_network:
+    name: "{{ keycloak_docker_network }}"
+    state: present
+  become: yes
+  tags:
+    - keycloak
+    - docker
+    - network
+
+# Tâche pour lancer le conteneur Keycloak.
+# Le conteneur est configuré avec les variables définies dans les `defaults`.
+# 'restart_policy: always' assure que le conteneur redémarrera automatiquement.
+- name: "Lancer le conteneur Keycloak"
+  community.docker.docker_container:
+    name: "{{ keycloak_container_name }}"
+    image: "{{ keycloak_docker_image }}"
+    state: started
+    restart_policy: always
+    command: "start" # Utilise le mode production pour un déploiement sécurisé
+    env:
+      KEYCLOAK_ADMIN: "{{ keycloak_admin_user }}"
+      KEYCLOAK_ADMIN_PASSWORD: "{{ keycloak_admin_password }}"
+    ports:
+      - "{{ keycloak_http_port }}:8080"
+    networks:
+      - name: "{{ keycloak_docker_network }}"
+    labels:
+      ansible_managed: "true"
+  become: yes
+  tags:
+    - keycloak
+    - docker
+    - container

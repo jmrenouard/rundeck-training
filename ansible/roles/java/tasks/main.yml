@@ -1,0 +1,42 @@
+# Fichier de tâches principal pour le rôle java
+
+---
+# Tâche pour mettre à jour le cache des paquets APT.
+# C'est une bonne pratique de le faire avant d'installer des paquets.
+- name: "Mettre à jour le cache APT"
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600 # Cache valide pendant 1 heure
+  become: yes
+  tags:
+    - java
+    - package
+
+# Tâche pour installer les dépendances nécessaires.
+# Ces paquets sont souvent requis pour gérer les dépôts et les paquets.
+- name: "Installer les dépendances requises"
+  ansible.builtin.apt:
+    name:
+      - software-properties-common
+      - apt-transport-https
+      - wget
+      - gpg
+    state: present
+  become: yes
+  tags:
+    - java
+    - package
+
+# Tâche pour installer le paquet Java spécifié dans les variables.
+- name: "Installer le paquet Java ({{ java_package }})"
+  ansible.builtin.apt:
+    name: "{{ java_package }}"
+    state: present
+  become: yes
+  tags:
+    - java
+    - package
+  notify: Set JAVA_HOME
+
+# Le handler pour configurer JAVA_HOME est déplacé dans handlers/main.yml
+# pour n'être exécuté que si l'installation de Java a lieu.

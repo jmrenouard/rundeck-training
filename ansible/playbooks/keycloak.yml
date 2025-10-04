@@ -1,0 +1,10 @@
+# Playbook pour déployer uniquement le rôle Keycloak.
+
+---
+- name: "Installer Keycloak via Docker"
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: keycloak

@@ -1,0 +1,23 @@
+# Playbook principal pour le déploiement de la stack complète.
+# Ce playbook exécute tous les rôles dans l'ordre requis.
+
+---
+- name: "Déployer la stack complète (Java, MySQL, Rundeck, Keycloak)"
+  hosts: all # Cible tous les hôtes définis dans l'inventaire.
+  become: yes # Exécute les tâches avec des privilèges élevés (sudo).
+  gather_facts: yes # Collecte les informations sur les hôtes cibles.
+
+  # La section 'roles' définit la liste des rôles à appliquer et leur ordre.
+  # L'ordre est important car Rundeck dépend de Java et de MySQL.
+  roles:
+    - role: java # Installe Java en premier.
+      tags: [java, always]
+
+    - role: mysql # Installe et configure MySQL.
+      tags: [mysql, always]
+
+    - role: rundeck # Installe et configure Rundeck.
+      tags: [rundeck, always]
+
+    - role: keycloak # Déploie Keycloak via Docker.
+      tags: [keycloak, always]

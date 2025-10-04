@@ -1,0 +1,10 @@
+# Playbook pour déployer uniquement le rôle Java.
+
+---
+- name: "Installer Java"
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: java
