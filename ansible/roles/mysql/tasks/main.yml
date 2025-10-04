@@ -1,0 +1,68 @@
+# Fichier de tâches principal pour le rôle mysql
+
+---
+# Tâche pour installer le paquet du serveur MySQL.
+- name: "Installer le paquet MySQL ({{ mysql_package }})"
+  ansible.builtin.apt:
+    name: "{{ mysql_package }}"
+    state: present
+    update_cache: yes
+  become: yes
+  tags:
+    - mysql
+    - database
+    - package
+
+# Tâche pour démarrer et activer le service MySQL.
+# Le service sera configuré pour démarrer automatiquement avec le système.
+- name: "Démarrer et activer le service MySQL"
+  ansible.builtin.service:
+    name: "{{ mysql_service }}"
+    state: started
+    enabled: yes
+  become: yes
+  tags:
+    - mysql
+    - database
+    - service
+
+# Tâche pour installer les dépendances Python pour le module Ansible mysql_db.
+# 'pymysql' est nécessaire pour que les modules Ansible puissent interagir avec MySQL.
+- name: "Installer les dépendances Python pour les modules MySQL"
+  ansible.builtin.apt:
+    name: python3-pymysql
+    state: present
+  become: yes
+  tags:
+    - mysql
+    - database
+    - package
+
+# Tâche pour créer la base de données pour Rundeck.
+# La base de données ne sera créée que si elle n'existe pas déjà.
+- name: "Créer la base de données pour Rundeck"
+  community.mysql.mysql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock # Utilise l'authentification par socket pour root
+  become: yes
+  tags:
+    - mysql
+    - database
+    - configuration
+
+# Tâche pour créer l'utilisateur de la base de données pour Rundeck.
+# L'utilisateur aura tous les privilèges sur la base de données Rundeck.
+- name: "Créer l'utilisateur de la base de données pour Rundeck"
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    state: present
+    host: "{{ db_host }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock # Utilise l'authentification par socket pour root
+  become: yes
+  tags:
+    - mysql
+    - database
+    - configuration

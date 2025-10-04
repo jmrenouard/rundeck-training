@@ -1,0 +1,18 @@
+# Fichier de variables par défaut pour le rôle keycloak
+
+---
+# Configuration du conteneur Docker pour Keycloak.
+keycloak_docker_image: "quay.io/keycloak/keycloak:25.0"
+keycloak_container_name: "keycloak"
+
+# Port sur lequel Keycloak sera accessible sur l'hôte.
+keycloak_http_port: 8080
+
+# Identifiants de l'administrateur initial de Keycloak.
+# IMPORTANT : Changez ces valeurs pour un environnement de production.
+keycloak_admin_user: "admin"
+keycloak_admin_password: "admin"
+
+# Nom du réseau Docker à utiliser.
+# Utiliser un réseau dédié est une bonne pratique.
+keycloak_docker_network: "keycloak-net"

@@ -1,0 +1,10 @@
+# Playbook pour déployer uniquement le rôle MySQL.
+
+---
+- name: "Installer et configurer MySQL"
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: mysql

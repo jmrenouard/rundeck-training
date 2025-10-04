@@ -1,0 +1,6 @@
+# Fichier de variables par défaut pour le rôle java
+
+---
+# Variable pour le paquet Java à installer.
+# OpenJDK 11 est une version LTS (Long Term Support) et est souvent recommandée.
+java_package: "openjdk-11-jdk"

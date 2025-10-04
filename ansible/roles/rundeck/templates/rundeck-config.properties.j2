@@ -1,0 +1,26 @@
+# Fichier de configuration de Rundeck (généré par Ansible)
+# ==========================================================
+
+# URL publique de votre instance Rundeck.
+# Utilisé pour générer les liens dans les notifications et l'interface.
+grails.server.url={{ rundeck_server_url }}
+
+# Configuration de la source de données (DataSource) pour la connexion à la base de données.
+# 'update' permet à Rundeck de gérer les mises à jour du schéma de la base de données.
+dataSource.dbCreate = update
+
+# Driver JDBC pour MySQL.
+# Assurez-vous que le connecteur JDBC pour MySQL est installé.
+dataSource.driverClassName = com.mysql.cj.jdbc.Driver
+
+# URL de connexion JDBC à la base de données MySQL.
+# Le paramètre 'autoReconnect=true' est recommandé pour la résilience.
+# 'useSSL=false' peut être utilisé pour le développement, mais SSL est recommandé en production.
+dataSource.url = jdbc:mysql://{{ rundeck_db_host }}/{{ rundeck_db_name }}?autoReconnect=true&useSSL=false
+
+# Nom d'utilisateur pour la connexion à la base de données.
+dataSource.username = {{ rundeck_db_user }}
+
+# Mot de passe pour la connexion à la base de données.
+# Ce mot de passe est géré via les variables Ansible.
+dataSource.password = {{ rundeck_db_password }}

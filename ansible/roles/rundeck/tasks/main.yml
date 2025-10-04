@@ -1,0 +1,85 @@
+# Fichier de tâches principal pour le rôle rundeck
+
+---
+# Tâche pour ajouter le référentiel (repository) officiel de Rundeck.
+# Utilise le script de configuration fourni par Rundeck.
+- name: "Ajouter le référentiel Rundeck"
+  ansible.builtin.shell: "curl -s https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-setup.sh | bash"
+  args:
+    creates: /etc/apt/sources.list.d/rundeck.list
+  become: yes
+  tags:
+    - rundeck
+    - package
+
+# Tâche pour installer le paquet Rundeck.
+# 'allow_downgrade' est utile si vous voulez forcer une version spécifique.
+- name: "Installer le paquet Rundeck"
+  ansible.builtin.apt:
+    name: "rundeck={{ rundeck_version }}"
+    state: present
+    update_cache: yes
+    allow_downgrade: yes
+  become: yes
+  tags:
+    - rundeck
+    - package
+  notify: Restart Rundeck
+
+# Tâche pour déployer le fichier de configuration principal de Rundeck.
+# Utilise un template pour insérer les variables de connexion à la base de données.
+- name: "Configurer Rundeck pour utiliser MySQL (rundeck-config.properties)"
+  ansible.builtin.template:
+    src: rundeck-config.properties.j2
+    dest: /etc/rundeck/rundeck-config.properties
+    owner: rundeck
+    group: rundeck
+    mode: '0640'
+  become: yes
+  tags:
+    - rundeck
+    - configuration
+  notify: Restart Rundeck
+
+# Tâche pour déployer le fichier de profil de Rundeck.
+# Utilise un template pour configurer la JVM et les options du serveur.
+- name: "Configurer le profil de Rundeck (port, adresse, JVM)"
+  ansible.builtin.template:
+    src: profile.j2
+    dest: /etc/rundeck/profile
+    owner: rundeck
+    group: rundeck
+    mode: '0644'
+  become: yes
+  tags:
+    - rundeck
+    - configuration
+  notify: Restart Rundeck
+
+# Tâche pour s'assurer que le service Rundeck est démarré et activé.
+# Le handler s'occupera du redémarrage si nécessaire.
+- name: "Démarrer et activer le service Rundeck"
+  ansible.builtin.service:
+    name: "{{ rundeck_service }}"
+    state: started
+    enabled: yes
+  become: yes
+  tags:
+    - rundeck
+    - service
+
+# Tâche pour attendre que l'interface web de Rundeck soit disponible.
+# Ceci est important pour s'assurer que le service a bien démarré après une installation ou un redémarrage.
+- name: "Attendre que Rundeck soit disponible sur le port {{ rundeck_port }}"
+  ansible.builtin.uri:
+    url: "http://localhost:{{ rundeck_port }}/user/login"
+    status_code: 200
+  register: rundeck_uri_status
+  until: rundeck_uri_status.status == 200
+  retries: 30 # Tente pendant 5 minutes (30 * 10s)
+  delay: 10 # Attend 10 secondes entre les tentatives
+  become: yes
+  tags:
+    - rundeck
+    - service
+    - validation

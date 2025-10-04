@@ -1,0 +1,14 @@
+# Fichier de profil de Rundeck (généré par Ansible)
+# =================================================
+
+# Ce fichier est utilisé pour définir les options de la JVM et d'autres
+# variables d'environnement pour le processus Rundeck.
+
+# Options de la machine virtuelle Java (JVM).
+# Configure la mémoire allouée à Rundeck.
+export RDECK_JVM_SETTINGS="{{ rundeck_jvm_settings }}"
+
+# Arguments de configuration passés à Rundeck au démarrage.
+# -Drundeck.server.address: Adresse IP sur laquelle le serveur écoute. 0.0.0.0 signifie toutes les interfaces.
+# -Drundeck.server.http.port: Port HTTP sur lequel Rundeck écoute.
+export RDECK_SERVER_CONFIG="$RDECK_SERVER_CONFIG -Drundeck.server.address={{ rundeck_address }} -Drundeck.server.http.port={{ rundeck_port }}"
