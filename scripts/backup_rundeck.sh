@@ -96,10 +96,19 @@ tar -czf "$BACKUP_FILE" \
 }
 success "Archive de sauvegarde créée : $BACKUP_FILE"
 
-# --- Nettoyage ---
-info "Nettoyage du fichier de sauvegarde temporaire de la base de données..."
-rm -f "$DB_BACKUP_FILE"
-success "Fichier temporaire supprimé."
+# --- Vérification de l'intégrité de l'archive ---
+info "Vérification de l'intégrité de l'archive de sauvegarde..."
+if tar -tzf "$BACKUP_FILE" > /dev/null 2>&1; then
+    success "L'intégrité de l'archive est confirmée."
+    # --- Nettoyage ---
+    info "Nettoyage du fichier de sauvegarde temporaire de la base de données..."
+    rm -f "$DB_BACKUP_FILE"
+    success "Fichier temporaire supprimé."
+else
+    error "L'archive de sauvegarde est corrompue. Le fichier temporaire n'a pas été supprimé."
+    # Optionally, handle the error (e.g., exit, alert, etc.)
+    exit 1
+fi
 
 # --- Redémarrage du service Rundeck ---
 info "Redémarrage du service Rundeck..."
