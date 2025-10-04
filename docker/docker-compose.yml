@@ -58,7 +58,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     # Mappage des ports. Le port 3306 du conteneur est mappé au port MYSQL_PORT de l'hôte.
     ports:
-        - "${MYSQL_PORT}:3306"
+      - "${MYSQL_PORT}:3306"
     # Volume pour la persistance des données de la base de données.
     volumes:
       # Mappe le répertoire local MYSQL_DATA_DIR aux données de MySQL dans le conteneur.
