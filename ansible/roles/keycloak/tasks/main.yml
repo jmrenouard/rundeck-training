@@ -50,7 +50,7 @@
     image: "{{ keycloak_docker_image }}"
     state: started
     restart_policy: always
-    command: "start-dev" # Utilise le mode développement pour un démarrage simple
+    command: "start" # Utilise le mode production pour un déploiement sécurisé
     env:
       KEYCLOAK_ADMIN: "{{ keycloak_admin_user }}"
       KEYCLOAK_ADMIN_PASSWORD: "{{ keycloak_admin_password }}"
