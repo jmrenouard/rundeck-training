@@ -89,6 +89,18 @@ mysql --user="$DB_USER" --password="$DB_PASS" "$DB_NAME" < "$DB_BACKUP_FILE" || 
 success "Base de données restaurée avec succès."
 
 # --- Restauration des fichiers ---
+# Vérification de la présence des répertoires requis dans la sauvegarde extraite
+REQUIRED_DIRS=("logs" "keystore" "projects" "rundeck")
+for dir in "${REQUIRED_DIRS[@]}"; do
+    if [ ! -d "$EXTRACT_DIR/$dir" ]; then
+        error "Le répertoire requis '$dir' est manquant dans la sauvegarde extraite."
+        rm -rf "$EXTRACT_DIR"
+        info "Tentative de redémarrage du service Rundeck..."
+        systemctl start rundeckd
+        exit 1
+    fi
+done
+info "Tous les répertoires requis sont présents dans la sauvegarde extraite."
 info "Suppression des anciens répertoires de données Rundeck..."
 rm -rf /var/lib/rundeck/logs /var/lib/rundeck/keystore /var/lib/rundeck/projects /etc/rundeck
 success "Anciens répertoires supprimés."
