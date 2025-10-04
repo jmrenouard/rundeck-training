@@ -82,6 +82,18 @@ success "Base de données sauvegardée dans '$DB_BACKUP_FILE'."
 
 # --- Sauvegarde des fichiers ---
 info "Création de l'archive des fichiers de Rundeck..."
+# La commande tar ci-dessous utilise plusieurs options '-C' pour inclure des fichiers et dossiers de différents emplacements.
+# Structure de l'archive résultante :
+# - $(basename "$DB_BACKUP_FILE") (fichier de sauvegarde de la base de données, à la racine de l'archive)
+# - logs/ (dossier de logs Rundeck)
+# - keystore/ (dossier keystore Rundeck)
+# - projects/ (dossier projets Rundeck)
+# - rundeck/ (dossier de configuration /etc/rundeck)
+#
+# La restauration se fait en extrayant l'archive dans un répertoire temporaire,
+# puis en utilisant 'rsync' pour fusionner les répertoires sauvegardés avec
+# les répertoires de destination. Cette méthode préserve les fichiers existants
+# qui ne sont pas dans la sauvegarde.
 tar -czf "$BACKUP_FILE" \
     -C /tmp "$(basename "$DB_BACKUP_FILE")" \
     -C "$(dirname "$RUNDECK_LOGS_DIR")" "$(basename "$RUNDECK_LOGS_DIR")" \
