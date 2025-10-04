@@ -32,11 +32,16 @@
     commands:
       # Étape 1 : Cloner le dépôt s'il n'existe pas, sinon faire un pull.
       - script: |
+          set -e
           if [ -d "@option.deploy_dir@/.git" ]; then
             cd @option.deploy_dir@
             git pull origin @option.git_branch@
           else
-            git clone --branch @option.git_branch@ @option.git_repo_url@ @option.deploy_dir@
+            if ! git clone --branch @option.git_branch@ @option.git_repo_url@ @option.deploy_dir@; then
+              echo "git clone failed, cleaning up @option.deploy_dir@"
+              rm -rf "@option.deploy_dir@"
+              exit 1
+            fi
           fi
         description: "Clonage ou mise à jour du dépôt Git"
       # Étape 2 : Exécuter la commande de build.
