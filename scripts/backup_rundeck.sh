@@ -59,13 +59,25 @@ fi
 
 # --- Sauvegarde de la base de données ---
 info "Sauvegarde de la base de données MySQL '$DB_NAME'..."
-mysqldump --user="$DB_USER" --password="$DB_PASS" "$DB_NAME" > "$DB_BACKUP_FILE" || {
+# Créer un fichier temporaire pour les identifiants MySQL
+MYSQL_CNF=$(mktemp)
+chmod 600 "$MYSQL_CNF"
+cat > "$MYSQL_CNF" <<EOF
+[client]
+user=$DB_USER
+password=$DB_PASS
+host=localhost
+EOF
+
+mysqldump --defaults-extra-file="$MYSQL_CNF" "$DB_NAME" > "$DB_BACKUP_FILE" || {
+    rm -f "$MYSQL_CNF"
     error "La sauvegarde de la base de données a échoué."
     # Redémarrer Rundeck même en cas d'échec
     info "Tentative de redémarrage du service Rundeck..."
     systemctl start rundeckd
     exit 1
 }
+rm -f "$MYSQL_CNF"
 success "Base de données sauvegardée dans '$DB_BACKUP_FILE'."
 
 # --- Sauvegarde des fichiers ---
