@@ -11,5 +11,5 @@ mysql_service: "mysql"
 # Il est fortement recommandé de changer le mot de passe en production.
 db_name: "rundeck"
 db_user: "rundeckuser"
-db_password: "rundeckpassword" # À CHANGER pour un environnement de production.
+db_password: "" # DOIT être défini de manière sécurisée, par exemple via Ansible Vault ou une variable d'environnement.
 db_host: "localhost"
