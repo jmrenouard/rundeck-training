@@ -10,3 +10,4 @@
     - role: java
     - role: mysql
     - role: rundeck
+    - role: nginx

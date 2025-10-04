@@ -1,6 +1,6 @@
 # Déploiement d'une Stack Applicative avec Ansible
 
-Ce projet Ansible permet de déployer une stack complète incluant Java, MySQL, Rundeck et Keycloak. Il est conçu pour être modulaire, vous permettant de déployer la stack entière ou seulement les composants dont vous avez besoin.
+Ce projet Ansible permet de déployer une stack complète incluant Java, MySQL, Rundeck, Nginx et Keycloak. Il est conçu pour être modulaire, vous permettant de déployer la stack entière ou seulement les composants dont vous avez besoin.
 
 ## Prérequis
 
@@ -26,11 +26,13 @@ ansible/
 │   ├── java.yml        # Playbook pour installer Java uniquement.
 │   ├── mysql.yml       # Playbook pour installer MySQL uniquement.
 │   ├── rundeck.yml     # Playbook pour installer Rundeck et ses dépendances.
+│   ├── nginx.yml       # Playbook pour installer et configurer Nginx.
 │   └── keycloak.yml    # Playbook pour déployer Keycloak via Docker.
 ├── roles/
 │   ├── java/           # Rôle pour l'installation de Java.
 │   ├── mysql/          # Rôle pour l'installation et la configuration de MySQL.
 │   ├── rundeck/        # Rôle pour l'installation et la configuration de Rundeck.
+│   ├── nginx/          # Rôle pour l'installation et la configuration de Nginx.
 │   └── keycloak/       # Rôle pour le déploiement de Keycloak.
 └── README.md           # Ce fichier de documentation.
 ```
@@ -90,9 +92,14 @@ Vous pouvez utiliser les playbooks individuels pour ne déployer qu'une partie d
     ansible-playbook -i inventory/hosts playbooks/mysql.yml
     ```
 
-*   **Installer Rundeck et ses dépendances (Java, MySQL) :**
+*   **Installer Rundeck et ses dépendances (Java, MySQL, Nginx) :**
     ```bash
     ansible-playbook -i inventory/hosts playbooks/rundeck.yml
+    ```
+
+*   **Installer et configurer Nginx uniquement :**
+    ```bash
+    ansible-playbook -i inventory/hosts playbooks/nginx.yml
     ```
 
 *   **Déployer uniquement Keycloak :**

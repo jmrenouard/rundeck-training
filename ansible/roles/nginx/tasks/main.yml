@@ -1,0 +1,37 @@
+---
+# tasks file for ansible-role-nginx
+
+# Installation de Nginx
+- name: "Installation de Nginx"
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+# S'assurer que le service Nginx est activé et démarré
+- name: "Activer et démarrer le service Nginx"
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
+# Copie du fichier de configuration de Nginx pour Rundeck
+- name: "Copie du fichier de configuration de Nginx pour Rundeck"
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/rundeck
+  notify: restart nginx
+
+# Activation du site Rundeck
+- name: "Activation du site Rundeck"
+  file:
+    src: /etc/nginx/sites-available/rundeck
+    dest: /etc/nginx/sites-enabled/rundeck
+    state: link
+  notify: restart nginx
+
+# Suppression du site par défaut de Nginx
+- name: "Suppression du site par défaut de Nginx"
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx

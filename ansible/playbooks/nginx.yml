@@ -1,0 +1,8 @@
+---
+- name: "Installer et configurer Nginx en tant que reverse proxy pour Rundeck"
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: nginx

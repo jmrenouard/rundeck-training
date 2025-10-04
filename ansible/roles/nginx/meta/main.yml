@@ -1,0 +1,18 @@
+---
+# meta file for ansible-role-nginx
+
+galaxy_info:
+  author: "Jules"
+  description: "Rôle Ansible pour installer et configurer Nginx en tant que reverse proxy pour Rundeck."
+  license: "MIT"
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - nginx
+    - rundeck
+    - reverse-proxy
+
+dependencies: []
