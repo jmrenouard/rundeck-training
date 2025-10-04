@@ -1,0 +1,35 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-reporting-list-processes"
+  # Le nom du job.
+  name: "Windows - Lister les processus en cours d'exécution"
+  # La description du job.
+  description: "Liste tous les processus en cours d'exécution sur un système Windows."
+  # Le niveau de log.
+  loglevel: INFO
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Lister les processus avec PowerShell.
+      - exec: "powershell -Command Get-Process | Format-Table -AutoSize"
+        description: "Liste des processus en cours"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Liste des processus pour ${node.name}"
+          message: "La liste des processus pour le nœud ${node.name} a été générée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la génération de la liste des processus pour ${node.name}"
+          message: "La génération de la liste des processus pour le nœud ${node.name} a échoué."

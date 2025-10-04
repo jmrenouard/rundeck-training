@@ -1,0 +1,60 @@
+# L'identifiant unique du job. Il est recommandé de le définir.
+- id: "uuid-linux-deploy-jar"
+  # Le nom du job qui sera affiché dans l'interface de Rundeck.
+  name: "Linux - Déploiement d'une application JAR"
+  # La description du job, pour expliquer son rôle.
+  description: "Un template de job pour déployer une application Java (JAR) sur un serveur Linux."
+  # Le niveau de log pour les exécutions du job.
+  loglevel: INFO
+  # Options pour le job, comme les champs de saisie pour l'utilisateur.
+  options:
+    # Option pour spécifier le chemin du fichier JAR à déployer.
+    - name: "jar_path"
+      description: "Chemin complet du fichier JAR à déployer."
+      required: true
+    # Option pour spécifier le répertoire de destination.
+    - name: "deploy_dir"
+      description: "Répertoire de destination pour le fichier JAR."
+      required: true
+      value: "/opt/app"
+    # Option pour spécifier le nom du service applicatif.
+    - name: "service_name"
+      description: "Nom du service systemd ou init.d à gérer."
+      required: true
+      value: "my-app"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête à la première étape qui échoue.
+    keepgoing: false
+    # Exécution séquentielle des étapes.
+    strategy: sequential
+    # La liste des commandes du workflow.
+    commands:
+      # Étape 1 : Arrêter le service de l'application.
+      - exec: "sudo systemctl stop @option.service_name@"
+        description: "Arrêt du service applicatif"
+      # Étape 2 : Copier le nouveau fichier JAR.
+      - exec: "cp @option.jar_path@ @option.deploy_dir@/"
+        description: "Copie du nouveau fichier JAR"
+      # Étape 3 : Démarrer le service de l'application.
+      - exec: "sudo systemctl start @option.service_name@"
+        description: "Démarrage du service applicatif"
+      # Étape 4 : Vérifier le statut du service.
+      - exec: "sudo systemctl status @option.service_name@"
+        description: "Vérification du statut du service"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès du déploiement : ${job.name}"
+          message: "Le déploiement de l'application '${job.name}' sur ${node.name} s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du déploiement : ${job.name}"
+          message: "Le déploiement de l'application '${job.name}' sur ${node.name} a échoué. Consulter les logs pour plus de détails."

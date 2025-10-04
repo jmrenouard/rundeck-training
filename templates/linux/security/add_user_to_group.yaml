@@ -1,0 +1,43 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-security-add-user-to-group"
+  # Le nom du job.
+  name: "Linux - Ajouter un utilisateur à un groupe"
+  # La description du job.
+  description: "Ajoute un utilisateur existant à un groupe sur un système Linux."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "username"
+      description: "Nom d'utilisateur à ajouter au groupe."
+      required: true
+    - name: "groupname"
+      description: "Nom du groupe."
+      required: true
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Ajouter l'utilisateur au groupe.
+      - exec: "sudo usermod -aG @option.groupname@ @option.username@"
+        description: "Ajout de l'utilisateur au groupe"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Ajout de @option.username@ à @option.groupname@ réussi sur ${node.name}"
+          message: "L'utilisateur @option.username@ a été ajouté au groupe @option.groupname@ avec succès sur le nœud ${node.name}."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de l'ajout de @option.username@ à @option.groupname@ sur ${node.name}"
+          message: "L'ajout de l'utilisateur @option.username@ au groupe @option.groupname@ sur le nœud ${node.name} a échoué."

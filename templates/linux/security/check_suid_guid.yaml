@@ -1,0 +1,44 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-security-check-suid-guid"
+  # Le nom du job.
+  name: "Linux - Vérifier les fichiers SUID/GUID"
+  # La description du job.
+  description: "Recherche les fichiers avec les bits SUID ou GUID positionnés, ce qui peut représenter un risque de sécurité."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "search_path"
+      description: "Chemin de recherche (par défaut, tout le système de fichiers)."
+      required: true
+      value: "/"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Rechercher les fichiers SUID.
+      - exec: "sudo find @option.search_path@ -type f -perm /4000"
+        description: "Recherche des fichiers SUID"
+      # Étape 2 : Rechercher les fichiers GUID.
+      - exec: "sudo find @option.search_path@ -type f -perm /2000"
+        description: "Recherche des fichiers GUID"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Rapport SUID/GUID pour ${node.name}"
+          message: "La recherche de fichiers SUID/GUID sur le nœud ${node.name} s'est terminée."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la recherche de fichiers SUID/GUID sur ${node.name}"
+          message: "La recherche de fichiers SUID/GUID sur le nœud ${node.name} a échoué."

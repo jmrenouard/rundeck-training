@@ -1,0 +1,51 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-reporting-memory-usage"
+  # Le nom du job.
+  name: "Windows - Rapport d'utilisation de la mémoire"
+  # La description du job.
+  description: "Génère un rapport sur l'utilisation de la mémoire (RAM) sur un système Windows."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "report_path"
+      description: "Chemin complet pour enregistrer le rapport."
+      required: true
+      value: "C:\\Temp\\memory_usage_report.txt"
+    - name: "email_recipient"
+      description: "Adresse email pour envoyer le rapport."
+      required: false
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Générer le rapport d'utilisation de la mémoire.
+      - exec: "powershell -Command \"Get-WmiObject -Class Win32_OperatingSystem | Select-Object @{Name='TotalVisibleMemorySize (GB)';Expression={[math]::Round($_.TotalVisibleMemorySize/1MB,2)}}, @{Name='FreePhysicalMemory (GB)';Expression={[math]::Round($_.FreePhysicalMemory/1MB,2)}} | Format-List | Out-File -FilePath '@option.report_path@'\""
+        description: "Génération du rapport d'utilisation de la mémoire"
+      # Étape 2 : Envoyer le rapport par email (si une adresse est fournie).
+      - exec: "powershell -Command \"Send-MailMessage -To '@option.email_recipient@' -Subject 'Rapport d''utilisation de la mémoire pour ${node.name}' -Body (Get-Content -Path '@option.report_path@' | Out-String) -SmtpServer 'smtp.example.com'\""
+        description: "Envoi du rapport par email"
+        # Cette étape n'est exécutée que si une adresse email est fournie.
+        if:
+          matches:
+            option.email_recipient: ".+"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Rapport d'utilisation de la mémoire généré pour ${node.name}"
+          message: "Le rapport d'utilisation de la mémoire pour le nœud ${node.name} a été généré avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la génération du rapport d'utilisation de la mémoire pour ${node.name}"
+          message: "La génération du rapport d'utilisation de la mémoire pour le nœud ${node.name} a échoué."

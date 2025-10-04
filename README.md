@@ -14,4 +14,4 @@ Vous trouverez ici les configurations Docker pour lancer rapidement un environne
 Une collection de scripts Bash pour une installation manuelle et automatisée de la stack Rundeck sur un système Ubuntu.
 
 ### [Templates](./templates/README.md)
-Contient des templates de jobs Rundeck au format YAML, prêts à être importés, pour exécuter des tâches avec Ansible, Bash ou Python.
+Contient une bibliothèque riche et variée de plus de 40 templates de jobs Rundeck au format YAML. Ces templates couvrent une large gamme de cas d'usage pour les plateformes Linux et Windows, incluant le déploiement d'applications, la maintenance système, les opérations de sauvegarde/restauration, le reporting, et la gestion de la sécurité.

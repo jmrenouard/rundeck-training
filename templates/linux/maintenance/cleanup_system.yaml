@@ -1,0 +1,51 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-maintenance-cleanup"
+  # Le nom du job.
+  name: "Linux - Nettoyage du système"
+  # La description du job.
+  description: "Nettoie les fichiers temporaires, les logs et le cache sur un système Linux pour libérer de l'espace disque."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "log_dir"
+      description: "Répertoire des logs à nettoyer."
+      required: true
+      value: "/var/log"
+    - name: "tmp_dir"
+      description: "Répertoire temporaire à nettoyer."
+      required: true
+      value: "/tmp"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Nettoyer le cache des paquets APT.
+      - exec: "sudo apt-get clean"
+        description: "Nettoyage du cache APT"
+      # Étape 2 : Supprimer les anciens journaux de log.
+      - exec: "sudo find @option.log_dir@ -type f -name '*.log' -mtime +7 -delete"
+        description: "Suppression des fichiers de log de plus de 7 jours"
+      # Étape 3 : Supprimer les fichiers temporaires.
+      - exec: "sudo find @option.tmp_dir@ -type f -mtime +7 -delete"
+        description: "Suppression des fichiers temporaires de plus de 7 jours"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès du nettoyage système sur ${node.name}"
+          message: "Le nettoyage du système sur le nœud ${node.name} s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du nettoyage système sur ${node.name}"
+          message: "Le nettoyage du système sur le nœud ${node.name} a échoué."

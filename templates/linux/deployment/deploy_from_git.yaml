@@ -1,0 +1,64 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-deploy-git"
+  # Le nom du job.
+  name: "Linux - Déploiement depuis un dépôt Git"
+  # La description du job.
+  description: "Clone ou met à jour un dépôt Git et exécute une commande de build."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "git_repo_url"
+      description: "URL du dépôt Git."
+      required: true
+    - name: "deploy_dir"
+      description: "Répertoire de destination pour le code source."
+      required: true
+      value: "/opt/app-git"
+    - name: "git_branch"
+      description: "Branche Git à utiliser."
+      required: true
+      value: "main"
+    - name: "build_command"
+      description: "Commande à exécuter après le clonage/pull (ex: 'mvn clean install')."
+      required: false
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Cloner le dépôt s'il n'existe pas, sinon faire un pull.
+      - script: |
+          if [ -d "@option.deploy_dir@/.git" ]; then
+            cd @option.deploy_dir@
+            git pull origin @option.git_branch@
+          else
+            git clone --branch @option.git_branch@ @option.git_repo_url@ @option.deploy_dir@
+          fi
+        description: "Clonage ou mise à jour du dépôt Git"
+      # Étape 2 : Exécuter la commande de build.
+      - exec: "cd @option.deploy_dir@ && @option.build_command@"
+        description: "Exécution de la commande de build"
+        # Cette étape n'est exécutée que si une commande de build est fournie.
+        if:
+          matches:
+            option.build_command: ".+"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès du déploiement depuis Git sur ${node.name}"
+          message: "Le déploiement depuis Git sur le nœud ${node.name} s'est terminé avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du déploiement depuis Git sur ${node.name}"
+          message: "Le déploiement depuis Git sur le nœud ${node.name} a échoué."

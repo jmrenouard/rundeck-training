@@ -1,0 +1,43 @@
+# L'identifiant unique du job.
+- id: "uuid-windows-maintenance-restart-service"
+  # Le nom du job.
+  name: "Windows - Redémarrer un service"
+  # La description du job.
+  description: "Redémarre un service sur un système Windows."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "service_name"
+      description: "Nom du service à redémarrer."
+      required: true
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Redémarrer le service.
+      - exec: "powershell -Command Restart-Service -Name '@option.service_name@' -Force"
+        description: "Redémarrage du service"
+      # Étape 2 : Vérifier le statut du service.
+      - exec: "powershell -Command Get-Service -Name '@option.service_name@'"
+        description: "Vérification du statut du service"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Redémarrage du service @option.service_name@ réussi sur ${node.name}"
+          message: "Le service @option.service_name@ a été redémarré avec succès sur le nœud ${node.name}."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec du redémarrage du service @option.service_name@ sur ${node.name}"
+          message: "Le redémarrage du service @option.service_name@ sur le nœud ${node.name} a échoué."

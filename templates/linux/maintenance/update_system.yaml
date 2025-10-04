@@ -1,0 +1,41 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-maintenance-update"
+  # Le nom du job.
+  name: "Linux - Mise à jour du système (APT)"
+  # La description du job.
+  description: "Met à jour les paquets d'un système Linux basé sur Debian/Ubuntu en utilisant APT."
+  # Le niveau de log.
+  loglevel: INFO
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Mettre à jour la liste des paquets.
+      - exec: "sudo apt-get update -y"
+        description: "Mise à jour de la liste des paquets (apt-get update)"
+      # Étape 2 : Mettre à niveau les paquets installés.
+      - exec: "sudo apt-get upgrade -y"
+        description: "Mise à niveau des paquets installés (apt-get upgrade)"
+      # Étape 3 : Nettoyer les paquets obsolètes.
+      - exec: "sudo apt-get autoremove -y"
+        description: "Nettoyage des paquets obsolètes (apt-get autoremove)"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Succès de la mise à jour système sur ${node.name}"
+          message: "La mise à jour du système sur le nœud ${node.name} s'est terminée avec succès."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la mise à jour système sur ${node.name}"
+          message: "La mise à jour du système sur le nœud ${node.name} a échoué."

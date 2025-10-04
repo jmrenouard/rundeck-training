@@ -1,0 +1,44 @@
+# L'identifiant unique du job.
+- id: "uuid-linux-security-create-user"
+  # Le nom du job.
+  name: "Linux - Créer un nouvel utilisateur"
+  # La description du job.
+  description: "Crée un nouvel utilisateur sur un système Linux."
+  # Le niveau de log.
+  loglevel: INFO
+  # Options pour le job.
+  options:
+    - name: "username"
+      description: "Nom d'utilisateur à créer."
+      required: true
+    - name: "user_shell"
+      description: "Shell pour le nouvel utilisateur."
+      required: true
+      value: "/bin/bash"
+  # La définition du workflow.
+  sequence:
+    # Le workflow s'arrête en cas d'échec.
+    keepgoing: false
+    # Exécution séquentielle.
+    strategy: sequential
+    # La liste des commandes.
+    commands:
+      # Étape 1 : Créer l'utilisateur avec son répertoire personnel et son shell.
+      - exec: "sudo useradd -m -s @option.user_shell@ @option.username@"
+        description: "Création de l'utilisateur"
+  # Section pour les notifications.
+  notification:
+    # Notification en cas de succès.
+    onsuccess:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Création de l'utilisateur @option.username@ réussie sur ${node.name}"
+          message: "L'utilisateur @option.username@ a été créé avec succès sur le nœud ${node.name}."
+    # Notification en cas d'échec.
+    onfailure:
+      - type: email
+        config:
+          recipients: "admin@example.com"
+          subject: "Échec de la création de l'utilisateur @option.username@ sur ${node.name}"
+          message: "La création de l'utilisateur @option.username@ sur le nœud ${node.name} a échoué."
