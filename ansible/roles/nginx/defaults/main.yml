@@ -1,11 +1,19 @@
----
-# defaults file for ansible-role-nginx
+# Fichier de variables par défaut pour le rôle Nginx.
 
-# Port d'écoute pour Nginx
+---
+# Port d'écoute pour Nginx.
 nginx_listen_port: 80
 
-# Port sur lequel Rundeck est exécuté
-rundeck_port: 4440
-
-# Nom du serveur pour Nginx
+# Nom du serveur pour Nginx.
+# Par défaut, utilise le nom de domaine complet (FQDN) de la machine.
+# Vous pouvez surcharger cette valeur dans votre inventaire ou playbook.
 nginx_server_name: "{{ ansible_fqdn }}"
+
+# Hôte backend de Rundeck.
+# Par défaut, pointe vers localhost.
+# Modifiez cette valeur si Rundeck tourne sur un autre serveur.
+rundeck_backend_host: "127.0.0.1"
+
+# Port de Rundeck.
+# Assurez-vous que ce port correspond à celui configuré dans le rôle Rundeck.
+rundeck_port: 4440

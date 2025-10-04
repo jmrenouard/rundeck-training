@@ -1,7 +1,15 @@
 ---
-# handlers file for ansible-role-nginx
+# Fichier de handlers pour le rôle Nginx.
 
-- name: restart nginx
+- name: "Valider la configuration Nginx"
+  command: "nginx -t"
+  changed_when: false
+  register: nginx_config_test
+  listen: "validate and reload nginx"
+
+- name: "Recharger Nginx"
   service:
     name: nginx
-    state: restarted
+    state: reloaded
+  when: nginx_config_test.rc == 0
+  listen: "validate and reload nginx"
