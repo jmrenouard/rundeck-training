@@ -9,6 +9,7 @@ Cet outil fournit une interface web pour générer dynamiquement des fichiers de
 - **Support complet du format** : Permet de configurer toutes les sections principales d'une politique ACL : `description`, `context`, `for`, `by`, et `notBy`.
 - **Politiques multiples** : Ajoutez et gérez plusieurs documents de politique dans un seul fichier, séparés par `---`.
 - **Règles dynamiques** : Ajoutez, modifiez et supprimez des règles de ressources (`job`, `node`, etc.) et des actions (`allow`, `deny`) facilement.
+- **Import YAML** : Charge et reconstruit le formulaire depuis un ou plusieurs documents `.aclpolicy` existants.
 - **Aucune installation requise** : La page est un simple fichier HTML (`index.html`) qui s'exécute directement dans le navigateur en utilisant des CDN pour ses dépendances.
 
 ## Utilisation
