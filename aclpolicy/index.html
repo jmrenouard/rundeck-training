@@ -343,7 +343,7 @@
 
                 let properties = this.aclSchema[contextType]?.[resourceType]?.properties || [];
 
-                // Si la ressource est de type 'resource' et a des 'kinds', on ajoute les propriétés des kinds
+                // If the resource is of type 'resource' and has 'kinds', add the properties of the kinds
                 if (resourceType === 'resource') {
                     const kinds = this.aclSchema[contextType]?.[resourceType]?.kinds || [];
                     const kindProperties = kinds.flatMap(kind => this.aclSchema[contextType]?.[kind]?.properties || []);
