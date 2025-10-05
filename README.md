@@ -5,6 +5,9 @@ Ce projet fournit une collection complète d'outils pour déployer, configurer e
 
 ## Répertoires
 
+### [aclpolicy](./aclpolicy/README.md)
+Ce répertoire contient un générateur de fichier `ACLPolicy` pour Rundeck.
+
 ### [Ansible](./ansible/README.md)
 Ce répertoire contient les playbooks et les rôles Ansible pour automatiser le déploiement de la stack Rundeck (Java, MySQL, Rundeck, Keycloak, MinIO).
 
