@@ -1,0 +1,102 @@
+# ==============================================================================
+# Job Rundeck : Transfert de Fichiers vers S3 (MinIO)
+# ==============================================================================
+# Ce template de job Rundeck permet d'envoyer un fichier local vers un
+# bucket sur un serveur de stockage S3 compatible, tel que MinIO.
+#
+# Prérequis sur le noeud cible :
+#   - Le client MinIO (`mc`) doit être installé et accessible dans le PATH.
+# ==============================================================================
+
+- name: "S3 - Transférer un fichier vers un bucket"
+  # Nom du job qui apparaîtra dans l'interface Rundeck.
+  description: |
+    # Transfert de Fichiers vers S3 (MinIO)
+
+    Ce job utilise le client MinIO (`mc`) pour transférer un fichier local vers un bucket S3.
+
+    **Fonctionnalités :**
+    - Configure un alias pour le serveur S3 cible.
+    - Copie le fichier spécifié vers le bucket et le chemin de destination.
+    - Utilise des options sécurisées pour les clés d'accès.
+
+    **Prérequis sur le nœud d'exécution :**
+    - Le client MinIO (`mc`) doit être installé et présent dans le `PATH`.
+    - L'utilisateur Rundeck doit avoir les permissions pour exécuter `mc`.
+  # Description détaillée du job.
+  group: "MinIO/S3"
+  # Groupe sous lequel le job sera classé.
+  options:
+    # --- Option 1 : Fichier Source ---
+    - name: "source_file"
+      description: "Chemin complet du fichier local à transférer."
+      type: text
+      required: true
+      # Le chemin du fichier source sur le noeud cible.
+
+    # --- Option 2 : Bucket de Destination ---
+    - name: "destination_bucket"
+      description: "Nom du bucket S3 de destination."
+      type: text
+      required: true
+      # Le nom du bucket où le fichier sera stocké.
+
+    # --- Option 3 : Chemin de Destination ---
+    - name: "destination_path"
+      description: "Chemin (préfixe) de destination dans le bucket (ex: backups/)."
+      type: text
+      required: false
+      # Le "dossier" virtuel dans le bucket. Laisser vide pour la racine.
+
+    # --- Option 4 : Hôte MinIO ---
+    - name: "minio_host"
+      description: "URL du serveur MinIO/S3 (ex: https://minio.example.com)."
+      type: text
+      required: true
+      value: "http://localhost:9000"
+      # L'adresse du serveur S3.
+
+    # --- Option 5 : Clé d'Accès ---
+    - name: "minio_access_key"
+      description: "Clé d'accès pour l'API S3 (Access Key)."
+      type: text
+      required: true
+      value: "minio"
+      # La clé d'accès (équivalent du nom d'utilisateur).
+
+    # --- Option 6 : Clé Secrète ---
+    - name: "minio_secret_key"
+      description: "Clé secrète pour l'API S3 (Secret Key)."
+      type: text
+      required: true
+      secure: true
+      storagePath: "keys/minio/secret_key"
+      # La clé secrète (mot de passe), stockée de manière sécurisée.
+
+  sequence:
+    # Séquence des commandes à exécuter.
+    keepgoing: false
+    # 'false' signifie que le workflow s'arrête à la première erreur.
+    strategy: node-first
+    # Exécute toutes les étapes sur un noeud avant de passer au suivant.
+    commands:
+      # --- Étape 1 : Configuration de l'alias et transfert ---
+      - exec: |
+          # Commande à exécuter sur le noeud cible.
+          # Définit un alias 's3cible' pour notre serveur MinIO.
+          # L'alias est temporaire et n'est utilisé que pour cette exécution.
+          mc alias set s3cible @option.minio_host@ @option.minio_access_key@ @option.minio_secret_key@
+
+          # Copie le fichier source vers le bucket de destination.
+          # La destination est construite comme 'alias/bucket/chemin/fichier'.
+          mc cp @option.source_file@ s3cible/@option.destination_bucket@/@option.destination_path@
+
+          # Affiche un message de succès.
+          echo "Transfert de '@option.source_file@' vers 's3://@option.destination_bucket@/@option.destination_path@' terminé avec succès."
+  # Permet au job d'être exécuté sur plusieurs noeuds.
+  multipleExecutions: true
+  # Contexte du projet (généralement 'project').
+  context:
+    project: 'default'
+  # Niveau de log.
+  loglevel: INFO

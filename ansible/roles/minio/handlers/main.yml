@@ -1,0 +1,11 @@
+# ==============================================================================
+# Handlers pour le Rôle MinIO
+# ==============================================================================
+# Ce fichier contient les handlers qui sont déclenchés par les tâches.
+# ==============================================================================
+---
+- name: "Redémarrer le service MinIO"
+  systemd:
+    name: minio
+    state: restarted
+  listen: "restart minio"

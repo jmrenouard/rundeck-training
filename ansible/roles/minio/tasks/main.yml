@@ -1,0 +1,66 @@
+# ==============================================================================
+# Tâches Principales pour le Rôle MinIO
+# ==============================================================================
+# Ce fichier orchestre l'installation et la configuration de MinIO.
+# ==============================================================================
+
+---
+# Fichier de tâches pour ansible-role-minio
+
+# Installation et configuration de MinIO
+- name: "Création de l'utilisateur minio-user"
+  user:
+    name: "{{ minio_user }}"
+    system: yes
+    shell: /sbin/nologin
+    comment: "Utilisateur pour le service MinIO"
+    create_home: no
+
+- name: "Création du répertoire de configuration"
+  file:
+    path: "{{ minio_config_dir }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: '0750'
+
+- name: "Création du répertoire de données"
+  file:
+    path: "{{ minio_data_dir }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: '0750'
+
+- name: "Téléchargement du binaire MinIO"
+  get_url:
+    url: "https://dl.min.io/server/minio/release/linux-amd64/minio"
+    dest: "/usr/local/bin/minio"
+    mode: '0755'
+    checksum: "sha256:https://dl.min.io/server/minio/release/linux-amd64/minio.sha256"
+  notify: restart minio
+
+- name: "Création du fichier d'environnement MinIO"
+  template:
+    src: minio.env.j2
+    dest: "{{ minio_config_dir }}/minio.env"
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: '0640'
+  notify: restart minio
+
+- name: "Création du fichier de service systemd"
+  template:
+    src: minio.service.j2
+    dest: /etc/systemd/system/minio.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart minio
+
+- name: "Activation et démarrage du service MinIO"
+  systemd:
+    name: minio
+    enabled: yes
+    state: started
+    daemon_reload: yes

@@ -1,0 +1,33 @@
+# ==============================================================================
+# Variables par Défaut pour le Rôle MinIO
+# ==============================================================================
+# Ce fichier définit les variables par défaut pour la configuration de MinIO.
+# Vous pouvez surcharger ces valeurs dans votre inventaire ou vos playbooks.
+# ==============================================================================
+
+---
+# Fichier de variables par défaut pour ansible-role-minio
+
+# --- Utilisateur et Groupe ---
+# L'utilisateur et le groupe sous lesquels le service MinIO s'exécutera.
+minio_user: "minio-user"
+minio_group: "minio-user"
+
+# --- Répertoires ---
+# Chemin vers le répertoire de configuration de MinIO.
+minio_config_dir: "/etc/minio"
+# Chemin vers le répertoire où MinIO stockera les données (buckets et objets).
+minio_data_dir: "/var/minio"
+
+# --- Configuration du Service ---
+# Adresse et port d'écoute du service MinIO.
+minio_listen_addr: "0.0.0.0:9000"
+# Adresse et port d'écoute pour la console web de MinIO.
+minio_console_addr: "0.0.0.0:9001"
+
+# --- Identifiants ---
+# Identifiants d'accès pour l'utilisateur root.
+# IMPORTANT: Il est fortement recommandé de changer ces valeurs par défaut.
+# Utilisez Ansible Vault pour stocker des secrets de manière sécurisée.
+minio_root_user: "minio"
+minio_root_password: "minio_password"

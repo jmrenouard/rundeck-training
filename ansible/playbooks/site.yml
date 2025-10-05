@@ -2,7 +2,7 @@
 # Ce playbook exécute tous les rôles dans l'ordre requis.
 
 ---
-- name: "Déployer la stack complète (Java, MySQL, Rundeck, Keycloak)"
+- name: "Déployer la stack complète (Java, MySQL, Rundeck, Keycloak, MinIO)"
   hosts: all # Cible tous les hôtes définis dans l'inventaire.
   become: yes # Exécute les tâches avec des privilèges élevés (sudo).
   gather_facts: yes # Collecte les informations sur les hôtes cibles.
@@ -21,3 +21,6 @@
 
     - role: keycloak # Déploie Keycloak via Docker.
       tags: [keycloak, always]
+
+    - role: minio # Déploie MinIO.
+      tags: [minio, always]

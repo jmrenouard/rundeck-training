@@ -5,13 +5,13 @@ Ce projet fournit une collection complète d'outils pour déployer, configurer e
 ## Répertoires
 
 ### [Ansible](./ansible/README.md)
-Ce répertoire contient les playbooks et les rôles Ansible pour automatiser le déploiement de la stack Rundeck (Java, MySQL, Rundeck, Keycloak).
+Ce répertoire contient les playbooks et les rôles Ansible pour automatiser le déploiement de la stack Rundeck (Java, MySQL, Rundeck, Keycloak, MinIO).
 
 ### [Docker](./docker/README.md)
 Vous trouverez ici les configurations Docker pour lancer rapidement un environnement de développement local ou de production avec Docker Compose et Docker Swarm.
 
 ### [Scripts](./scripts/README.md)
-Une collection de scripts Bash pour une installation manuelle et automatisée de la stack Rundeck sur un système Ubuntu.
+Une collection de scripts Bash pour une installation manuelle et automatisée de la stack Rundeck et de ses composants (comme MinIO) sur un système Ubuntu.
 
 ### [Templates](./templates/README.md)
-Contient une bibliothèque riche et variée de plus de 40 templates de jobs Rundeck au format YAML. Ces templates couvrent une large gamme de cas d'usage pour les plateformes Linux et Windows, incluant le déploiement d'applications, la maintenance système, les opérations de sauvegarde/restauration, le reporting, et la gestion de la sécurité.
+Contient une bibliothèque riche et variée de plus de 40 templates de jobs Rundeck au format YAML. Ces templates couvrent une large gamme de cas d'usage pour les plateformes Linux et Windows, incluant le déploiement d'applications, l'intégration avec MinIO/S3, la maintenance système, les opérations de sauvegarde/restauration, le reporting, et la gestion de la sécurité.
