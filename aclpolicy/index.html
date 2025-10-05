@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Fichier ACLPolicy pour Rundeck</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" integrity="sha384-+Qw1Qn6e6QF6UVx/F4WRzEwA4kQn6Qw1Qn6e6QF6UVx/F4WRzEwA4kQn6Qw1Qn6e" crossorigin="anonymous" defer></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" integrity="sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du" crossorigin="anonymous"></script>
     <style>
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -101,7 +101,7 @@
                                         <div class="bg-slate-50 p-4 rounded-md border border-slate-200">
                                             <div class="flex justify-between items-center mb-3">
                                                  <select x-model="resourceRule.type" class="form-input w-1/3">
-                                                    <template x-for="type in resourceTypes" :key="type">
+                                                    <template x-for="type in Object.keys(aclSchema[policy.context.type] || {})" :key="type">
                                                         <option :value="type" x-text="type"></option>
                                                     </template>
                                                 </select>
@@ -122,9 +122,14 @@
                                                                             <option :value="matcher" x-text="matcher"></option>
                                                                         </template>
                                                                     </select>
-                                                                    <input type="text" x-model="rule.property" class="form-input text-sm" placeholder="propriété (ex: name)">
+                                                                    <input type="text" x-model="rule.property" class="form-input text-sm" placeholder="propriété (ex: name)" :list="`datalist-properties-${policyIndex}-${resourceIndex}`">
                                                                 </div>
-                                                                <input type="text" x-model="rule.value" class="form-input text-sm mt-2" placeholder="valeur (ex: job-1)">
+                                                                <input type="text" x-model="rule.value" class="form-input text-sm mt-2" :placeholder="rule.property === 'kind' ? 'valeur (ex: job)' : 'valeur (ex: job-1)'">
+                                                                <datalist :id="`datalist-properties-${policyIndex}-${resourceIndex}`">
+                                                                    <template x-for="prop in availableProperties(policyIndex, resourceIndex)" :key="prop">
+                                                                        <option :value="prop"></option>
+                                                                    </template>
+                                                                </datalist>
                                                             </div>
                                                             <div>
                                                                 <fieldset>
@@ -140,6 +145,7 @@
                                                                             class="form-input text-sm" 
                                                                             placeholder="Autoriser (allow), séparé par virgule"
                                                                             :id="`actions-allow-${policyIndex}-${resourceIndex}-${ruleIndex}`"
+                                                                            :list="`datalist-actions-${policyIndex}-${resourceIndex}`"
                                                                         >
                                                                         <label 
                                                                             :for="`actions-deny-${policyIndex}-${resourceIndex}-${ruleIndex}`" 
@@ -151,8 +157,14 @@
                                                                             class="form-input text-sm mt-1" 
                                                                             placeholder="Refuser (deny), séparé par virgule"
                                                                             :id="`actions-deny-${policyIndex}-${resourceIndex}-${ruleIndex}`"
+                                                                            :list="`datalist-actions-${policyIndex}-${resourceIndex}`"
                                                                         >
                                                                     </div>
+                                                                    <datalist :id="`datalist-actions-${policyIndex}-${resourceIndex}`">
+                                                                        <template x-for="action in availableActions(policyIndex, resourceIndex)" :key="action">
+                                                                            <option :value="action"></option>
+                                                                        </template>
+                                                                    </datalist>
                                                                 </fieldset>
                                                             </div>
                                                         </div>
@@ -226,11 +238,119 @@
             copySuccess: false,
             yamlToImport: '',
             importStatus: { message: '', isError: false },
-            resourceTypes: ['job', 'node', 'adhoc', 'project', 'resource', 'system', 'system_acl', 'user', 'project_acl', 'storage'],
             ruleMatchers: ['equals', 'match', 'contains', 'subset'],
+
+            //-= ACL Schema based on Rundeck Documentation =-
+            aclSchema: {
+                application: {
+                    resource: {
+                        actions: [
+                            // project
+                            'create',
+                            // system
+                            'read', 'view_cluster', 'enable_executions', 'disable_executions', 'admin',
+                            // system_acl
+                            'create', 'update', 'delete',
+                            // user
+                            'admin',
+                            // job
+                            'admin',
+                            // apitoken
+                            'generate_user_token', 'generate_service_token', 'admin',
+                            // plugin
+                            'read', 'install', 'uninstall', 'admin',
+                            // runner
+                            'read', 'create', 'update', 'delete', 'ping', 'regenerate_credentials'
+                        ],
+                        properties: ['kind'],
+                        kinds: ['project', 'system', 'system_acl', 'user', 'job', 'apitoken', 'plugin', 'runner']
+                    },
+                    project: {
+                        actions: ['read', 'configure', 'delete', 'import', 'export', 'scm_import', 'scm_export', 'delete_execution', 'admin'],
+                        properties: ['name']
+                    },
+                    project_acl: {
+                        actions: ['read', 'create', 'update', 'delete', 'admin'],
+                        properties: ['name']
+                    },
+                    storage: {
+                        actions: ['create', 'update', 'read', 'delete'],
+                        properties: ['path', 'name']
+                    },
+                    apitoken: {
+                        actions: ['create'],
+                        properties: ['username', 'roles']
+                    }
+                },
+                project: {
+                    resource: {
+                        actions: [
+                            // job
+                            'create', 'delete', 'scm_create', 'scm_delete',
+                            // node
+                            'read', 'create', 'update', 'refresh',
+                            // event
+                            'read', 'create',
+                            // webhook
+                            'admin', 'read', 'create', 'update', 'delete', 'post',
+                            // runner
+                            'read', 'create', 'update', 'delete', 'ping', 'regenerate_credentials'
+                        ],
+                        properties: ['kind'],
+                        kinds: ['job', 'node', 'event', 'webhook', 'runner']
+                    },
+                    adhoc: {
+                        actions: ['read', 'run', 'runAs', 'kill', 'killAs'],
+                        properties: [] // No specific properties to match on
+                    },
+                    job: {
+                        actions: ['read', 'view', 'update', 'delete', 'run', 'runAs', 'kill', 'killAs', 'create', 'toggle_schedule', 'toggle_execution', 'scm_create', 'scm_update', 'scm_delete', 'view_history'],
+                        properties: ['name', 'group', 'uuid']
+                    },
+                    node: {
+                        actions: ['read', 'run'],
+                        properties: ['rundeck_server', 'nodename', 'username', 'hostname', 'description', 'tags', 'osName', 'osFamily', 'osVersion', 'osArch']
+                    },
+                    runner: {
+                        actions: ['read', 'create', 'update', 'delete', 'ping', 'admin'],
+                        properties: ['name', 'id', 'tags']
+                    }
+                }
+            },
 
             init() {
                 // The first policy is now added declaratively.
+            },
+
+            availableActions(policyIndex, resourceIndex) {
+                const policy = this.policies[policyIndex];
+                const resourceRule = policy?.for?.[resourceIndex];
+                if (!policy || !resourceRule) return [];
+
+                const contextType = policy.context.type;
+                const resourceType = resourceRule.type;
+
+                return this.aclSchema[contextType]?.[resourceType]?.actions || [];
+            },
+
+            availableProperties(policyIndex, resourceIndex) {
+                const policy = this.policies[policyIndex];
+                const resourceRule = policy?.for?.[resourceIndex];
+                if (!policy || !resourceRule) return [];
+
+                const contextType = policy.context.type;
+                const resourceType = resourceRule.type;
+
+                let properties = this.aclSchema[contextType]?.[resourceType]?.properties || [];
+
+                // If the resource is of type 'resource' and has 'kinds', add the properties of the kinds
+                if (resourceType === 'resource') {
+                    const kinds = this.aclSchema[contextType]?.[resourceType]?.kinds || [];
+                    const kindProperties = kinds.flatMap(kind => this.aclSchema[contextType]?.[kind]?.properties || []);
+                    properties = [...new Set([...properties, ...kindProperties])];
+                }
+
+                return properties;
             },
 
             importFromYaml() {
@@ -379,6 +499,9 @@
             },
 
             get generatedYamlContent() {
+                if (typeof jsyaml === 'undefined') {
+                    return 'Génération du YAML...';
+                }
                 try {
                     const yamlDocs = this.policies.map(policy => {
                         const out = {};
