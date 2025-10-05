@@ -1,0 +1,47 @@
+# ==============================================================================
+# Template de Service Systemd pour MinIO
+# ==============================================================================
+# Ce template Jinja2 génère le fichier de service systemd pour MinIO.
+# Les variables sont fournies par Ansible.
+# ==============================================================================
+
+[Unit]
+Description=MinIO Object Storage Server
+Documentation=https://docs.min.io
+Wants=network-online.target
+After=network-online.target
+AssertFileIsExecutable=/usr/local/bin/minio
+
+[Service]
+Type=simple
+User={{ minio_user }}
+Group={{ minio_group }}
+WorkingDirectory={{ minio_data_dir }}
+
+# Fichier d'environnement pour charger les variables de configuration
+EnvironmentFile={{ minio_config_dir }}/minio.env
+
+# Commande de démarrage du serveur MinIO
+# Les variables d'environnement (MINIO_ROOT_USER, MINIO_ROOT_PASSWORD) sont chargées depuis le fichier .env
+ExecStart=/usr/local/bin/minio server {{ minio_data_dir }} --console-address "{{ minio_console_addr }}"
+
+# Redémarrage automatique en cas d'échec
+Restart=always
+RestartSec=10
+
+# Limites de ressources
+LimitNOFILE=65536
+
+# Sécurité
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictRealtime=true
+
+[Install]
+WantedBy=multi-user.target

@@ -107,3 +107,22 @@ Ce script permet de restaurer Rundeck à partir d'un fichier de sauvegarde cré�
 ```bash
 sudo ./restore_rundeck.sh /var/backups/rundeck/rundeck_backup_YYYYMMDD_HHMMSS.tar.gz
 ```
+
+---
+
+### Script d'installation de MinIO
+
+Le script `install_minio.sh` installe et configure un serveur de stockage d'objets MinIO.
+
+**Fonctionnalités :**
+- Crée un utilisateur (`minio-user`) et un groupe dédiés pour le service.
+- Met en place les répertoires de configuration (`/etc/minio`) et de données (`/var/minio`).
+- Télécharge le binaire officiel de MinIO.
+- Configure un service `systemd` (`minio.service`) pour une gestion propre du serveur.
+- Démarre et active le service MinIO.
+- **Note :** Le script génère un fichier d'environnement (`/etc/minio/minio.env`) avec des identifiants par défaut. Il est crucial de les modifier pour un environnement de production.
+
+**Utilisation :**
+```bash
+sudo ./install_minio.sh
+```

@@ -37,4 +37,3 @@
         line: 'JAVA_HOME={{ java_home_path }}'
         state: present
         create: yes
-  listen: "Set JAVA_HOME"

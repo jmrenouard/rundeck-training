@@ -1,6 +1,6 @@
 # Déploiement d'une Stack Applicative avec Ansible
 
-Ce projet Ansible permet de déployer une stack complète incluant Java, MySQL, Rundeck, Nginx et Keycloak. Il est conçu pour être modulaire, vous permettant de déployer la stack entière ou seulement les composants dont vous avez besoin.
+Ce projet Ansible permet de déployer une stack complète incluant Java, MySQL, Rundeck, Nginx, Keycloak et MinIO. Il est conçu pour être modulaire, vous permettant de déployer la stack entière ou seulement les composants dont vous avez besoin.
 
 ## Prérequis
 
@@ -27,13 +27,15 @@ ansible/
 │   ├── mysql.yml       # Playbook pour installer MySQL uniquement.
 │   ├── rundeck.yml     # Playbook pour installer Rundeck et ses dépendances.
 │   ├── nginx.yml       # Playbook pour installer et configurer Nginx.
-│   └── keycloak.yml    # Playbook pour déployer Keycloak via Docker.
+│   ├── keycloak.yml    # Playbook pour déployer Keycloak via Docker.
+│   └── minio.yml       # Playbook pour déployer MinIO.
 ├── roles/
 │   ├── java/           # Rôle pour l'installation de Java.
 │   ├── mysql/          # Rôle pour l'installation et la configuration de MySQL.
 │   ├── rundeck/        # Rôle pour l'installation et la configuration de Rundeck.
 │   ├── nginx/          # Rôle pour l'installation et la configuration de Nginx.
-│   └── keycloak/       # Rôle pour le déploiement de Keycloak.
+│   ├── keycloak/       # Rôle pour le déploiement de Keycloak.
+│   └── minio/          # Rôle pour le déploiement de MinIO.
 └── README.md           # Ce fichier de documentation.
 ```
 
@@ -65,6 +67,7 @@ Chaque rôle possède un fichier `defaults/main.yml` (`ansible/roles/<nom_du_rol
 *   **MySQL :** `ansible/roles/mysql/defaults/main.yml` (variables `db_password`).
 *   **Rundeck :** `ansible/roles/rundeck/defaults/main.yml` (variables `rundeck_db_password`).
 *   **Keycloak :** `ansible/roles/keycloak/defaults/main.yml` (variables `keycloak_admin_password`).
+*   **MinIO :** `ansible/roles/minio/defaults/main.yml` (variables `minio_root_user`, `minio_root_password`).
 
 ## Utilisation : Exécution des Playbooks
 
@@ -107,10 +110,16 @@ Vous pouvez utiliser les playbooks individuels pour ne déployer qu'une partie d
     ansible-playbook -i inventory/hosts playbooks/keycloak.yml
     ```
 
+*   **Déployer uniquement MinIO :**
+    ```bash
+    ansible-playbook -i inventory/hosts playbooks/minio.yml
+    ```
+
 ### Utiliser les Tags pour une Exécution Granulaire
 
-Vous pouvez également utiliser des tags pour exécuter uniquement certaines parties d'un playbook. Par exemple, pour n'exécuter que les tâches liées à Rundeck du playbook principal :
+Vous pouvez également utiliser des tags pour exécuter uniquement certaines parties d'un playbook. Par exemple, pour n'exécuter que les tâches liées à Rundeck ou MinIO du playbook principal :
 
 ```bash
 ansible-playbook -i inventory/hosts playbooks/site.yml --tags "rundeck"
+ansible-playbook -i inventory/hosts playbooks/site.yml --tags "minio"
 ```

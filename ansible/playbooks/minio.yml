@@ -1,0 +1,19 @@
+# ==============================================================================
+# Playbook pour Déployer MinIO
+# ==============================================================================
+# Ce playbook applique le rôle 'minio' pour installer et configurer MinIO.
+# Pour l'exécuter, utilisez la commande :
+# ansible-playbook -i inventory/hosts minio.yml
+# ==============================================================================
+
+---
+- hosts: all  # ou un groupe spécifique, ex: 'minio_servers'
+  become: yes
+  roles:
+    - role: minio
+      # --- Surcharge des Variables (Optionnel) ---
+      # Vous pouvez surcharger les variables par défaut ici si nécessaire.
+      # Exemple :
+      # vars:
+      #   minio_root_user: "mon_utilisateur_secret"
+      #   minio_root_password: "{{ mot_de_passe_via_vault }}"
