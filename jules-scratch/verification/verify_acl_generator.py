@@ -3,9 +3,9 @@ from playwright.sync_api import sync_playwright, expect, Page
 
 def verify_acl_policy_generator(page: Page):
     """
-    Vérifie le générateur de politique ACL en testant les menus déroulants dynamiques
-    pour les contextes 'application' et 'project'.
-    Utilise des assertions robustes qui vérifient la présence dans le DOM plutôt que la visibilité.
+    Verifies the ACL policy generator by testing the dynamic dropdown menus
+    for the 'application' and 'project' contexts.
+    Uses robust assertions that check for presence in the DOM rather than visibility.
     """
     # Le chemin absolu vers le fichier index.html
     file_path = os.path.abspath('aclpolicy/index.html')
