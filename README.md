@@ -1,3 +1,4 @@
+![rundeck-training](banner.png)
 # Projet d'Automatisation et de Déploiement de Rundeck
 
 Ce projet fournit une collection complète d'outils pour déployer, configurer et gérer un environnement Rundeck. Il est divisé en plusieurs répertoires, chacun se concentrant sur un aspect spécifique de l'automatisation.
