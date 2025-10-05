@@ -353,8 +353,6 @@
             _splitAndTrim(str) {
                 if (!str || typeof str !== 'string') return [];
                 const arr = str.split(',').map(item => item.trim()).filter(Boolean);
-                if (arr.length === 1) return arr[0];
-                if (arr.length === 0) return [];
                 return arr;
             },
 
