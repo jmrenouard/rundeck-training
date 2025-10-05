@@ -127,11 +127,33 @@
                                                                 <input type="text" x-model="rule.value" class="form-input text-sm mt-2" placeholder="valeur (ex: job-1)">
                                                             </div>
                                                             <div>
-                                                                <label class="font-medium text-sm">Actions</label>
-                                                                <div class="mt-1">
-                                                                    <input type="text" x-model="rule.actions.allow" class="form-input text-sm" placeholder="Autoriser (allow), séparé par virgule">
-                                                                    <input type="text" x-model="rule.actions.deny" class="form-input text-sm mt-2" placeholder="Refuser (deny), séparé par virgule">
-                                                                </div>
+                                                                <fieldset>
+                                                                    <legend class="font-medium text-sm">Actions</legend>
+                                                                    <div class="mt-1">
+                                                                        <label 
+                                                                            :for="`actions-allow-${policyIndex}-${resourceIndex}-${ruleIndex}`" 
+                                                                            class="text-sm block"
+                                                                        >Actions autorisées</label>
+                                                                        <input 
+                                                                            type="text" 
+                                                                            x-model="rule.actions.allow" 
+                                                                            class="form-input text-sm" 
+                                                                            placeholder="Autoriser (allow), séparé par virgule"
+                                                                            :id="`actions-allow-${policyIndex}-${resourceIndex}-${ruleIndex}`"
+                                                                        >
+                                                                        <label 
+                                                                            :for="`actions-deny-${policyIndex}-${resourceIndex}-${ruleIndex}`" 
+                                                                            class="text-sm block mt-2"
+                                                                        >Actions refusées</label>
+                                                                        <input 
+                                                                            type="text" 
+                                                                            x-model="rule.actions.deny" 
+                                                                            class="form-input text-sm mt-1" 
+                                                                            placeholder="Refuser (deny), séparé par virgule"
+                                                                            :id="`actions-deny-${policyIndex}-${resourceIndex}-${ruleIndex}`"
+                                                                        >
+                                                                    </div>
+                                                                </fieldset>
                                                             </div>
                                                         </div>
                                                          <div class="text-right mt-2">
