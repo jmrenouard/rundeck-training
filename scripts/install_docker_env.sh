@@ -58,6 +58,13 @@ success "Docker est installé."
 
 # Vérifie si Docker Compose est installé
 if ! command -v docker-compose &> /dev/null; then
+  sudo apt -y install docker-compose
+  success "Docker Compose a été installé."
+else
+  success "Docker Compose est déjà installé."
+fi
+# Vérifie si Docker Compose est installé
+if ! command -v docker-compose &> /dev/null; then
     error "Docker Compose n'est pas installé. Veuillez l'installer avant de continuer."
 fi
 success "Docker Compose est installé."
