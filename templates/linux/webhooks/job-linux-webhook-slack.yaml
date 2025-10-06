@@ -34,7 +34,7 @@
             "attachments": [
               {
                 "fallback": "Notification de Job Rundeck: @option.message@",
-                "color": "\$COLOR",
+                "color": "$COLOR",
                 "title": "Notification Rundeck",
                 "title_link": "\$RD_JOB_URL",
                 "fields": [
