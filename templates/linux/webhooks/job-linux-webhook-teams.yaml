@@ -33,7 +33,7 @@
           {
             "@type": "MessageCard",
             "@context": "http://schema.org/extensions",
-            "themeColor": "\$COLOR",
+            "themeColor": "$COLOR",
             "summary": "Notification de Rundeck: @option.title@",
             "sections": [{
               "activityTitle": "@option.title@",
