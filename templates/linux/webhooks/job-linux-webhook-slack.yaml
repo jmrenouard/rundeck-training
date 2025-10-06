@@ -67,7 +67,7 @@
           )
 
           # Envoi de la requête au webhook Slack.
-          curl -f -X POST -H "Content-Type: application/json" --data "\$PAYLOAD" "@option.slack_webhook_url@"
+          curl -f -X POST -H "Content-Type: application/json" --data "$PAYLOAD" "@option.slack_webhook_url@"
     keepgoing: false
     strategy: node-first
   options:
