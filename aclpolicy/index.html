@@ -38,20 +38,25 @@
         <!-- Contenu principal -->
         <main class="flex-1 p-4 sm:p-6 lg:p-8 lg:mr-[40rem]">
             <div class="max-w-5xl mx-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold text-slate-900">Générateur d'ACLPolicy Rundeck</h1>
-                    <button @click="addPolicy()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                        Ajouter une politique
+                <header class="text-center mb-8">
+                    <div class="flex justify-center items-center mb-4">
+                        <button @click="setLang('fr')" :class="{ 'bg-blue-600 text-white': lang === 'fr', 'bg-slate-200': lang !== 'fr' }" class="px-4 py-2 rounded-l-lg transition">FR</button>
+                        <button @click="setLang('en')" :class="{ 'bg-blue-600 text-white': lang === 'en', 'bg-slate-200': lang !== 'en' }" class="px-4 py-2 rounded-r-lg transition">EN</button>
+                    </div>
+                    <h1 class="text-3xl font-bold text-slate-900" x-text="t('title')"></h1>
+                </header>
+
+                <div class="flex justify-end items-center mb-6">
+                    <button @click="addPolicy()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition" x-text="t('add_policy')">
                     </button>
                 </div>
 
                 <!-- Section d'importation -->
                 <div class="bg-white rounded-lg shadow-sm border border-slate-200 mb-8 p-6">
-                    <h2 class="text-xl font-bold text-slate-800 mb-3">Importer une politique existante</h2>
-                    <textarea x-model="yamlToImport" class="form-input w-full h-32 font-mono text-sm" placeholder="Collez votre contenu .aclpolicy ici..."></textarea>
+                    <h2 class="text-xl font-bold text-slate-800 mb-3" x-text="t('import_section_title')"></h2>
+                    <textarea x-model="yamlToImport" class="form-input w-full h-32 font-mono text-sm" :placeholder="t('import_placeholder')"></textarea>
                     <div class="flex items-center justify-between mt-3">
-                        <button @click="importFromYaml()" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
-                            Importer et Remplir le Formulaire
+                        <button @click="importFromYaml()" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition" x-text="t('import_button')">
                         </button>
                         <div x-show="importStatus.message"
                              :class="{ 'text-green-600': !importStatus.isError, 'text-red-600': importStatus.isError }"
@@ -65,8 +70,8 @@
                 <template x-for="(policy, policyIndex) in policies" :key="policy.id">
                     <div class="bg-white rounded-lg shadow-md border border-slate-200 mb-8">
                         <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-                            <h2 class="text-2xl font-bold text-slate-800" x-text="`Politique #${policyIndex + 1}`"></h2>
-                            <button @click="removePolicy(policyIndex)" class="text-red-500 hover:text-red-700 transition" x-show="policies.length > 1">
+                            <h2 class="text-2xl font-bold text-slate-800" x-text="`${t('policy_title')} #${policyIndex + 1}`"></h2>
+                            <button @click="removePolicy(policyIndex)" class="text-red-500 hover:text-red-700 transition" x-show="policies.length > 1" :title="t('remove_policy_title')">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                         </div>
@@ -74,27 +79,27 @@
                         <div class="p-6 space-y-6">
                             <!-- Description -->
                             <div>
-                                <label :for="`policy-${policyIndex}-description`" class="block text-lg font-semibold mb-2">Description</label>
-                                <input :id="`policy-${policyIndex}-description`" type="text" class="form-input" x-model="policy.description" placeholder="Description courte et descriptive...">
+                                <label :for="`policy-${policyIndex}-description`" class="block text-lg font-semibold mb-2" x-text="t('description_label')"></label>
+                                <input :id="`policy-${policyIndex}-description`" type="text" class="form-input" x-model="policy.description" :placeholder="t('description_placeholder')">
                             </div>
 
                             <!-- Contexte -->
                             <div>
-                                <h3 class="text-lg font-semibold mb-3 border-t pt-4">Contexte</h3>
+                                <h3 class="text-lg font-semibold mb-3 border-t pt-4" x-text="t('context_label')"></h3>
                                 <div class="flex items-center space-x-4">
                                     <select x-model="policy.context.type" class="form-input w-1/3">
-                                        <option value="project">Projet</option>
-                                        <option value="application">Application</option>
+                                        <option value="project" x-text="t('context_project')"></option>
+                                        <option value="application" x-text="t('context_application')"></option>
                                     </select>
-                                    <input type="text" class="form-input w-2/3" x-model="policy.context.value" :placeholder="policy.context.type === 'project' ? 'Nom du projet (ex: MonProjet, ou regex: .*)' : 'rundeck'">
+                                    <input type="text" class="form-input w-2/3" x-model="policy.context.value" :placeholder="policy.context.type === 'project' ? t('context_project_placeholder') : t('context_application_placeholder')">
                                 </div>
                             </div>
 
                             <!-- Section 'For' -->
                             <div class="border-t pt-4">
                                 <div class="flex justify-between items-center mb-3">
-                                    <h3 class="text-lg font-semibold">Pour (for)</h3>
-                                    <button @click="addResourceRule(policyIndex)" class="px-3 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition">Ajouter une ressource</button>
+                                    <h3 class="text-lg font-semibold" x-text="t('for_section_title')"></h3>
+                                    <button @click="addResourceRule(policyIndex)" class="px-3 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition" x-text="t('add_resource_button')"></button>
                                 </div>
                                 <div class="space-y-4">
                                     <template x-for="(resourceRule, resourceIndex) in policy.for" :key="resourceRule.id">
@@ -105,7 +110,7 @@
                                                         <option :value="type" x-text="type"></option>
                                                     </template>
                                                 </select>
-                                                <button @click="removeResourceRule(policyIndex, resourceIndex)" class="text-red-500 hover:text-red-700 text-sm">Supprimer Ressource</button>
+                                                <button @click="removeResourceRule(policyIndex, resourceIndex)" class="text-red-500 hover:text-red-700 text-sm" x-text="t('remove_resource_button')"></button>
                                             </div>
 
                                             <!-- Règles de matching -->
@@ -114,17 +119,17 @@
                                                     <div class="bg-white p-3 rounded border">
                                                         <div class="grid grid-cols-2 gap-4">
                                                             <div>
-                                                                <label class="font-medium text-sm">Règle de correspondance</label>
+                                                                <label class="font-medium text-sm" x-text="t('matcher_label')"></label>
                                                                 <div class="flex space-x-2 mt-1">
                                                                     <select x-model="rule.matcher" class="form-input text-sm">
-                                                                        <option value="">(aucune)</option>
+                                                                        <option value="" x-text="t('matcher_none')"></option>
                                                                         <template x-for="matcher in ruleMatchers" :key="matcher">
                                                                             <option :value="matcher" x-text="matcher"></option>
                                                                         </template>
                                                                     </select>
-                                                                    <input type="text" x-model="rule.property" class="form-input text-sm" placeholder="propriété (ex: name)" :list="`datalist-properties-${policyIndex}-${resourceIndex}`">
+                                                                    <input type="text" x-model="rule.property" class="form-input text-sm" :placeholder="t('matcher_property_placeholder')" :list="`datalist-properties-${policyIndex}-${resourceIndex}`">
                                                                 </div>
-                                                                <input type="text" x-model="rule.value" class="form-input text-sm mt-2" :placeholder="rule.property === 'kind' ? 'valeur (ex: job)' : 'valeur (ex: job-1)'">
+                                                                <input type="text" x-model="rule.value" class="form-input text-sm mt-2" :placeholder="rule.property === 'kind' ? t('matcher_value_placeholder_job') : t('matcher_value_placeholder_default')">
                                                                 <datalist :id="`datalist-properties-${policyIndex}-${resourceIndex}`">
                                                                     <template x-for="prop in availableProperties(policyIndex, resourceIndex)" :key="prop">
                                                                         <option :value="prop"></option>
@@ -133,29 +138,31 @@
                                                             </div>
                                                             <div>
                                                                 <fieldset>
-                                                                    <legend class="font-medium text-sm">Actions</legend>
+                                                                    <legend class="font-medium text-sm" x-text="t('actions_label')"></legend>
                                                                     <div class="mt-1">
                                                                         <label 
                                                                             :for="`actions-allow-${policyIndex}-${resourceIndex}-${ruleIndex}`" 
                                                                             class="text-sm block"
-                                                                        >Actions autorisées</label>
+                                                                            x-text="t('actions_allow_label')"
+                                                                        ></label>
                                                                         <input 
                                                                             type="text" 
                                                                             x-model="rule.actions.allow" 
                                                                             class="form-input text-sm" 
-                                                                            placeholder="Autoriser (allow), séparé par virgule"
+                                                                            :placeholder="t('actions_allow_placeholder')"
                                                                             :id="`actions-allow-${policyIndex}-${resourceIndex}-${ruleIndex}`"
                                                                             :list="`datalist-actions-${policyIndex}-${resourceIndex}`"
                                                                         >
                                                                         <label 
                                                                             :for="`actions-deny-${policyIndex}-${resourceIndex}-${ruleIndex}`" 
                                                                             class="text-sm block mt-2"
-                                                                        >Actions refusées</label>
+                                                                            x-text="t('actions_deny_label')"
+                                                                        ></label>
                                                                         <input 
                                                                             type="text" 
                                                                             x-model="rule.actions.deny" 
                                                                             class="form-input text-sm mt-1" 
-                                                                            placeholder="Refuser (deny), séparé par virgule"
+                                                                            :placeholder="t('actions_deny_placeholder')"
                                                                             :id="`actions-deny-${policyIndex}-${resourceIndex}-${ruleIndex}`"
                                                                             :list="`datalist-actions-${policyIndex}-${resourceIndex}`"
                                                                         >
@@ -169,11 +176,11 @@
                                                             </div>
                                                         </div>
                                                          <div class="text-right mt-2">
-                                                            <button @click="removeRule(policyIndex, resourceIndex, ruleIndex)" class="text-xs text-red-500 hover:text-red-700">Retirer la règle</button>
+                                                            <button @click="removeRule(policyIndex, resourceIndex, ruleIndex)" class="text-xs text-red-500 hover:text-red-700" x-text="t('remove_rule_button')"></button>
                                                         </div>
                                                     </div>
                                                 </template>
-                                                 <button @click="addRule(policyIndex, resourceIndex)" class="px-2 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition">+ Règle</button>
+                                                 <button @click="addRule(policyIndex, resourceIndex)" class="px-2 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition" x-text="t('add_rule_button')"></button>
                                             </div>
                                         </div>
                                     </template>
@@ -184,20 +191,20 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-4">
                                 <!-- By -->
                                 <div>
-                                    <h3 class="text-lg font-semibold mb-2">Par (by)</h3>
+                                    <h3 class="text-lg font-semibold mb-2" x-text="t('by_section_title')"></h3>
                                     <div class="space-y-2">
-                                        <input type="text" class="form-input" x-model="policy.by.username" placeholder="Utilisateurs (username), séparé par virgule">
-                                        <input type="text" class="form-input" x-model="policy.by.group" placeholder="Groupes (group), séparé par virgule">
-                                        <input type="text" class="form-input" x-model="policy.by.urn" placeholder="URNs, séparé par virgule">
+                                        <input type="text" class="form-input" x-model="policy.by.username" :placeholder="t('username_placeholder')">
+                                        <input type="text" class="form-input" x-model="policy.by.group" :placeholder="t('group_placeholder')">
+                                        <input type="text" class="form-input" x-model="policy.by.urn" :placeholder="t('urn_placeholder')">
                                     </div>
                                 </div>
                                 <!-- NotBy -->
                                 <div>
-                                    <h3 class="text-lg font-semibold mb-2">Pas par (notBy)</h3>
+                                    <h3 class="text-lg font-semibold mb-2" x-text="t('notby_section_title')"></h3>
                                     <div class="space-y-2">
-                                        <input type="text" class="form-input" x-model="policy.notBy.username" placeholder="Utilisateurs (username), séparé par virgule">
-                                        <input type="text" class="form-input" x-model="policy.notBy.group" placeholder="Groupes (group), séparé par virgule">
-                                        <input type="text" class="form-input" x-model="policy.notBy.urn" placeholder="URNs, séparé par virgule">
+                                        <input type="text" class="form-input" x-model="policy.notBy.username" :placeholder="t('username_placeholder')">
+                                        <input type="text" class="form-input" x-model="policy.notBy.group" :placeholder="t('group_placeholder')">
+                                        <input type="text" class="form-input" x-model="policy.notBy.urn" :placeholder="t('urn_placeholder')">
                                     </div>
                                 </div>
                             </div>
@@ -211,10 +218,10 @@
         <aside class="fixed top-0 right-0 h-screen w-[40rem] hidden lg:flex flex-col p-4">
             <div class="bg-slate-800 rounded-lg shadow-2xl overflow-hidden h-full flex flex-col">
                 <div class="flex-shrink-0 flex justify-between items-center p-4 bg-slate-900">
-                    <h3 class="text-lg font-semibold text-white">Fichier .aclpolicy généré</h3>
+                    <h3 class="text-lg font-semibold text-white" x-text="t('generated_yaml_title')"></h3>
                     <button @click="copyToClipboard()" class="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-md text-sm hover:bg-sky-700 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                        <span x-text="copySuccess ? 'Copié !' : 'Copier'"></span>
+                        <span x-text="copySuccess ? t('copy_button_success') : t('copy_button')"></span>
                     </button>
                 </div>
                 <pre class="flex-1 overflow-y-auto p-4"><code class="text-slate-300 text-sm whitespace-pre-wrap" x-text="generatedYamlContent"></code></pre>
@@ -235,10 +242,102 @@
                     notBy: { username: '', group: '', urn: '' },
                 }
             ],
+            lang: 'fr',
             copySuccess: false,
             yamlToImport: '',
             importStatus: { message: '', isError: false },
             ruleMatchers: ['equals', 'match', 'contains', 'subset'],
+
+            translations: {
+                fr: {
+                    title: "Générateur d'ACLPolicy Rundeck",
+                    add_policy: "Ajouter une politique",
+                    import_section_title: "Importer une politique existante",
+                    import_placeholder: "Collez votre contenu .aclpolicy ici...",
+                    import_button: "Importer et Remplir le Formulaire",
+                    policy_title: "Politique",
+                    remove_policy_title: "Supprimer cette politique",
+                    description_label: "Description",
+                    description_placeholder: "Description courte et descriptive...",
+                    context_label: "Contexte",
+                    context_project: "Projet",
+                    context_application: "Application",
+                    context_project_placeholder: "Nom du projet (ex: MonProjet, ou regex: .*)",
+                    context_application_placeholder: "rundeck",
+                    for_section_title: "Pour (for)",
+                    add_resource_button: "Ajouter une ressource",
+                    remove_resource_button: "Supprimer Ressource",
+                    matcher_label: "Règle de correspondance",
+                    matcher_none: "(aucune)",
+                    matcher_property_placeholder: "propriété (ex: name)",
+                    matcher_value_placeholder_job: "valeur (ex: job)",
+                    matcher_value_placeholder_default: "valeur (ex: job-1)",
+                    actions_label: "Actions",
+                    actions_allow_label: "Actions autorisées",
+                    actions_allow_placeholder: "Autoriser (allow), séparé par virgule",
+                    actions_deny_label: "Actions refusées",
+                    actions_deny_placeholder: "Refuser (deny), séparé par virgule",
+                    remove_rule_button: "Retirer la règle",
+                    add_rule_button: "+ Règle",
+                    by_section_title: "Par (by)",
+                    notby_section_title: "Pas par (notBy)",
+                    username_placeholder: "Utilisateurs (username), séparé par virgule",
+                    group_placeholder: "Groupes (group), séparé par virgule",
+                    urn_placeholder: "URNs, séparé par virgule",
+                    generated_yaml_title: "Fichier .aclpolicy généré",
+                    copy_button: "Copier",
+                    copy_button_success: "Copié !",
+                    import_empty: "Le champ est vide.",
+                    import_success: "Importation réussie : {count} politique(s) chargée(s).",
+                    import_no_policy: "Aucune politique valide trouvée dans le YAML.",
+                    import_error: "Erreur de parsing YAML : {error}",
+                    yaml_generating: "Génération du YAML..."
+                },
+                en: {
+                    title: "Rundeck ACLPolicy Generator",
+                    add_policy: "Add Policy",
+                    import_section_title: "Import Existing Policy",
+                    import_placeholder: "Paste your .aclpolicy content here...",
+                    import_button: "Import and Fill Form",
+                    policy_title: "Policy",
+                    remove_policy_title: "Remove this policy",
+                    description_label: "Description",
+                    description_placeholder: "Short and descriptive description...",
+                    context_label: "Context",
+                    context_project: "Project",
+                    context_application: "Application",
+                    context_project_placeholder: "Project name (e.g., MyProject, or regex: .*)",
+                    context_application_placeholder: "rundeck",
+                    for_section_title: "For (for)",
+                    add_resource_button: "Add Resource",
+                    remove_resource_button: "Remove Resource",
+                    matcher_label: "Matching Rule",
+                    matcher_none: "(none)",
+                    matcher_property_placeholder: "property (e.g., name)",
+                    matcher_value_placeholder_job: "value (e.g., job)",
+                    matcher_value_placeholder_default: "value (e.g., job-1)",
+                    actions_label: "Actions",
+                    actions_allow_label: "Allowed Actions",
+                    actions_allow_placeholder: "Allow, comma-separated",
+                    actions_deny_label: "Denied Actions",
+                    actions_deny_placeholder: "Deny, comma-separated",
+                    remove_rule_button: "Remove Rule",
+                    add_rule_button: "+ Rule",
+                    by_section_title: "By (by)",
+                    notby_section_title: "Not By (notBy)",
+                    username_placeholder: "Usernames, comma-separated",
+                    group_placeholder: "Groups, comma-separated",
+                    urn_placeholder: "URNs, comma-separated",
+                    generated_yaml_title: "Generated .aclpolicy File",
+                    copy_button: "Copy",
+                    copy_button_success: "Copied!",
+                    import_empty: "The field is empty.",
+                    import_success: "Import successful: {count} policy(ies) loaded.",
+                    import_no_policy: "No valid policies found in the YAML.",
+                    import_error: "YAML parsing error: {error}",
+                    yaml_generating: "Generating YAML..."
+                }
+            },
 
             //-= ACL Schema based on Rundeck Documentation =-
             aclSchema: {
@@ -319,7 +418,21 @@
             },
 
             init() {
-                // The first policy is now added declaratively.
+                this.$watch('lang', () => {
+                    document.title = this.t('title');
+                });
+            },
+
+            setLang(lang) {
+                this.lang = lang;
+            },
+
+            t(key, replacements = {}) {
+                let translation = this.translations[this.lang][key] || key;
+                Object.entries(replacements).forEach(([k, v]) => {
+                    translation = translation.replace(`{${k}}`, v);
+                });
+                return translation;
             },
 
             availableActions(policyIndex, resourceIndex) {
@@ -355,7 +468,7 @@
 
             importFromYaml() {
                 if (!this.yamlToImport.trim()) {
-                    this.showImportStatus('Le champ est vide.', true);
+                    this.showImportStatus(this.t('import_empty'), true);
                     return;
                 }
                 try {
@@ -411,13 +524,13 @@
 
                     if (importedPolicies.length > 0) {
                         this.policies = importedPolicies;
-                        this.showImportStatus(`Importation réussie : ${importedPolicies.length} politique(s) chargée(s).`);
+                        this.showImportStatus(this.t('import_success', { count: importedPolicies.length }));
                     } else {
-                        this.showImportStatus('Aucune politique valide trouvée dans le YAML.', true);
+                        this.showImportStatus(this.t('import_no_policy'), true);
                     }
 
                 } catch (e) {
-                    this.showImportStatus(`Erreur de parsing YAML : ${e.message}`, true);
+                    this.showImportStatus(this.t('import_error', { error: e.message }), true);
                     console.error(e);
                 }
             },
@@ -500,7 +613,7 @@
 
             get generatedYamlContent() {
                 if (typeof jsyaml === 'undefined') {
-                    return 'Génération du YAML...';
+                    return this.t('yaml_generating');
                 }
                 try {
                     const yamlDocs = this.policies.map(policy => {
@@ -560,7 +673,7 @@
                     return yamlDocs.join('---\n');
                 } catch (e) {
                     console.error(e);
-                    return `Erreur lors de la génération du YAML:\n${e.message}`;
+                    return this.t('import_error', { error: e.message });
                 }
             }
         }));
