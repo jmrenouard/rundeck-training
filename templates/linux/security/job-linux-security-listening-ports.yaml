@@ -1,0 +1,61 @@
+# uuid: abcdefgh-ijklm-nopqr-stuvw-xyz0123456
+# description: "Template de job pour lister les ports en écoute sur un serveur Linux."
+# group: "Security"
+# name: "Linux - 02 - Sécurité - Lister les Ports en Écoute"
+
+- description: |
+    Ce job scanne le serveur et liste tous les ports TCP et UDP actuellement en état d'écoute.
+    Il utilise la commande `ss` (ou `netstat` si `ss` n'est pas disponible), qui est plus moderne et plus rapide.
+    Le résultat donne une vue d'ensemble des services exposés sur le réseau.
+
+    Prérequis:
+    - `ss` ou `netstat` doit être installé sur le nœud.
+    - Des droits `sudo` sont recommandés pour voir les processus associés à chaque port.
+
+    Options:
+    - `protocol`: Choisir le protocole à scanner (tcp, udp, ou all).
+  name: "Linux - 02 - Sécurité - Lister les Ports en Écoute"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Message d'information.
+          echo "Scan des ports en écoute sur le serveur..."
+
+          # Détection de la meilleure commande disponible (ss ou netstat).
+          if command -v ss &> /dev/null; then
+            CMD="sudo ss -tuln" # -t: tcp, -u: udp, -l: listening, -n: numeric
+          else
+            CMD="sudo netstat -tuln"
+          fi
+
+          echo "Utilisation de la commande: $CMD"
+
+          # Filtrage par protocole.
+          case "@option.protocol@" in
+            tcp)
+              echo "Affichage des ports TCP en écoute:"
+              $CMD | grep 'tcp'
+              ;;
+            udp)
+              echo "Affichage des ports UDP en écoute:"
+              $CMD | grep 'udp'
+              ;;
+            all)
+              echo "Affichage de tous les ports en écoute (TCP et UDP):"
+              $CMD
+              ;;
+          esac
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: protocol
+      description: "Choisir le protocole réseau à inspecter."
+      required: true
+      value: "all"
+      values:
+        - "all"
+        - "tcp"
+        - "udp"
+  group: "Linux/Security"
+  uuid: abcdefgh-ijklm-nopqr-stuvw-xyz0123456

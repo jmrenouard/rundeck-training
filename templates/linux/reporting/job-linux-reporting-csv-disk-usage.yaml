@@ -1,0 +1,63 @@
+# uuid: e5f6a7b8-c9d0-1234-5678-90abcdef1234
+# description: "Template de job pour générer un rapport d'utilisation disque au format CSV."
+# group: "Reporting"
+# name: "Linux - 01 - Reporting - Rapport CSV Utilisation Disque"
+
+- description: |
+    Ce job génère un fichier CSV contenant l'état d'utilisation des systèmes de fichiers montés.
+    Le rapport inclut le nom du système de fichiers, la taille totale, l'espace utilisé, l'espace disponible et le pourcentage d'utilisation.
+    Le fichier CSV généré peut être utilisé pour des notifications ou comme source de données pour des outils de visualisation.
+
+    Options:
+    - `output_path`: Le chemin où enregistrer le fichier CSV.
+    - `filesystem_type`: (Optionnel) Filtrer par type de système de fichiers (ex: ext4, xfs).
+  name: "Linux - 01 - Reporting - Rapport CSV Utilisation Disque"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Nom du fichier de sortie.
+          OUTPUT_FILE="@option.output_path@/disk_usage_report_$(date +%Y%m%d).csv"
+
+          echo "Génération du rapport d'utilisation disque..."
+          echo "Fichier de sortie: $OUTPUT_FILE"
+
+          # Construction de la commande df.
+          # -hT: Affiche les tailles dans un format lisible par l'homme et le type de système de fichiers.
+          # --output: Spécifie les colonnes à afficher.
+          DF_CMD="df -hT --output=source,fstype,size,used,avail,pcent"
+
+          # Ajout du filtre par type de système de fichiers si spécifié.
+          if [ -n "@option.filesystem_type@" ]; then
+            DF_CMD="$DF_CMD -t @option.filesystem_type@"
+          fi
+
+          # Exécution de la commande et conversion de la sortie en CSV.
+          # 1. Exécute df et ignore la première ligne (l'en-tête).
+          # 2. Remplace les espaces multiples par une seule virgule pour le format CSV.
+          # 3. Supprime les espaces autour des virgules.
+          # 4. Ajoute un en-tête CSV au début du fichier.
+          {
+            echo "FileSystem,Type,Size,Used,Available,Use%"
+            $DF_CMD | tail -n +2 | sed -E 's/[[:space:]]+/,/g' | sed 's/ ,/,/g; s/, /,/g'
+          } > $OUTPUT_FILE
+
+          # Vérification et affichage du résultat.
+          if [ -s "$OUTPUT_FILE" ]; then
+            echo "Rapport CSV généré avec succès:"
+            cat $OUTPUT_FILE
+          else
+            echo "Erreur: Le fichier de rapport n'a pas pu être généré."
+            exit 1
+          fi
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: output_path
+      description: "Le répertoire de destination pour le rapport CSV."
+      required: true
+      value: "/tmp"
+    - name: filesystem_type
+      description: "(Optionnel) Filtrer sur un type de système de fichiers spécifique (ex: ext4, xfs)."
+  group: "Linux/Reporting"
+  uuid: e5f6a7b8-c9d0-1234-5678-90abcdef1234

@@ -1,0 +1,64 @@
+# uuid: f6a7b8c9-d0e1-2345-6789-0abcdef12345
+# description: "Template de job pour générer un rapport sur l'état des services systemd au format CSV."
+# group: "Reporting"
+# name: "Linux - 02 - Reporting - Rapport CSV État des Services"
+
+- description: |
+    Ce job liste les services gérés par systemd et exporte leur état dans un fichier CSV.
+    Le rapport inclut le nom du service, son état de chargement, son état d'activité et son état de sous-activité.
+    C'est un excellent moyen d'auditer rapidement les services fonctionnant sur une machine.
+
+    Options:
+    - `output_path`: Le chemin où enregistrer le fichier CSV.
+    - `service_state`: (Optionnel) Filtrer les services par état (ex: running, failed, exited).
+  name: "Linux - 02 - Reporting - Rapport CSV État des Services"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Nom du fichier de sortie.
+          OUTPUT_FILE="@option.output_path@/services_status_report_$(date +%Y%m%d).csv"
+
+          echo "Génération du rapport sur l'état des services..."
+          echo "Fichier de sortie: $OUTPUT_FILE"
+
+          # Construction de la commande systemctl.
+          # --type=service: Ne lister que les unités de type service.
+          # --all: Affiche toutes les unités, y compris celles inactives.
+          # --no-pager: Désactive la pagination pour la sortie.
+          SYSTEMCTL_CMD="systemctl list-units --type=service --all --no-pager"
+
+          # Ajout du filtre par état si spécifié.
+          if [ -n "@option.service_state@" ]; then
+            SYSTEMCTL_CMD="$SYSTEMCTL_CMD --state=@option.service_state@"
+          fi
+
+          # Exécution de la commande et formatage en CSV.
+          # 1. Exécute systemctl et ignore la première et la dernière ligne (en-tête et pied de page).
+          # 2. Supprime les caractères de préfixe (comme '● ').
+          # 3. Remplace les espaces multiples par une seule virgule.
+          # 4. Ajoute l'en-tête CSV.
+          {
+            echo "Unit,Load,Active,Sub,Description"
+            $SYSTEMCTL_CMD | head -n -1 | tail -n +2 | sed -E 's/^. //; s/[[:space:]]{2,}/,/g'
+          } > $OUTPUT_FILE
+
+          # Vérification et affichage du résultat.
+          if [ -s "$OUTPUT_FILE" ]; then
+            echo "Rapport CSV généré avec succès:"
+            cat $OUTPUT_FILE
+          else
+            echo "Erreur: Le fichier de rapport n'a pas pu être généré."
+            exit 1
+          fi
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: output_path
+      description: "Le répertoire de destination pour le rapport CSV."
+      required: true
+      value: "/tmp"
+    - name: service_state
+      description: "(Optionnel) Filtrer les services par état (ex: running, failed, exited)."
+  group: "Linux/Reporting"
+  uuid: f6a7b8c9-d0e1-2345-6789-0abcdef12345

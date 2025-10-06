@@ -1,0 +1,92 @@
+# uuid: 5b3c1f2e-3d8a-4e6f-9c7b-7a2d8e4f5b1c
+# description: "Template de job pour envoyer une notification à un canal Slack via un webhook."
+# group: "Webhooks"
+# name: "Linux - 02 - Webhook - Notification Slack"
+
+- description: |
+    Ce job envoie un message formaté à un canal Slack.
+    Il est idéal pour notifier les équipes des résultats d'un job (succès, échec, etc.).
+
+    Options:
+    - `slack_webhook_url`: L'URL du webhook entrant de Slack.
+    - `message`: Le message à envoyer.
+    - `status`: Le statut de la notification (par exemple, "Succès", "Échec", "Info").
+    - `channel`: (Optionnel) Le canal Slack où envoyer le message.
+  name: "Linux - 02 - Webhook - Notification Slack"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Construction de la charge utile (payload) JSON pour Slack.
+          # Le format utilise les blocs de Slack pour un affichage plus riche.
+          # La couleur de la barre latérale change en fonction du statut.
+          STATUS_LOWER=$(echo "@option.status@" | tr '[:upper:]' '[:lower:]')
+          COLOR="good" # Vert par défaut (Succès)
+          if [ "$STATUS_LOWER" = "échec" ]; then
+            COLOR="danger" # Rouge pour Échec
+          elif [ "$STATUS_LOWER" = "info" ]; then
+            COLOR="warning" # Jaune pour Info
+          fi
+
+          PAYLOAD=$(cat <<EOF
+          {
+            "channel": "@option.channel@",
+            "attachments": [
+              {
+                "fallback": "Notification de Job Rundeck: @option.message@",
+                "color": "\$COLOR",
+                "title": "Notification Rundeck",
+                "title_link": "\$RD_JOB_URL",
+                "fields": [
+                  {
+                    "title": "Projet",
+                    "value": "@project@",
+                    "short": true
+                  },
+                  {
+                    "title": "Job",
+                    "value": "@job.name@",
+                    "short": true
+                  },
+                  {
+                    "title": "Statut",
+                    "value": "@option.status@",
+                    "short": true
+                  },
+                  {
+                    "title": "Exécuté par",
+                    "value": "@user.name@",
+                    "short": true
+                  }
+                ],
+                "text": "@option.message@"
+              }
+            ]
+          }
+          EOF
+          )
+
+          # Envoi de la requête au webhook Slack.
+          curl -f -X POST -H "Content-Type: application/json" --data "\$PAYLOAD" "@option.slack_webhook_url@"
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: slack_webhook_url
+      description: "L'URL du webhook entrant configuré dans Slack."
+      required: true
+    - name: message
+      description: "Le message principal de la notification."
+      required: true
+      value: "Le déploiement s'est terminé."
+    - name: status
+      description: "Le statut de la notification pour la couleur du message."
+      required: true
+      value: "Succès"
+      values:
+        - "Succès"
+        - "Échec"
+        - "Info"
+    - name: channel
+      description: "(Optionnel) Spécifier un canal ou un utilisateur (ex: #alerts, @jdoe)."
+  group: "Linux/Webhooks"
+  uuid: 5b3c1f2e-3d8a-4e6f-9c7b-7a2d8e4f5b1c

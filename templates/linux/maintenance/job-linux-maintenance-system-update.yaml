@@ -1,0 +1,68 @@
+# uuid: 3456789a-cdef-ghij-klmn-opqrstuvwxyz
+# description: "Template de job pour mettre à jour les paquets système (Debian/Ubuntu)."
+# group: "Maintenance"
+# name: "Linux - 02 - Maintenance - Mise à Jour Système (APT)"
+
+- description: |
+    Ce job effectue une mise à jour complète des paquets sur un système Debian ou Ubuntu.
+    Il exécute `apt update` puis `apt upgrade`.
+
+    ATTENTION: Ce job peut redémarrer des services ou installer de nouvelles versions de logiciels,
+    ce qui pourrait potentiellement interrompre des applications en cours d'exécution.
+    À utiliser de préférence pendant les fenêtres de maintenance.
+
+    Prérequis:
+    - Le nœud d'exécution doit avoir les droits `sudo` pour exécuter les commandes `apt`.
+
+    Options:
+    - `auto_remove`: Exécuter `apt autoremove` après la mise à jour pour nettoyer les dépendances inutiles.
+    - `dist_upgrade`: Utiliser `dist-upgrade` au lieu de `upgrade` pour gérer les changements de dépendances majeurs.
+  name: "Linux - 02 - Maintenance - Mise à Jour Système (APT)"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Commande pour s'assurer que l'interface de apt est non-interactive.
+          export DEBIAN_FRONTEND=noninteractive
+
+          # Étape 1: Mettre à jour la liste des paquets disponibles.
+          echo "Exécution de 'apt update'..."
+          sudo apt-get update -y
+
+          # Étape 2: Mettre à jour les paquets installés.
+          UPGRADE_CMD="sudo apt-get upgrade -y"
+          if [ "@option.dist_upgrade@" = "true" ]; then
+            echo "Utilisation de 'dist-upgrade'..."
+            UPGRADE_CMD="sudo apt-get dist-upgrade -y"
+          else
+            echo "Utilisation de 'upgrade'..."
+          fi
+
+          $UPGRADE_CMD
+
+          # Étape 3: Nettoyer les paquets obsolètes (optionnel).
+          if [ "@option.auto_remove@" = "true" ]; then
+            echo "Exécution de 'apt autoremove' pour nettoyer les dépendances..."
+            sudo apt-get autoremove -y
+          fi
+
+          echo "Mise à jour du système terminée avec succès."
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: auto_remove
+      description: "Si 'true', exécute 'apt autoremove' après la mise à jour."
+      required: true
+      value: "true"
+      values:
+        - "true"
+        - "false"
+    - name: dist_upgrade
+      description: "Si 'true', utilise 'dist-upgrade' au lieu de 'upgrade'."
+      required: true
+      value: "false"
+      values:
+        - "true"
+        - "false"
+  group: "Linux/Maintenance"
+  uuid: 3456789a-cdef-ghij-klmn-opqrstuvwxyz

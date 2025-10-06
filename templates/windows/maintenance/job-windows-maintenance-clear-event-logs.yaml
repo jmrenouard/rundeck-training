@@ -1,0 +1,54 @@
+# uuid: 89abcdef-ghijk-lmnop-qrstu-vwxyz01234
+# description: "Template de job pour effacer les journaux d'événements sur un nœud Windows."
+# group: "Maintenance"
+# name: "Windows - 02 - Maintenance - Nettoyage des Journaux d'Événements"
+
+- description: |
+    Ce job utilise PowerShell pour effacer les principaux journaux d'événements Windows (Application, Security, System).
+    Il permet également de cibler un journal spécifique.
+
+    ATTENTION: Cette action est irréversible et supprime des informations de diagnostic potentiellement utiles.
+
+    Prérequis:
+    - Le job doit s'exécuter avec des privilèges d'administrateur sur le nœud Windows.
+
+    Options:
+    - `log_name`: Le nom du journal à vider. Laisser vide pour vider les journaux par défaut.
+  name: "Windows - 02 - Maintenance - Nettoyage des Journaux d'Événements"
+  loglevel: INFO
+  node-executor: "script"
+  script-interpreter: "powershell"
+  file-extension: "ps1"
+  sequence:
+    commands:
+      - script: |
+          # Nom du journal cible.
+          $LogName = "@option.log_name@"
+
+          if ($LogName) {
+              # Vider un journal spécifique.
+              Write-Host "Tentative de nettoyage du journal d'événements '$LogName'..."
+              $Log = Get-WinEvent -ListLog $LogName -ErrorAction SilentlyContinue
+              if (-not $Log) {
+                  Write-Host "Erreur: Le journal d'événements '$LogName' n'existe pas."
+                  exit 1
+              }
+              Clear-EventLog -LogName $LogName
+              Write-Host "Le journal '$LogName' a été nettoyé avec succès."
+          } else {
+              # Vider les journaux par défaut.
+              $DefaultLogs = @("Application", "Security", "System")
+              Write-Host "Nettoyage des journaux d'événements par défaut: $($DefaultLogs -join ', ')"
+              foreach ($Log in $DefaultLogs) {
+                  Write-Host "Nettoyage du journal '$Log'..."
+                  Clear-EventLog -LogName $Log
+              }
+              Write-Host "Nettoyage des journaux par défaut terminé."
+          }
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: log_name
+      description: "(Optionnel) Nom du journal à vider (ex: 'Windows PowerShell'). Si vide, nettoie Application, Security, et System."
+  group: "Windows/Maintenance"
+  uuid: 89abcdef-ghijk-lmnop-qrstu-vwxyz01234

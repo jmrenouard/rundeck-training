@@ -1,0 +1,57 @@
+# uuid: 456789ab-defg-hijk-lmno-pqrstuvwxyza
+# description: "Template de job pour mettre à jour les paquets système (RHEL/CentOS)."
+# group: "Maintenance"
+# name: "Linux - 03 - Maintenance - Mise à Jour Système (YUM-DNF)"
+
+- description: |
+    Ce job effectue une mise à jour complète des paquets sur un système RHEL, CentOS ou Fedora.
+    Il utilise `dnf` si disponible, sinon il se rabat sur `yum`.
+
+    ATTENTION: Ce job peut installer de nouvelles versions de logiciels, ce qui pourrait
+    potentiellement interrompre des applications. À utiliser pendant les fenêtres de maintenance.
+
+    Prérequis:
+    - Le nœud d'exécution doit avoir les droits `sudo`.
+
+    Options:
+    - `auto_remove`: Exécuter `autoremove` après la mise à jour pour nettoyer les dépendances inutiles.
+  name: "Linux - 03 - Maintenance - Mise à Jour Système (YUM-DNF)"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Détection du gestionnaire de paquets (dnf ou yum).
+          if command -v dnf &> /dev/null; then
+            PKG_MANAGER=dnf
+          elif command -v yum &> /dev/null; then
+            PKG_MANAGER=yum
+          else
+            echo "Erreur: Ni dnf ni yum n'ont été trouvés sur ce système."
+            exit 1
+          fi
+
+          echo "Utilisation du gestionnaire de paquets: $PKG_MANAGER"
+
+          # Étape 1: Mettre à jour les paquets.
+          echo "Exécution de '$PKG_MANAGER update'..."
+          sudo $PKG_MANAGER update -y
+
+          # Étape 2: Nettoyer les dépendances (optionnel).
+          if [ "@option.auto_remove@" = "true" ]; then
+            echo "Exécution de '$PKG_MANAGER autoremove'..."
+            sudo $PKG_MANAGER autoremove -y
+          fi
+
+          echo "Mise à jour du système terminée avec succès."
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: auto_remove
+      description: "Si 'true', exécute 'autoremove' après la mise à jour."
+      required: true
+      value: "true"
+      values:
+        - "true"
+        - "false"
+  group: "Linux/Maintenance"
+  uuid: 456789ab-defg-hijk-lmno-pqrstuvwxyza

@@ -1,0 +1,36 @@
+# uuid: 2a2f5fe6-8b6a-4b7c-9b8e-de29c578c7d7
+# description: "Template de job pour appeler un webhook générique avec une charge utile (payload) JSON."
+# group: "Webhooks"
+# name: "Linux - 01 - Webhook - Appel Générique"
+
+- description: |
+    Ce job permet d'envoyer une requête POST à n'importe quel webhook.
+    Il est utile pour notifier des systèmes externes, déclencher des pipelines CI/CD, etc.
+
+    Options:
+    - `webhook_url`: L'URL de destination du webhook.
+    - `payload`: Le corps de la requête au format JSON.
+  name: "Linux - 01 - Webhook - Appel Générique"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Commande pour envoyer une requête POST à un webhook avec curl.
+          # L'URL et la charge utile (payload) sont fournies via des options de job.
+          # L'option -f (--fail) fait en sorte que curl retourne une erreur si le code de statut HTTP est 4xx ou 5xx.
+          curl -f -X POST -H "Content-Type: application/json" -d '@option.payload@' '@option.webhook_url@'
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: webhook_url
+      description: "L'URL complète du webhook à appeler."
+      required: true
+    - name: payload
+      description: "La charge utile (payload) au format JSON à envoyer."
+      required: true
+      value: '{ "text": "Notification depuis Rundeck." }'
+  # Le groupe permet de classer les jobs dans l'interface de Rundeck.
+  group: "Linux/Webhooks"
+  # Le nom est affiché dans l'interface de Rundeck.
+  # L'UUID est un identifiant unique pour le job.
+  uuid: 2a2f5fe6-8b6a-4b7c-9b8e-de29c578c7d7

@@ -1,0 +1,70 @@
+# uuid: d4e5f6a7-b8c9-0123-4567-890abcdef123
+# description: "Template de job pour vérifier la date d'expiration d'un certificat TLS/SSL."
+# group: "Security"
+# name: "Linux - 01 - Sécurité - Vérification Certificat TLS"
+
+- description: |
+    Ce job se connecte à un serveur sur un port spécifié et vérifie la date d'expiration du certificat TLS/SSL.
+    Il peut être utilisé pour surveiller les certificats et envoyer des alertes avant leur expiration.
+
+    Prérequis:
+    - L'outil `openssl` doit être installé sur le nœud d'exécution.
+
+    Options:
+    - `domain_name`: Le nom de domaine ou l'adresse IP du serveur à vérifier.
+    - `port`: Le port sur lequel le service TLS est exposé (généralement 443).
+    - `warn_days`: Le nombre de jours avant l'expiration pour déclencher un avertissement.
+  name: "Linux - 01 - Sécurité - Vérification Certificat TLS"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Message d'information.
+          echo "Vérification du certificat TLS pour @option.domain_name@:@option.port@"
+
+          # Récupération de la date d'expiration du certificat avec openssl.
+          # s_client se connecte au serveur, et x509 traite les informations du certificat.
+          EXPIRATION_DATE=$(openssl s_client -servername @option.domain_name@ -connect @option.domain_name@:@option.port@ 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+
+          # Vérification si la date a bien été récupérée.
+          if [ -z "$EXPIRATION_DATE" ]; then
+            echo "Erreur: Impossible de récupérer les informations du certificat pour @option.domain_name@."
+            exit 1
+          fi
+
+          echo "Le certificat expire le: $EXPIRATION_DATE"
+
+          # Conversion de la date d'expiration et de la date actuelle en secondes depuis l'époque (epoch).
+          EXPIRATION_EPOCH=$(date -d "$EXPIRATION_DATE" +%s)
+          NOW_EPOCH=$(date +%s)
+
+          # Calcul du nombre de jours restants.
+          DAYS_LEFT=$(( (EXPIRATION_EPOCH - NOW_EPOCH) / 86400 ))
+
+          # Comparaison avec le seuil d'avertissement.
+          if [ $DAYS_LEFT -le 0 ]; then
+            echo "ERREUR: Le certificat pour @option.domain_name@ a expiré !"
+            exit 1
+          elif [ $DAYS_LEFT -lt @option.warn_days@ ]; then
+            echo "AVERTISSEMENT: Le certificat expire dans $DAYS_LEFT jours (seuil: @option.warn_days@ jours)."
+            # Dans un vrai scénario, on pourrait ici déclencher une notification.
+          else
+            echo "SUCCÈS: Le certificat est valide pour encore $DAYS_LEFT jours."
+          fi
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: domain_name
+      description: "Le nom de domaine (ou IP) dont le certificat doit être vérifié."
+      required: true
+      value: "www.google.com"
+    - name: port
+      description: "Le port du service TLS (ex: 443 pour HTTPS)."
+      required: true
+      value: "443"
+    - name: warn_days
+      description: "Le nombre de jours avant expiration pour lever un avertissement."
+      required: true
+      value: "30"
+  group: "Linux/Security"
+  uuid: d4e5f6a7-b8c9-0123-4567-890abcdef123

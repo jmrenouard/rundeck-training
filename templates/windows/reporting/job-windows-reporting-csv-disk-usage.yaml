@@ -1,0 +1,64 @@
+# uuid: 56789abc-efgh-ijkl-mnop-qrstuvwxyza0
+# description: "Template de job pour générer un rapport d'utilisation disque au format CSV sur Windows."
+# group: "Reporting"
+# name: "Windows - 01 - Reporting - Rapport CSV Utilisation Disque"
+
+- description: |
+    Ce job utilise PowerShell pour générer un fichier CSV listant l'état des disques logiques.
+    Le rapport inclut le nom du disque, la taille totale, et l'espace libre.
+    Ce fichier peut être utilisé pour la surveillance ou l'analyse de capacité.
+
+    Prérequis:
+    - Le job doit s'exécuter sur un nœud Windows avec PowerShell.
+
+    Options:
+    - `output_path`: Le chemin (style Windows) où enregistrer le fichier CSV.
+  name: "Windows - 01 - Reporting - Rapport CSV Utilisation Disque"
+  loglevel: INFO
+  # 'node-executor' indique que l'étape de workflow est un script exécuté sur le nœud.
+  # 'script-interpreter' spécifie l'interpréteur, ici powershell.
+  # 'file-extension' est utilisé par Rundeck pour savoir quel type de fichier temporaire créer.
+  node-executor: "script"
+  script-interpreter: "powershell"
+  file-extension: "ps1"
+  sequence:
+    commands:
+      # L'attribut 'script' contient le code PowerShell à exécuter.
+      - script: |
+          # Définition du chemin de sortie du fichier.
+          $Output_File = "@option.output_path@\disk_usage_report_$(Get-Date -Format 'yyyyMMdd').csv"
+
+          # Message d'information.
+          Write-Host "Génération du rapport d'utilisation disque pour Windows..."
+          Write-Host "Fichier de sortie: $Output_File"
+
+          # Utilisation de Get-WmiObject pour récupérer les informations sur les disques logiques.
+          # -Filter "DriveType=3": Ne sélectionne que les disques durs locaux.
+          # Select-Object: Formate les propriétés pour une meilleure lisibilité.
+          # ConvertTo-Csv: Convertit l'objet PowerShell en format CSV.
+          # -NoTypeInformation: Supprime la ligne d'en-tête #TYPE de PowerShell.
+          Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType=3" |
+          Select-Object DeviceID,
+                        @{Name="Size (GB)";Expression={[math]::Round($_.Size/1GB, 2)}},
+                        @{Name="FreeSpace (GB)";Expression={[math]::Round($_.FreeSpace/1GB, 2)}},
+                        @{Name="PercentFree";Expression={"{0:P2}" -f ($_.FreeSpace / $_.Size)}} |
+          ConvertTo-Csv -NoTypeInformation |
+          Out-File -FilePath $Output_File -Encoding utf8
+
+          # Vérification et affichage du résultat.
+          if (Test-Path $Output_File) {
+              Write-Host "Rapport CSV généré avec succès:"
+              Get-Content $Output_File
+          } else {
+              Write-Host "Erreur: Le fichier de rapport n'a pas pu être généré."
+              exit 1
+          }
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: output_path
+      description: "Le répertoire de destination pour le rapport CSV (ex: C:\\Temp)."
+      required: true
+      value: "C:\\Temp"
+  group: "Windows/Reporting"
+  uuid: 56789abc-efgh-ijkl-mnop-qrstuvwxyza0
