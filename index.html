@@ -353,7 +353,7 @@
                                 } else if (step.type === 'jobref') {
                                     newStep.jobref = cleanup(step.details);
                                 } else {
-                                     newStep[step.type] = cleanup(step.details);
+                                    newStep[step.type] = cleanup(step.details);
                                 }
                                 return newStep;
                             }).filter(s => s.exec || s.script || s.jobref || s.scriptfile || s.scripturl)
