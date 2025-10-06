@@ -10,24 +10,6 @@
     <style>
         body { font-family: sans-serif; }
         [x-cloak] { display: none !important; }
-        .form-input {
-            @apply w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline;
-        }
-        .btn {
-            @apply px-4 py-2 font-bold text-white rounded-lg;
-        }
-        .btn-primary {
-            @apply bg-blue-500 hover:bg-blue-700;
-        }
-        .btn-secondary {
-            @apply bg-gray-500 hover:bg-gray-700;
-        }
-        .btn-danger {
-            @apply bg-red-500 hover:bg-red-700;
-        }
-        .card {
-            @apply bg-white shadow-md rounded-lg p-6 mb-6;
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -39,12 +21,12 @@
     </header>
 
     <!-- Section d'Importation -->
-    <div class="card">
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
         <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Importer depuis YAML</h2>
         <p class="text-gray-600 mb-4">Collez un fichier de ressources YAML existant pour commencer.</p>
-        <textarea x-model="yamlInput" class="form-input h-32" placeholder="Collez votre YAML ici..."></textarea>
+        <textarea x-model="yamlInput" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline h-32" placeholder="Collez votre YAML ici..."></textarea>
         <div class="mt-4 flex justify-end">
-            <button @click="importYaml" class="btn btn-secondary">
+            <button @click="importYaml" class="px-4 py-2 font-bold text-white rounded-lg bg-gray-500 hover:bg-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
                 Importer
             </button>
@@ -55,14 +37,14 @@
     <div>
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-semibold">Nœuds</h2>
-            <button @click="addNode" class="btn btn-primary">
+            <button @click="addNode" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                 Ajouter un Nœud
             </button>
         </div>
 
         <template x-for="node in nodes" :key="node.id">
-            <div class="card relative">
+            <div class="bg-white shadow-md rounded-lg p-6 mb-6 relative">
                 <button @click="removeNode(node.id)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Supprimer ce nœud">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
@@ -72,42 +54,42 @@
                     <div class="md:col-span-3 font-bold text-lg border-b pb-2 mb-2">Attributs Requis</div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600">Nodename</label>
-                        <input type="text" x-model="node.nodename" class="form-input" placeholder="node-01.example.com">
+                        <input type="text" x-model="node.nodename" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="node-01.example.com">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600">Hostname</label>
-                        <input type="text" x-model="node.hostname" class="form-input" placeholder="192.168.1.10">
+                        <input type="text" x-model="node.hostname" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="192.168.1.10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600">Username</label>
-                        <input type="text" x-model="node.username" class="form-input" placeholder="rundeck">
+                        <input type="text" x-model="node.username" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="rundeck">
                     </div>
 
                     <!-- Champs Optionnels -->
                     <div class="md:col-span-3 font-bold text-lg border-b pb-2 mb-2 mt-4">Attributs Optionnels</div>
                     <div class="md:col-span-3">
                         <label class="block text-sm font-medium text-gray-600">Description</label>
-                        <input type="text" x-model="node.description" class="form-input" placeholder="Serveur web de production">
+                        <input type="text" x-model="node.description" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Serveur web de production">
                     </div>
                     <div class="md:col-span-3">
                         <label class="block text-sm font-medium text-gray-600">Tags (séparés par virgule)</label>
-                        <input type="text" x-model="node.tags" class="form-input" placeholder="web,prod,ubuntu">
+                        <input type="text" x-model="node.tags" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="web,prod,ubuntu">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600">OS Family</label>
-                        <input type="text" x-model="node.osFamily" class="form-input" placeholder="unix">
+                        <input type="text" x-model="node.osFamily" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="unix">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600">OS Name</label>
-                        <input type="text" x-model="node.osName" class="form-input" placeholder="Linux">
+                        <input type="text" x-model="node.osName" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Linux">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600">OS Architecture</label>
-                        <input type="text" x-model="node.osArch" class="form-input" placeholder="x86_64">
+                        <input type="text" x-model="node.osArch" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="x86_64">
                     </div>
                      <div class="md:col-span-3">
                         <label class="block text-sm font-medium text-gray-600">SSH Key Storage Path</label>
-                        <input type="text" x-model="node['ssh-key-storage-path']" class="form-input" placeholder="keys/prod/my-key.pem">
+                        <input type="text" x-model="node['ssh-key-storage-path']" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="keys/prod/my-key.pem">
                     </div>
 
                     <!-- Attributs Personnalisés -->
@@ -116,10 +98,10 @@
                         <template x-for="attr in node.customAttributes" :key="attr.id">
                             <div class="grid grid-cols-11 gap-2 mb-2 items-center">
                                 <div class="col-span-5">
-                                    <input type="text" x-model="attr.key" class="form-input" placeholder="Clé (ex: app-port)">
+                                    <input type="text" x-model="attr.key" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Clé (ex: app-port)">
                                 </div>
                                 <div class="col-span-5">
-                                    <input type="text" x-model="attr.value" class="form-input" placeholder="Valeur (ex: 8080)">
+                                    <input type="text" x-model="attr.value" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Valeur (ex: 8080)">
                                 </div>
                                 <div class="col-span-1 text-center">
                                     <button @click="removeCustomAttribute(node.id, attr.id)" class="text-gray-400 hover:text-red-500" title="Supprimer cet attribut">
@@ -128,7 +110,7 @@
                                 </div>
                             </div>
                         </template>
-                        <button @click="addCustomAttribute(node.id)" class="btn btn-secondary mt-2">Ajouter un Attribut</button>
+                        <button @click="addCustomAttribute(node.id)" class="px-4 py-2 font-bold text-white rounded-lg bg-gray-500 hover:bg-gray-700 mt-2">Ajouter un Attribut</button>
                     </div>
                 </div>
             </div>
@@ -136,11 +118,11 @@
     </div>
 
     <!-- Section de Sortie -->
-    <div class="card mt-8">
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6 mt-8">
         <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Résultat YAML</h2>
         <div class="relative">
             <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto"><code x-text="yamlOutput"></code></pre>
-            <button @click="copyToClipboard" class="btn btn-primary absolute top-2 right-2">
+            <button @click="copyToClipboard" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700 absolute top-2 right-2">
                 <span x-text="copyButtonText"></span>
             </button>
         </div>
@@ -153,17 +135,20 @@
         return {
             nodes: [],
             yamlInput: '',
+            yamlOutput: '',
             copyButtonText: 'Copier',
             standardAttributes: ['nodename', 'hostname', 'username', 'description', 'tags', 'osFamily', 'osArch', 'osName', 'osVersion', 'ssh-key-storage-path'],
 
             init() {
                 this.$watch('nodes', () => this.generateYaml(), { deep: true });
-                this.addNode(); // Start with one empty node
+                this.addNode();
+                this.generateYaml();
             },
 
-            get yamlOutput() {
+            generateYaml() {
                 if (typeof jsyaml === 'undefined') {
-                    return "Chargement de la librairie js-yaml...";
+                    this.yamlOutput = "Chargement de la librairie js-yaml...";
+                    return;
                 }
                 try {
                     const resourceObject = this.nodes.reduce((acc, node) => {
@@ -190,13 +175,14 @@
                     }, {});
 
                     if (Object.keys(resourceObject).length === 0) {
-                        return "# Ajoutez un nœud et renseignez son 'nodename' pour commencer.";
+                        this.yamlOutput = "# Ajoutez un nœud et renseignez son 'nodename' pour commencer.";
+                        return;
                     }
 
-                    return jsyaml.dump(resourceObject, { indent: 2, lineWidth: -1 });
+                    this.yamlOutput = jsyaml.dump(resourceObject, { indent: 2, lineWidth: -1 });
                 } catch (e) {
                     console.error(e);
-                    return `Erreur de génération YAML: ${e.message}`;
+                    this.yamlOutput = `Erreur de génération YAML: ${e.message}`;
                 }
             },
 
@@ -276,6 +262,7 @@
                     });
                     this.nodes = newNodes;
                     this.yamlInput = '';
+                    this.generateYaml();
                 } catch (e) {
                     console.error(e);
                     alert(`Erreur lors de l'importation du YAML: ${e.message}`);
