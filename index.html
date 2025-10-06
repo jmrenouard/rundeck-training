@@ -358,8 +358,8 @@
                                 return newStep;
                             }).filter(s => s.exec || s.script || s.jobref || s.scriptfile || s.scripturl)
                         };
-                         if (rawJob.sequence.keepgoing) jobToRender.sequence.keepgoing = true;
-                         if (rawJob.sequence.strategy !== 'node-first') jobToRender.sequence.strategy = rawJob.sequence.strategy;
+                        if (rawJob.sequence.keepgoing) jobToRender.sequence.keepgoing = true;
+                        if (rawJob.sequence.strategy !== 'node-first') jobToRender.sequence.strategy = rawJob.sequence.strategy;
                     }
 
                     // Process options
