@@ -1,0 +1,68 @@
+# uuid: b2c3d4e5-f6a7-8901-2345-67890abcdef1
+# description: "Template de job pour sauvegarder une base de données PostgreSQL."
+# group: "Backup"
+# name: "Linux - 01 - PostgreSQL - Sauvegarde"
+
+- description: |
+    Ce job effectue une sauvegarde complète d'une base de données PostgreSQL spécifiée.
+    Le fichier de sauvegarde est compressé et horodaté.
+
+    Prérequis:
+    - Les outils clients PostgreSQL (`pg_dump`) doivent être installés sur le nœud d'exécution.
+    - L'accès à la base de données doit être configuré (ex: via le fichier .pgpass).
+
+    Options:
+    - `db_name`: Le nom de la base de données à sauvegarder.
+    - `db_user`: L'utilisateur pour se connecter à la base de données.
+    - `db_host`: L'hôte de la base de données (ex: localhost).
+    - `backup_dir`: Le répertoire où stocker le fichier de sauvegarde.
+  name: "Linux - 01 - PostgreSQL - Sauvegarde"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Définition du nom du fichier de sauvegarde avec la date et l'heure.
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          BACKUP_FILE="@option.backup_dir@/@option.db_name@-$TIMESTAMP.sql.gz"
+
+          # Affichage des informations de la sauvegarde.
+          echo "Démarrage de la sauvegarde de la base de données '@option.db_name@'..."
+          echo "Hôte: @option.db_host@"
+          echo "Utilisateur: @option.db_user@"
+          echo "Fichier de destination: $BACKUP_FILE"
+
+          # Commande de sauvegarde avec pg_dump.
+          # -U: Utilisateur
+          # -h: Hôte
+          # -d: Nom de la base de données
+          # Le résultat est compressé à la volée avec gzip pour économiser de l'espace.
+          pg_dump -U @option.db_user@ -h @option.db_host@ -d @option.db_name@ | gzip > $BACKUP_FILE
+
+          # Vérification de la création du fichier.
+          if [ -f "$BACKUP_FILE" ]; then
+            echo "Sauvegarde terminée avec succès."
+            ls -lh $BACKUP_FILE
+          else
+            echo "Erreur: Le fichier de sauvegarde n'a pas été créé."
+            exit 1
+          fi
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: db_name
+      description: "Le nom de la base de données à sauvegarder."
+      required: true
+    - name: db_user
+      description: "L'utilisateur de la base de données pour l'authentification."
+      required: true
+      value: "postgres"
+    - name: db_host
+      description: "L'adresse IP ou le nom d'hôte du serveur de base de données."
+      required: true
+      value: "localhost"
+    - name: backup_dir
+      description: "Le répertoire de destination pour le fichier de sauvegarde."
+      required: true
+      value: "/var/backups/postgres"
+  group: "Linux/Backup"
+  uuid: b2c3d4e5-f6a7-8901-2345-67890abcdef1

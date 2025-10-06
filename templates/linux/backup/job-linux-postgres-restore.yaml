@@ -1,0 +1,68 @@
+# uuid: c3d4e5f6-a7b8-9012-3456-7890abcdef12
+# description: "Template de job pour restaurer une base de données PostgreSQL depuis un fichier de sauvegarde."
+# group: "Backup"
+# name: "Linux - 02 - PostgreSQL - Restauration"
+
+- description: |
+    Ce job restaure une base de données PostgreSQL à partir d'un fichier de sauvegarde compressé (`.sql.gz`).
+    Il recrée la base de données avant d'importer les données.
+
+    ATTENTION: Ce job supprime et recrée la base de données cible. À utiliser avec une extrême prudence.
+
+    Prérequis:
+    - Les outils clients PostgreSQL (`psql`, `dropdb`, `createdb`) sont installés.
+    - L'accès à la base de données est configuré.
+
+    Options:
+    - `db_name`: Le nom de la base de données à restaurer.
+    - `db_user`: L'utilisateur pour se connecter à la base de données.
+    - `db_host`: L'hôte de la base de données.
+    - `backup_file_path`: Le chemin complet vers le fichier de sauvegarde (`.sql.gz`).
+  name: "Linux - 02 - PostgreSQL - Restauration"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Vérification de l'existence du fichier de sauvegarde.
+          if [ ! -f "@option.backup_file_path@" ]; then
+            echo "Erreur: Le fichier de sauvegarde '@option.backup_file_path@' n'existe pas."
+            exit 1
+          fi
+
+          echo "Démarrage de la restauration de la base de données '@option.db_name@'..."
+          echo "Fichier source: @option.backup_file_path@"
+
+          # Étape 1: Suppression de la base de données existante (si elle existe).
+          # L'option --if-exists évite une erreur si la base n'existe pas.
+          echo "Suppression de la base de données existante (si nécessaire)..."
+          dropdb --if-exists -U @option.db_user@ -h @option.db_host@ @option.db_name@
+
+          # Étape 2: Création d'une nouvelle base de données vide.
+          echo "Création d'une nouvelle base de données..."
+          createdb -U @option.db_user@ -h @option.db_host@ -O @option.db_user@ @option.db_name@
+
+          # Étape 3: Restauration des données depuis le fichier de sauvegarde.
+          # Le fichier est décompressé à la volée avec gunzip et passé à psql.
+          echo "Importation des données..."
+          gunzip -c @option.backup_file_path@ | psql -U @option.db_user@ -h @option.db_host@ -d @option.db_name@
+
+          echo "Restauration terminée avec succès."
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: db_name
+      description: "Le nom de la base de données cible pour la restauration."
+      required: true
+    - name: db_user
+      description: "L'utilisateur de la base de données pour l'authentification."
+      required: true
+      value: "postgres"
+    - name: db_host
+      description: "L'adresse IP ou le nom d'hôte du serveur de base de données."
+      required: true
+      value: "localhost"
+    - name: backup_file_path
+      description: "Le chemin complet vers le fichier de sauvegarde .sql.gz à restaurer."
+      required: true
+  group: "Linux/Backup"
+  uuid: c3d4e5f6-a7b8-9012-3456-7890abcdef12

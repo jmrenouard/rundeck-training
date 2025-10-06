@@ -1,0 +1,83 @@
+# uuid: 8c1d4a7e-9b3c-4f5e-8d7a-6c3b2a1f4e5d
+# description: "Template de job pour envoyer une notification à un canal Microsoft Teams."
+# group: "Webhooks"
+# name: "Linux - 03 - Webhook - Notification Teams"
+
+- description: |
+    Ce job envoie une "Adaptive Card" à un canal Microsoft Teams via un webhook.
+    C'est une méthode efficace pour notifier les équipes des événements importants de Rundeck.
+
+    Options:
+    - `teams_webhook_url`: L'URL du webhook entrant de Microsoft Teams.
+    - `message`: Le message principal de la notification.
+    - `status`: Le statut de la notification (affecte la couleur de la carte).
+    - `title`: Le titre de la carte de notification.
+  name: "Linux - 03 - Webhook - Notification Teams"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Détermination de la couleur en fonction du statut.
+          # Le format de couleur pour Teams est un code hexadécimal.
+          STATUS_LOWER=$(echo "@option.status@" | tr '[:upper:]' '[:lower:]')
+          COLOR="00FF00" # Vert pour Succès
+          if [ "$STATUS_LOWER" = "échec" ]; then
+            COLOR="FF0000" # Rouge pour Échec
+          elif [ "$STATUS_LOWER" = "info" ]; then
+            COLOR="FFFF00" # Jaune pour Info
+          fi
+
+          # Construction de la charge utile (payload) JSON pour Microsoft Teams.
+          # Le format est celui d'une "MessageCard".
+          PAYLOAD=$(cat <<EOF
+          {
+            "@type": "MessageCard",
+            "@context": "http://schema.org/extensions",
+            "themeColor": "$COLOR",
+            "summary": "Notification de Rundeck: @option.title@",
+            "sections": [{
+              "activityTitle": "@option.title@",
+              "activitySubtitle": "Notification depuis Rundeck",
+              "facts": [
+                { "name": "Projet", "value": "@project@" },
+                { "name": "Job", "value": "@job.name@" },
+                { "name": "Statut", "value": "@option.status@" },
+                { "name": "Exécuté par", "value": "@user.name@" }
+              ],
+              "text": "@option.message@"
+            }],
+            "potentialAction": [{
+              "@type": "OpenUri",
+              "name": "Voir le Job dans Rundeck",
+              "targets": [{ "os": "default", "uri": "$RD_JOB_URL" }]
+            }]
+          }
+          EOF
+          )
+
+          # Envoi de la requête au webhook Teams.
+          curl -f -X POST -H "Content-Type: application/json" --data "$PAYLOAD" "@option.teams_webhook_url@"
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: teams_webhook_url
+      description: "L'URL du connecteur de webhook entrant configuré dans Microsoft Teams."
+      required: true
+    - name: title
+      description: "Le titre de la carte de notification."
+      required: true
+      value: "Déploiement Terminé"
+    - name: message
+      description: "Le message détaillé à afficher dans la carte."
+      required: true
+      value: "Le déploiement de l'application v1.2.3 a été réalisé avec succès sur le serveur web."
+    - name: status
+      description: "Le statut de la notification pour la couleur de la carte."
+      required: true
+      value: "Succès"
+      values:
+        - "Succès"
+        - "Échec"
+        - "Info"
+  group: "Linux/Webhooks"
+  uuid: 8c1d4a7e-9b3c-4f5e-8d7a-6c3b2a1f4e5d

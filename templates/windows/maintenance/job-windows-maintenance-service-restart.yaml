@@ -1,0 +1,63 @@
+# uuid: 789abcde-fghij-klmno-pqrst-uvwxyz0123
+# description: "Template de job pour redémarrer un service sur un nœud Windows."
+# group: "Maintenance"
+# name: "Windows - 01 - Maintenance - Redémarrage de Service"
+
+- description: |
+    Ce job utilise PowerShell pour arrêter puis redémarrer un service Windows spécifié.
+    Il inclut des vérifications pour s'assurer que le service existe et qu'il est bien redémarré.
+
+    Prérequis:
+    - Le job doit s'exécuter sur un nœud Windows avec des permissions suffisantes pour gérer les services.
+
+    Options:
+    - `service_name`: Le nom du service à redémarrer (le vrai nom, pas le nom d'affichage).
+  name: "Windows - 01 - Maintenance - Redémarrage de Service"
+  loglevel: INFO
+  node-executor: "script"
+  script-interpreter: "powershell"
+  file-extension: "ps1"
+  sequence:
+    commands:
+      - script: |
+          # Nom du service cible.
+          $ServiceName = "@option.service_name@"
+
+          Write-Host "Tentative de redémarrage du service '$ServiceName'..."
+
+          # Vérification de l'existence du service.
+          $Service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+          if (-not $Service) {
+              Write-Host "Erreur: Le service '$ServiceName' n'a pas été trouvé."
+              exit 1
+          }
+
+          # Redémarrage du service.
+          # -Force: Tente de redémarrer même si le service a des dépendances.
+          # -PassThru: Renvoie un objet représentant le service après l'opération.
+          try {
+              Restart-Service -Name $ServiceName -Force -PassThru -ErrorAction Stop
+              Write-Host "Le service '$ServiceName' a été redémarré avec succès."
+
+              # Vérification finale de l'état.
+              $FinalStatus = (Get-Service -Name $ServiceName).Status
+              Write-Host "État final du service: $FinalStatus"
+              if ($FinalStatus -ne "Running") {
+                  Write-Host "Avertissement: Le service n'est pas dans l'état 'Running' après le redémarrage."
+                  exit 1
+              }
+          }
+          catch {
+              Write-Host "Erreur lors du redémarrage du service '$ServiceName'."
+              # Affiche l'erreur PowerShell complète.
+              Write-Host $_.Exception.Message
+              exit 1
+          }
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: service_name
+      description: "Le nom du service à redémarrer (ex: 'Spooler', 'wuauserv')."
+      required: true
+  group: "Windows/Maintenance"
+  uuid: 789abcde-fghij-klmno-pqrst-uvwxyz0123

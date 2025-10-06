@@ -1,0 +1,63 @@
+# uuid: 6789abcd-fghi-jklm-nopq-rstuvwxyza01
+# description: "Template de job pour générer un rapport sur l'état des services Windows au format CSV."
+# group: "Reporting"
+# name: "Windows - 02 - Reporting - Rapport CSV État des Services"
+
+- description: |
+    Ce job utilise PowerShell pour lister les services Windows et leur état actuel.
+    Le rapport généré au format CSV inclut le nom, le nom d'affichage, l'état et le type de démarrage du service.
+
+    Prérequis:
+    - Le job doit s'exécuter sur un nœud Windows avec PowerShell.
+
+    Options:
+    - `output_path`: Le chemin où enregistrer le fichier CSV.
+    - `service_status`: (Optionnel) Filtrer les services par état (ex: Running, Stopped).
+  name: "Windows - 02 - Reporting - Rapport CSV État des Services"
+  loglevel: INFO
+  node-executor: "script"
+  script-interpreter: "powershell"
+  file-extension: "ps1"
+  sequence:
+    commands:
+      - script: |
+          # Définition du chemin de sortie du fichier.
+          $Output_File = "@option.output_path@\services_status_report_$(Get-Date -Format 'yyyyMMdd').csv"
+
+          Write-Host "Génération du rapport sur l'état des services Windows..."
+          Write-Host "Fichier de sortie: $Output_File"
+
+          # Récupération des services.
+          $Services = Get-Service
+
+          # Filtrage optionnel par état.
+          $StatusFilter = "@option.service_status@"
+          if ($StatusFilter) {
+              $Services = $Services | Where-Object { $_.Status -eq $StatusFilter }
+          }
+
+          # Sélection des propriétés et conversion en CSV.
+          $Services | Select-Object Name, DisplayName, Status, StartType |
+          ConvertTo-Csv -NoTypeInformation |
+          Out-File -FilePath $Output_File -Encoding utf8
+
+          # Vérification et affichage du résultat.
+          if (Test-Path $Output_File) {
+              Write-Host "Rapport CSV généré avec succès:"
+              Get-Content $Output_File
+          } else {
+              Write-Host "Erreur: Le fichier de rapport n'a pas pu être généré."
+              exit 1
+          }
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: output_path
+      description: "Le répertoire de destination pour le rapport CSV (ex: C:\\Temp)."
+      required: true
+      value: "C:\\Temp"
+    - name: service_status
+      description: "(Optionnel) Filtrer les services par état (Running, Stopped)."
+      values: ["Running", "Stopped"]
+  group: "Windows/Reporting"
+  uuid: 6789abcd-fghi-jklm-nopq-rstuvwxyza01

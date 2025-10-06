@@ -1,0 +1,66 @@
+# uuid: 23456789-bcde-fghi-jklm-nopqrstuvwxy
+# description: "Template de job pour nettoyer les anciens fichiers dans un répertoire."
+# group: "Maintenance"
+# name: "Linux - 01 - Maintenance - Nettoyage des Anciens Fichiers"
+
+- description: |
+    Ce job recherche et supprime les fichiers plus anciens qu'un nombre de jours spécifié
+    dans un répertoire donné. Il est très utile pour la maintenance régulière des systèmes.
+
+    ATTENTION: La suppression est définitive. Assurez-vous que le chemin et l'âge sont corrects.
+
+    Prérequis:
+    - L'outil `find` doit être disponible.
+
+    Options:
+    - `target_directory`: Le répertoire à nettoyer.
+    - `age_days`: L'âge minimum (en jours) des fichiers à supprimer.
+    - `file_pattern`: (Optionnel) Un pattern pour ne cibler que certains fichiers (ex: *.log, *.tmp).
+  name: "Linux - 01 - Maintenance - Nettoyage des Anciens Fichiers"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Message d'information sur l'opération.
+          echo "Début du nettoyage des fichiers plus anciens que @option.age_days@ jours dans le répertoire '@option.target_directory@'."
+          if [ -n "@option.file_pattern@" ]; then
+            echo "Pattern de fichier cible: @option.file_pattern@"
+          fi
+
+          # Construction de la commande find.
+          # -type f: Ne cible que les fichiers.
+          # -mtime +X: Cible les fichiers modifiés il y a plus de X jours.
+          # -name "pattern": Cible les fichiers correspondant au pattern.
+          # -print: Affiche les fichiers trouvés avant de les supprimer.
+          # -delete: Supprime les fichiers trouvés.
+          FIND_CMD="find @option.target_directory@ -type f -mtime +@option.age_days@"
+
+          if [ -n "@option.file_pattern@" ]; then
+            FIND_CMD="$FIND_CMD -name '@option.file_pattern@'"
+          fi
+
+          # D'abord, on liste les fichiers qui seront supprimés (dry run).
+          echo "Les fichiers suivants seront supprimés :"
+          eval "$FIND_CMD -print"
+
+          # Ensuite, on exécute la suppression.
+          echo "Suppression en cours..."
+          eval "$FIND_CMD -delete"
+
+          echo "Nettoyage terminé."
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: target_directory
+      description: "Le chemin absolu du répertoire à nettoyer."
+      required: true
+      value: "/tmp"
+    - name: age_days
+      description: "Supprimer les fichiers plus anciens que ce nombre de jours."
+      required: true
+      value: "30"
+    - name: file_pattern
+      description: "(Optionnel) Pattern de nom de fichier à cibler (ex: '*.log')."
+      value: "*.log"
+  group: "Linux/Maintenance"
+  uuid: 23456789-bcde-fghi-jklm-nopqrstuvwxy

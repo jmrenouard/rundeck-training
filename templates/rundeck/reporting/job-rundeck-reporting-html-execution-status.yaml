@@ -1,0 +1,154 @@
+# uuid: 12345678-abcd-efgh-ijkl-mnopqrstuvwx
+# description: "Template de job pour générer un rapport HTML sur l'état des exécutions des jobs Rundeck."
+# group: "Reporting"
+# name: "Rundeck - 01 - Reporting - Rapport HTML sur l'État des Exécutions"
+
+- description: |
+    Ce job interroge l'API de Rundeck pour récupérer l'état des exécutions récentes d'un projet
+    et génère un rapport HTML élégant et facile à lire.
+    Le rapport peut être envoyé par email ou publié sur un serveur web interne.
+
+    Prérequis:
+    - `curl` et `jq` doivent être installés sur le nœud d'exécution.
+    - Un token d'API Rundeck avec les permissions de lecture sur les exécutions est nécessaire.
+
+    Options:
+    - `project_name`: Le nom du projet Rundeck à analyser.
+    - `api_token`: Le token d'API pour s'authentifier auprès de Rundeck.
+    - `rundeck_url`: L'URL de base de l'instance Rundeck (ex: http://localhost:4440).
+    - `output_path`: Le chemin où enregistrer le rapport HTML.
+    - `status_filter`: (Optionnel) Filtrer les exécutions par statut (ex: succeeded, failed, running).
+    - `recent_filter`: (Optionnel) Filtrer les exécutions des X dernières heures (ex: '1h', '24h').
+  name: "Rundeck - 01 - Reporting - Rapport HTML sur l'État des Exécutions"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Nom du fichier de sortie.
+          OUTPUT_FILE="@option.output_path@/rundeck_execution_report_$(date +%Y%m%d-%H%M).html"
+
+          echo "Génération du rapport d'exécution pour le projet '@option.project_name@'..."
+          echo "Fichier de sortie: $OUTPUT_FILE"
+
+          # Construction de l'URL de l'API
+          API_URL="@option.rundeck_url@/api/41/project/@option.project_name@/executions?authtoken=@option.api_token@"
+
+          # Ajout des filtres optionnels
+          if [ -n "@option.status_filter@" ]; then
+            API_URL="$API_URL&statusFilter=@option.status_filter@"
+          fi
+          if [ -n "@option.recent_filter@" ]; then
+            API_URL="$API_URL&recentFilter=@option.recent_filter@"
+          fi
+
+          echo "Appel de l'API Rundeck: $API_URL"
+
+          # Appel à l'API et stockage de la réponse JSON
+          API_RESPONSE=$(curl -s -H "Accept: application/json" "$API_URL")
+
+          # Vérification si la réponse est vide ou contient une erreur
+          if [ -z "$API_RESPONSE" ] || echo "$API_RESPONSE" | jq -e '.error'; then
+              echo "Erreur lors de l'appel à l'API Rundeck ou aucune exécution trouvée."
+              echo "$API_RESPONSE"
+              exit 1
+          fi
+
+          # Génération de l'en-tête HTML
+          cat > $OUTPUT_FILE <<EOF
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <title>Rapport d'Exécution Rundeck - Projet @option.project_name@</title>
+            <style>
+              body { font-family: sans-serif; margin: 2em; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              .status-succeeded { background-color: #d4edda; color: #155724; }
+              .status-failed { background-color: #f8d7da; color: #721c24; }
+              .status-running { background-color: #cce5ff; color: #004085; }
+              .status-aborted { background-color: #fff3cd; color: #856404; }
+              h1 { color: #333; }
+            </style>
+          </head>
+          <body>
+            <h1>Rapport d'Exécution Rundeck</h1>
+            <p><strong>Projet:</strong> @option.project_name@</p>
+            <p><strong>Généré le:</strong> $(date +"%Y-%m-%d %H:%M:%S")</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Job</th>
+                  <th>Statut</th>
+                  <th>Utilisateur</th>
+                  <th>Début</th>
+                  <th>Fin</th>
+                  <th>Lien</th>
+                </tr>
+              </thead>
+              <tbody>
+          EOF
+
+          # Traitement du JSON et ajout des lignes au tableau HTML
+          echo "$API_RESPONSE" | jq -c '.executions[]' | while read execution; do
+            ID=$(echo "$execution" | jq -r '.id')
+            JOB_NAME=$(echo "$execution" | jq -r '.job.name // "Ad-hoc"')
+            GROUP_PATH=$(echo "$execution" | jq -r '.job.group // ""')
+            STATUS=$(echo "$execution" | jq -r '.status')
+            USER=$(echo "$execution" | jq -r '.user')
+            START_TIME=$(echo "$execution" | jq -r '.["date-started"].date')
+            END_TIME=$(echo "$execution" | jq -r '.["date-ended"].date // "N/A"')
+            LINK=$(echo "$execution" | jq -r '.permalink')
+
+            # Formatage du nom complet du job
+            FULL_JOB_NAME="$GROUP_PATH/$JOB_NAME"
+
+            cat >> $OUTPUT_FILE <<EOF
+                <tr>
+                  <td>$ID</td>
+                  <td>$FULL_JOB_NAME</td>
+                  <td class="status-$STATUS">$STATUS</td>
+                  <td>$USER</td>
+                  <td>$START_TIME</td>
+                  <td>$END_TIME</td>
+                  <td><a href="$LINK">Voir</a></td>
+                </tr>
+          EOF
+          done
+
+          # Génération du pied de page HTML
+          cat >> $OUTPUT_FILE <<EOF
+              </tbody>
+            </table>
+          </body>
+          </html>
+          EOF
+
+          echo "Rapport HTML généré avec succès dans $OUTPUT_FILE"
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: project_name
+      description: "Le nom du projet Rundeck pour lequel générer le rapport."
+      required: true
+    - name: api_token
+      description: "Le token d'API Rundeck avec les permissions nécessaires."
+      required: true
+    - name: rundeck_url
+      description: "L'URL de base de votre instance Rundeck (ex: http://rundeck.example.com)."
+      required: true
+      value: "http://localhost:4440"
+    - name: output_path
+      description: "Le répertoire de destination pour le rapport HTML."
+      required: true
+      value: "/tmp"
+    - name: status_filter
+      description: "(Optionnel) Filtrer par statut (succeeded, failed, running, aborted)."
+      values: ["succeeded", "failed", "running", "aborted"]
+    - name: recent_filter
+      description: "(Optionnel) Période de temps pour les exécutions récentes (ex: 1h, 2d, 3w)."
+      value: "24h"
+  group: "Rundeck/Reporting"
+  uuid: 12345678-abcd-efgh-ijkl-mnopqrstuvwx

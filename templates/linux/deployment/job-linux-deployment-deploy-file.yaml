@@ -1,0 +1,70 @@
+# uuid: 9abcdefg-hijkl-mnopq-rstuv-wxyz012345
+# description: "Template de job pour télécharger et déployer un fichier depuis une URL."
+# group: "Deployment"
+# name: "Linux - 01 - Déploiement - Déployer Fichier depuis URL"
+
+- description: |
+    Ce job télécharge un fichier depuis une URL spécifiée et le place dans un répertoire de destination.
+    Il peut également définir les permissions du fichier et un propriétaire/groupe.
+
+    Prérequis:
+    - `curl` ou `wget` doit être installé sur le nœud.
+    - Les permissions nécessaires pour écrire dans le répertoire de destination.
+
+    Options:
+    - `file_url`: L'URL complète du fichier à télécharger.
+    - `destination_path`: Le chemin complet de destination (incluant le nom du fichier).
+    - `file_permissions`: (Optionnel) Les permissions à appliquer au fichier (ex: 755, 644).
+    - `file_owner`: (Optionnel) Le propriétaire du fichier (ex: 'user:group').
+  name: "Linux - 01 - Déploiement - Déployer Fichier depuis URL"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Message d'information.
+          echo "Téléchargement du fichier depuis '@option.file_url@'..."
+          echo "Destination: '@option.destination_path@'"
+
+          # Téléchargement du fichier avec curl.
+          # -L: suit les redirections.
+          # -o: spécifie le fichier de sortie.
+          # -f: échoue silencieusement sur les erreurs serveur.
+          curl -f -L -o @option.destination_path@ @option.file_url@
+
+          # Vérification du succès du téléchargement.
+          if [ $? -ne 0 ]; then
+            echo "Erreur: Le téléchargement a échoué."
+            exit 1
+          fi
+
+          echo "Fichier téléchargé avec succès."
+
+          # Application des permissions (optionnel).
+          if [ -n "@option.file_permissions@" ]; then
+            echo "Application des permissions: @option.file_permissions@"
+            chmod @option.file_permissions@ @option.destination_path@
+          fi
+
+          # Application du propriétaire (optionnel).
+          if [ -n "@option.file_owner@" ]; then
+            echo "Application du propriétaire: @option.file_owner@"
+            chown @option.file_owner@ @option.destination_path@
+          fi
+
+          echo "Déploiement du fichier terminé."
+          ls -l @option.destination_path@
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: file_url
+      description: "L'URL du fichier à télécharger (HTTP, HTTPS, FTP)."
+      required: true
+    - name: destination_path
+      description: "Le chemin de destination complet, incluant le nom du fichier (ex: /tmp/myfile.txt)."
+      required: true
+    - name: file_permissions
+      description: "(Optionnel) Permissions octales pour le fichier (ex: 755)."
+    - name: file_owner
+      description: "(Optionnel) Propriétaire et groupe pour le fichier (format: user ou user:group)."
+  group: "Linux/Deployment"
+  uuid: 9abcdefg-hijkl-mnopq-rstuv-wxyz012345

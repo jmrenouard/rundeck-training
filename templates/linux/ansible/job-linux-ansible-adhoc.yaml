@@ -1,0 +1,46 @@
+# uuid: a1b2c3d4-e5f6-7890-1234-567890abcdef
+# description: "Template de job pour exécuter une commande Ansible ad-hoc."
+# group: "Ansible"
+# name: "Linux - 02 - Ansible - Commande Ad-Hoc"
+
+- description: |
+    Ce job exécute une commande Ansible ad-hoc sur un groupe de machines cibles.
+    Idéal pour des tâches rapides comme vérifier la connectivité, l'état d'un service, ou exécuter une commande simple.
+
+    Prérequis:
+    - Ansible doit être installé sur le nœud d'exécution.
+    - Un fichier d'inventaire doit être accessible.
+
+    Options:
+    - `target_hosts`: Le groupe de machines de l'inventaire à cibler (ex: webservers, all).
+    - `ansible_module`: Le module Ansible à utiliser (ex: ping, command, service).
+    - `module_args`: Les arguments à passer au module (ex: 'name=httpd state=restarted').
+    - `inventory_path`: Le chemin vers le fichier d'inventaire.
+  name: "Linux - 02 - Ansible - Commande Ad-Hoc"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Construction et exécution de la commande Ansible ad-hoc.
+          # La commande est simple et directe.
+          echo "Exécution de la commande ad-hoc sur '@option.target_hosts@'..."
+          ansible @option.target_hosts@ -i @option.inventory_path@ -m @option.ansible_module@ -a '@option.module_args@'
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: target_hosts
+      description: "Le groupe de machines ou le pattern de l'inventaire à cibler."
+      required: true
+      value: "all"
+    - name: ansible_module
+      description: "Le module Ansible à utiliser pour la commande."
+      required: true
+      value: "ping"
+    - name: module_args
+      description: "(Optionnel) Les arguments à passer au module Ansible."
+    - name: inventory_path
+      description: "Le chemin vers le fichier d'inventaire Ansible."
+      required: true
+      value: "/etc/ansible/hosts"
+  group: "Linux/Ansible"
+  uuid: a1b2c3d4-e5f6-7890-1234-567890abcdef

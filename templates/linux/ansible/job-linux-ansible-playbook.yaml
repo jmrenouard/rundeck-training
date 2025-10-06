@@ -1,0 +1,71 @@
+# uuid: f4d8a1b2-2c6e-4b8e-9f3d-5c1a7b0d9e8f
+# description: "Template de job pour exécuter un playbook Ansible depuis un dépôt Git."
+# group: "Ansible"
+# name: "Linux - 01 - Ansible - Exécution de Playbook"
+
+- description: |
+    Ce job clone un dépôt Git contenant des playbooks Ansible, puis exécute un playbook spécifié.
+    Il est conçu pour être le point d'entrée de vos déploiements et configurations automatisés avec Ansible.
+
+    Prérequis:
+    - Ansible doit être installé sur le nœud Rundeck (ou sur un nœud d'exécution dédié).
+    - Git doit être installé.
+
+    Options:
+    - `git_repo_url`: L'URL du dépôt Git contenant les playbooks.
+    - `git_branch`: La branche à utiliser.
+    - `playbook_path`: Le chemin vers le fichier du playbook dans le dépôt.
+    - `inventory_path`: Le chemin vers le fichier d'inventaire.
+    - `extra_vars`: Variables supplémentaires à passer à Ansible (format: key=value,key2=value2).
+  name: "Linux - 01 - Ansible - Exécution de Playbook"
+  loglevel: INFO
+  sequence:
+    commands:
+      - exec: |
+          # Création d'un répertoire de travail temporaire et unique.
+          WORKDIR=$(mktemp -d)
+          echo "Répertoire de travail : $WORKDIR"
+          cd $WORKDIR
+
+          # Clonage du dépôt Git.
+          echo "Clonage du dépôt @option.git_repo_url@ (branche @option.git_branch@)..."
+          git clone --branch @option.git_branch@ @option.git_repo_url@ .
+
+          # Construction de la commande Ansible.
+          ANSIBLE_CMD="ansible-playbook -i @option.inventory_path@ @option.playbook_path@"
+
+          # Ajout des variables supplémentaires si elles sont fournies.
+          if [ -n "@option.extra_vars@" ]; then
+            ANSIBLE_CMD="$ANSIBLE_CMD --extra-vars '@option.extra_vars@'"
+          fi
+
+          # Exécution du playbook Ansible.
+          echo "Exécution de la commande : $ANSIBLE_CMD"
+          eval $ANSIBLE_CMD
+
+          # Nettoyage du répertoire de travail.
+          echo "Nettoyage du répertoire de travail..."
+          rm -rf $WORKDIR
+    keepgoing: false
+    strategy: node-first
+  options:
+    - name: git_repo_url
+      description: "L'URL HTTPS ou SSH du dépôt Git contenant les playbooks."
+      required: true
+      value: "https://github.com/ansible/ansible-examples.git"
+    - name: git_branch
+      description: "La branche du dépôt à utiliser."
+      required: true
+      value: "master"
+    - name: playbook_path
+      description: "Le chemin relatif vers le playbook à exécuter (ex: lamp_simple/site.yml)."
+      required: true
+      value: "lamp_simple/site.yml"
+    - name: inventory_path
+      description: "Le chemin relatif vers le fichier d'inventaire (ex: lamp_simple/hosts)."
+      required: true
+      value: "lamp_simple/hosts"
+    - name: extra_vars
+      description: "(Optionnel) Variables supplémentaires à passer à la commande ansible-playbook (ex: 'user=root port=22')."
+  group: "Linux/Ansible"
+  uuid: f4d8a1b2-2c6e-4b8e-9f3d-5c1a7b0d9e8f
