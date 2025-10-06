@@ -49,7 +49,7 @@
             "potentialAction": [{
               "@type": "OpenUri",
               "name": "Voir le Job dans Rundeck",
-              "targets": [{ "os": "default", "uri": "\$RD_JOB_URL" }]
+              "targets": [{ "os": "default", "uri": "$RD_JOB_URL" }]
             }]
           }
           EOF
