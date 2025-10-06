@@ -14,120 +14,217 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-<div class="container mx-auto p-8" x-data="rundeckResourceGenerator()" x-cloak>
+<div class="container mx-auto p-4 sm:p-8" x-data="rundeckResourceGenerator()" x-cloak>
     <header class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-700">Générateur de Fichier de Ressources Rundeck</h1>
-        <p class="text-lg text-gray-500 mt-2">Créez et configurez vos nœuds Rundeck facilement.</p>
+        <div class="flex justify-center items-center mb-4">
+            <button @click="setLang('fr')" :class="{ 'bg-blue-500 text-white': lang === 'fr', 'bg-gray-200': lang !== 'fr' }" class="px-4 py-2 rounded-l-lg">FR</button>
+            <button @click="setLang('en')" :class="{ 'bg-blue-500 text-white': lang === 'en', 'bg-gray-200': lang !== 'en' }" class="px-4 py-2 rounded-r-lg">EN</button>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-700" x-text="t('title')"></h1>
+        <p class="text-lg text-gray-500 mt-2" x-text="t('subtitle')"></p>
     </header>
 
-    <!-- Section d'Importation -->
-    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Importer depuis YAML</h2>
-        <p class="text-gray-600 mb-4">Collez un fichier de ressources YAML existant pour commencer.</p>
-        <textarea x-model="yamlInput" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline h-32" placeholder="Collez votre YAML ici..."></textarea>
-        <div class="mt-4 flex justify-end">
-            <button @click="importYaml" class="px-4 py-2 font-bold text-white rounded-lg bg-gray-500 hover:bg-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
-                Importer
-            </button>
-        </div>
-    </div>
+    <div class="flex flex-col lg:flex-row gap-8">
 
-    <!-- Section des Nœuds -->
-    <div>
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-semibold">Nœuds</h2>
-            <button @click="addNode" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                Ajouter un Nœud
-            </button>
-        </div>
-
-        <template x-for="node in nodes" :key="node.id">
-            <div class="bg-white shadow-md rounded-lg p-6 mb-6 relative">
-                <button @click="removeNode(node.id)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500" title="Supprimer ce nœud">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Champs Requis -->
-                    <div class="md:col-span-3 font-bold text-lg border-b pb-2 mb-2">Attributs Requis</div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">Nodename</label>
-                        <input type="text" x-model="node.nodename" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="node-01.example.com">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">Hostname</label>
-                        <input type="text" x-model="node.hostname" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="192.168.1.10">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">Username</label>
-                        <input type="text" x-model="node.username" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="rundeck">
-                    </div>
-
-                    <!-- Champs Optionnels -->
-                    <div class="md:col-span-3 font-bold text-lg border-b pb-2 mb-2 mt-4">Attributs Optionnels</div>
-                    <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-gray-600">Description</label>
-                        <input type="text" x-model="node.description" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Serveur web de production">
-                    </div>
-                    <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-gray-600">Tags (séparés par virgule)</label>
-                        <input type="text" x-model="node.tags" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="web,prod,ubuntu">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">OS Family</label>
-                        <input type="text" x-model="node.osFamily" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="unix">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">OS Name</label>
-                        <input type="text" x-model="node.osName" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Linux">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">OS Architecture</label>
-                        <input type="text" x-model="node.osArch" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="x86_64">
-                    </div>
-                     <div class="md:col-span-3">
-                        <label class="block text-sm font-medium text-gray-600">SSH Key Storage Path</label>
-                        <input type="text" x-model="node['ssh-key-storage-path']" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="keys/prod/my-key.pem">
-                    </div>
-
-                    <!-- Attributs Personnalisés -->
-                    <div class="md:col-span-3">
-                        <h3 class="font-bold text-lg border-b pb-2 mb-2 mt-4">Attributs Personnalisés</h3>
-                        <template x-for="attr in node.customAttributes" :key="attr.id">
-                            <div class="grid grid-cols-11 gap-2 mb-2 items-center">
-                                <div class="col-span-5">
-                                    <input type="text" x-model="attr.key" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Clé (ex: app-port)">
-                                </div>
-                                <div class="col-span-5">
-                                    <input type="text" x-model="attr.value" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Valeur (ex: 8080)">
-                                </div>
-                                <div class="col-span-1 text-center">
-                                    <button @click="removeCustomAttribute(node.id, attr.id)" class="text-gray-400 hover:text-red-500" title="Supprimer cet attribut">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
-                        <button @click="addCustomAttribute(node.id)" class="px-4 py-2 font-bold text-white rounded-lg bg-gray-500 hover:bg-gray-700 mt-2">Ajouter un Attribut</button>
-                    </div>
+        <!-- Colonne de Gauche: Formulaires -->
+        <div class="lg:w-1/2">
+            <!-- Section d'Importation -->
+            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2" x-text="t('import_title')"></h2>
+                <p class="text-gray-600 mb-4" x-text="t('import_desc')"></p>
+                <textarea x-model="yamlInput" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline h-32" :placeholder="t('import_placeholder')"></textarea>
+                <div class="mt-4 flex justify-end">
+                    <button @click="importYaml" class="px-4 py-2 font-bold text-white rounded-lg bg-gray-500 hover:bg-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                        <span x-text="t('import_button')"></span>
+                    </button>
                 </div>
             </div>
-        </template>
-    </div>
 
-    <!-- Section de Sortie -->
-    <div class="bg-white shadow-md rounded-lg p-6 mb-6 mt-8">
-        <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Résultat YAML</h2>
-        <div class="relative">
-            <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto"><code x-text="yamlOutput"></code></pre>
-            <button @click="copyToClipboard" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700 absolute top-2 right-2">
-                <span x-text="copyButtonText"></span>
-            </button>
+            <!-- Section des Nœuds -->
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold" x-text="t('nodes_title')"></h2>
+                    <button @click="addNode" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        <span x-text="t('add_node_button')"></span>
+                    </button>
+                </div>
+
+                <template x-for="node in nodes" :key="node.id">
+                    <div class="bg-white shadow-md rounded-lg p-6 mb-6 relative">
+                        <button @click="removeNode(node.id)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500" :title="t('remove_node_title')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Champs Requis -->
+                            <div class="md:col-span-2 font-bold text-lg border-b pb-2 mb-2" x-text="t('required_attributes')"></div>
+                            <div>
+                                <div class="flex items-center">
+                                    <label :for="'nodename-' + node.id" class="block text-sm font-medium text-gray-600"><span x-text="t('nodename_label')"></span><span class="text-red-500">*</span></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('nodename_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <input :id="'nodename-' + node.id" type="text" x-model="node.nodename" @input="if(node.hostname_is_pristine) node.hostname = node.nodename" required class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline invalid:border-red-500" :placeholder="t('nodename_placeholder')">
+                            </div>
+                            <div>
+                                <div class="flex items-center">
+                                    <label :for="'hostname-' + node.id" class="block text-sm font-medium text-gray-600"><span x-text="t('hostname_label')"></span><span class="text-red-500">*</span></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('hostname_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <input :id="'hostname-' + node.id" type="text" x-model="node.hostname" @input="node.hostname_is_pristine = false" required class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline invalid:border-red-500" :placeholder="t('hostname_placeholder')">
+                            </div>
+                            <div class="md:col-span-2">
+                                <div class="flex items-center">
+                                    <label :for="'username-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('username_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('username_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <input :id="'username-' + node.id" type="text" x-model="node.username" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" :placeholder="t('username_placeholder')">
+                            </div>
+
+                            <!-- Champs Optionnels -->
+                            <div class="md:col-span-2 font-bold text-lg border-b pb-2 mb-2 mt-4" x-text="t('optional_attributes')"></div>
+                            <div class="md:col-span-2">
+                                <div class="flex items-center">
+                                    <label :for="'description-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('description_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('description_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <input :id="'description-' + node.id" type="text" x-model="node.description" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" :placeholder="t('description_placeholder')">
+                            </div>
+                            <div class="md:col-span-2">
+                                <div class="flex items-center">
+                                    <label :for="'tags-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('tags_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('tags_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <input :id="'tags-' + node.id" type="text" x-model="node.tags" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" :placeholder="t('tags_placeholder')">
+                            </div>
+                            <div>
+                                <div class="flex items-center">
+                                    <label :for="'osFamily-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('os_family_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('os_family_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <select :id="'osFamily-' + node.id" x-model="node.osFamily" @change="node.osName = ''" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline">
+                                    <option value="" x-text="t('select_default')"></option>
+                                    <template x-for="family in osData.families" :key="family">
+                                        <option :value="family" x-text="family"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="flex items-center">
+                                    <label :for="'osName-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('os_name_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('os_name_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <select :id="'osName-' + node.id" x-model="node.osName" :disabled="!node.osFamily" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline disabled:bg-gray-200">
+                                    <option value="" x-text="t('select_default')"></option>
+                                    <template x-if="node.osFamily">
+                                        <template x-for="name in osData.names[node.osFamily]" :key="name">
+                                            <option :value="name" x-text="name"></option>
+                                        </template>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="flex items-center">
+                                    <label :for="'osArch-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('os_arch_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('os_arch_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <select :id="'osArch-' + node.id" x-model="node.osArch" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline">
+                                    <option value="" x-text="t('select_default')"></option>
+                                    <template x-for="arch in osData.architectures" :key="arch">
+                                        <option :value="arch" x-text="arch"></option>
+                                    </template>
+                                </select>
+                            </div>
+                             <div class="md:col-span-2">
+                                <div class="flex items-center">
+                                    <label :for="'ssh_key_path-' + node.id" class="block text-sm font-medium text-gray-600" x-text="t('ssh_key_path_label')"></label>
+                                    <div class="relative flex items-center ml-2 group">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('ssh_key_path_tooltip')"></div>
+                                    </div>
+                                </div>
+                                <input :id="'ssh_key_path-' + node.id" type="text" x-model="node['ssh-key-storage-path']" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" :placeholder="t('ssh_key_path_placeholder')">
+                            </div>
+
+                            <!-- Attributs Personnalisés -->
+                            <div class="md:col-span-2">
+                                <h3 class="font-bold text-lg border-b pb-2 mb-2 mt-4" x-text="t('custom_attributes_title')"></h3>
+                                <template x-for="attr in node.customAttributes" :key="attr.id">
+                                    <div class="grid grid-cols-11 gap-2 mb-2 items-center">
+                                        <div class="col-span-5">
+                                            <div class="flex items-center">
+                                                <input type="text" x-model="attr.key" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" :placeholder="t('custom_key_placeholder')">
+                                                <div class="relative flex items-center ml-2 group">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('custom_key_tooltip')"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-span-5">
+                                            <div class="flex items-center">
+                                                <input type="text" x-model="attr.value" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" :placeholder="t('custom_value_placeholder')">
+                                                <div class="relative flex items-center ml-2 group">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" x-text="t('custom_value_tooltip')"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-span-1 text-center">
+                                            <button @click="removeCustomAttribute(node.id, attr.id)" class="text-gray-400 hover:text-red-500" :title="t('remove_attribute_title')">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <button @click="addCustomAttribute(node.id)" class="px-4 py-2 font-bold text-white rounded-lg bg-gray-500 hover:bg-gray-700 mt-2">
+                                    <span x-text="t('add_attribute_button')"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
         </div>
-    </div>
 
+        <!-- Colonne de Droite: YAML -->
+        <div class="lg:w-1/2">
+            <div class="bg-white shadow-md rounded-lg p-6 sticky top-8">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2" x-text="t('yaml_output_title')"></h2>
+                <div class="relative">
+                    <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto h-[600px]"><code x-text="yamlOutput"></code></pre>
+                    <button @click="copyToClipboard" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700 absolute top-4 right-4">
+                        <span x-text="copyButtonText"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
@@ -137,17 +234,153 @@
             yamlInput: '',
             yamlOutput: '',
             copyButtonText: 'Copier',
+            lang: 'fr',
+            translations: {
+                fr: {
+                    title: 'Générateur de Fichier de Ressources Rundeck',
+                    subtitle: 'Créez et configurez vos nœuds Rundeck facilement.',
+                    import_title: 'Importer depuis YAML',
+                    import_desc: 'Collez un fichier de ressources YAML existant pour commencer.',
+                    import_placeholder: 'Collez votre YAML ici...',
+                    import_button: 'Importer',
+                    nodes_title: 'Nœuds',
+                    add_node_button: 'Ajouter un Nœud',
+                    remove_node_title: 'Supprimer ce nœud',
+                    required_attributes: 'Attributs Requis',
+                    optional_attributes: 'Attributs Optionnels',
+                    nodename_label: 'Nodename',
+                    hostname_label: 'Hostname',
+                    username_label: 'Username',
+                    description_label: 'Description',
+                    tags_label: 'Tags (séparés par virgule)',
+                    os_family_label: 'OS Family',
+                    os_name_label: 'OS Name',
+                    os_arch_label: 'OS Architecture',
+                    ssh_key_path_label: 'SSH Key Storage Path',
+                    custom_attributes_title: 'Attributs Personnalisés',
+                    custom_key_placeholder: 'Clé (ex: app-port)',
+                    custom_value_placeholder: 'Valeur (ex: 8080)',
+                    remove_attribute_title: 'Supprimer cet attribut',
+                    add_attribute_button: 'Ajouter un Attribut',
+                    yaml_output_title: 'Résultat YAML',
+                    copy: 'Copier',
+                    copied: 'Copié !',
+                    yaml_loading: "Chargement de la librairie js-yaml...",
+                    yaml_start_message: "# Ajoutez un nœud et renseignez son 'nodename' pour commencer.",
+                    yaml_generation_error: 'Erreur de génération YAML: ',
+                    yaml_import_error: "Erreur lors de l'importation du YAML: ",
+                    yaml_lib_not_loaded: "La librairie de parsing YAML n'est pas encore chargée. Veuillez réessayer dans un instant.",
+                    import_area_empty: "La zone d'importation est vide.",
+                    yaml_must_be_object: "Le YAML doit être un objet (une carte de nœuds).",
+                    copy_error: "La copie a échoué. Veuillez utiliser la copie manuelle.",
+                    nodename_tooltip: "Le nom unique du nœud dans Rundeck. C'est la clé principale dans le YAML.",
+                    hostname_tooltip: "L'adresse IP ou le nom d'hôte DNS auquel Rundeck se connectera.",
+                    username_tooltip: "Le nom d'utilisateur pour se connecter au nœud (SSH, WinRM).",
+                    description_tooltip: "Une brève description du rôle ou de la fonction du nœud.",
+                    tags_tooltip: "Les tags permettent de filtrer les nœuds lors de la création de jobs.",
+                    os_family_tooltip: "La famille du système d'exploitation (ex: unix, windows).",
+                    os_name_tooltip: "Le nom du système d'exploitation (ex: Linux, Windows Server).",
+                    os_arch_tooltip: "L'architecture du système d'exploitation (ex: x86_64, amd64).",
+                    ssh_key_path_tooltip: "Le chemin vers la clé SSH privée dans le Key Storage de Rundeck.",
+                    custom_key_tooltip: "Nom de l'attribut personnalisé.",
+                    custom_value_tooltip: "Valeur de l'attribut personnalisé.",
+                    nodename_placeholder: "node-01.example.com",
+                    hostname_placeholder: "192.168.1.10",
+                    username_placeholder: "rundeck",
+                    description_placeholder: "Serveur web de production",
+                    tags_placeholder: "web,prod,ubuntu",
+                    ssh_key_path_placeholder: "keys/prod/my-key.pem",
+                    select_default: "-- Choisir --"
+                },
+                en: {
+                    title: 'Rundeck Resource File Generator',
+                    subtitle: 'Easily create and configure your Rundeck nodes.',
+                    import_title: 'Import from YAML',
+                    import_desc: 'Paste an existing YAML resource file to get started.',
+                    import_placeholder: 'Paste your YAML here...',
+                    import_button: 'Import',
+                    nodes_title: 'Nodes',
+                    add_node_button: 'Add Node',
+                    remove_node_title: 'Remove this node',
+                    required_attributes: 'Required Attributes',
+                    optional_attributes: 'Optional Attributes',
+                    nodename_label: 'Nodename',
+                    hostname_label: 'Hostname',
+                    username_label: 'Username',
+                    description_label: 'Description',
+                    tags_label: 'Tags (comma-separated)',
+                    os_family_label: 'OS Family',
+                    os_name_label: 'OS Name',
+                    os_arch_label: 'OS Architecture',
+                    ssh_key_path_label: 'SSH Key Storage Path',
+                    custom_attributes_title: 'Custom Attributes',
+                    custom_key_placeholder: 'Key (e.g., app-port)',
+                    custom_value_placeholder: 'Value (e.g., 8080)',
+                    remove_attribute_title: 'Remove this attribute',
+                    add_attribute_button: 'Add Attribute',
+                    yaml_output_title: 'YAML Output',
+                    copy: 'Copy',
+                    copied: 'Copied!',
+                    yaml_loading: "Loading js-yaml library...",
+                    yaml_start_message: "# Add a node and fill in its 'nodename' to get started.",
+                    yaml_generation_error: 'YAML generation error: ',
+                    yaml_import_error: "Error importing YAML: ",
+                    yaml_lib_not_loaded: "The YAML parsing library is not loaded yet. Please try again in a moment.",
+                    import_area_empty: "The import area is empty.",
+                    yaml_must_be_object: "The YAML must be an object (a map of nodes).",
+                    copy_error: "Copying failed. Please use manual copy.",
+                    nodename_tooltip: "The unique name of the node in Rundeck. This is the main key in the YAML.",
+                    hostname_tooltip: "The IP address or DNS hostname that Rundeck will connect to.",
+                    username_tooltip: "The username to connect to the node (SSH, WinRM).",
+                    description_tooltip: "A brief description of the node's role or function.",
+                    tags_tooltip: "Tags are used to filter nodes when creating jobs.",
+                    os_family_tooltip: "The operating system family (e.g., unix, windows).",
+                    os_name_tooltip: "The operating system name (e.g., Linux, Windows Server).",
+                    os_arch_tooltip: "The operating system architecture (e.g., x86_64, amd64).",
+                    ssh_key_path_tooltip: "The path to the private SSH key in Rundeck's Key Storage.",
+                    custom_key_tooltip: "Name of the custom attribute.",
+                    custom_value_tooltip: "Value of the custom attribute.",
+                    nodename_placeholder: "node-01.example.com",
+                    hostname_placeholder: "192.168.1.10",
+                    username_placeholder: "rundeck",
+                    description_placeholder: "Production web server",
+                    tags_placeholder: "web,prod,ubuntu",
+                    ssh_key_path_placeholder: "keys/prod/my-key.pem",
+                    select_default: "-- Select --"
+                }
+            },
+            osData: {
+                families: ['unix', 'windows'],
+                names: {
+                    unix: ['Linux', 'macOS', 'SunOS', 'FreeBSD', 'AIX'],
+                    windows: ['Windows Server 2022', 'Windows Server 2019', 'Windows 11', 'Windows 10']
+                },
+                architectures: ['x86_64', 'amd64', 'aarch64', 'sparc', 'powerpc']
+            },
             standardAttributes: ['nodename', 'hostname', 'username', 'description', 'tags', 'osFamily', 'osArch', 'osName', 'osVersion', 'ssh-key-storage-path'],
 
             init() {
                 this.$watch('nodes', () => this.generateYaml(), { deep: true });
                 this.addNode();
                 this.generateYaml();
+                this.copyButtonText = this.t('copy');
+                this.$watch('lang', (newLang) => {
+                    document.title = this.t('title');
+                });
+            },
+
+            setLang(lang) {
+                this.lang = lang;
+                this.copyButtonText = this.t('copy');
+            },
+
+            t(key) {
+                return this.translations[this.lang][key] || key;
             },
 
             generateYaml() {
                 if (typeof jsyaml === 'undefined') {
-                    this.yamlOutput = "Chargement de la librairie js-yaml...";
+                    this.yamlOutput = this.t('yaml_loading');
                     return;
                 }
                 try {
@@ -175,14 +408,14 @@
                     }, {});
 
                     if (Object.keys(resourceObject).length === 0) {
-                        this.yamlOutput = "# Ajoutez un nœud et renseignez son 'nodename' pour commencer.";
+                        this.yamlOutput = this.t('yaml_start_message');
                         return;
                     }
 
                     this.yamlOutput = jsyaml.dump(resourceObject, { indent: 2, lineWidth: -1 });
                 } catch (e) {
                     console.error(e);
-                    this.yamlOutput = `Erreur de génération YAML: ${e.message}`;
+                    this.yamlOutput = `${this.t('yaml_generation_error')}${e.message}`;
                 }
             },
 
@@ -191,6 +424,7 @@
                     id: Date.now() + Math.random(),
                     nodename: '',
                     hostname: '',
+                    hostname_is_pristine: true,
                     username: '',
                     description: '',
                     tags: '',
@@ -223,23 +457,24 @@
 
             importYaml() {
                 if (typeof jsyaml === 'undefined') {
-                    alert("La librairie de parsing YAML n'est pas encore chargée. Veuillez réessayer dans un instant.");
+                    alert(this.t('yaml_lib_not_loaded'));
                     return;
                 }
                 if (!this.yamlInput.trim()) {
-                    alert("La zone d'importation est vide.");
+                    alert(this.t('import_area_empty'));
                     return;
                 }
                 try {
                     const data = jsyaml.load(this.yamlInput);
                     if (typeof data !== 'object' || data === null) {
-                        throw new Error("Le YAML doit être un objet (une carte de nœuds).");
+                        throw new Error(this.t('yaml_must_be_object'));
                     }
 
                     const newNodes = Object.entries(data).map(([nodename, attributes]) => {
                         const node = {
                             id: Date.now() + Math.random(),
-                            customAttributes: []
+                            customAttributes: [],
+                            hostname_is_pristine: !attributes.hasOwnProperty('hostname')
                         };
 
                         for (const [key, value] of Object.entries(attributes)) {
@@ -265,19 +500,19 @@
                     this.generateYaml();
                 } catch (e) {
                     console.error(e);
-                    alert(`Erreur lors de l'importation du YAML: ${e.message}`);
+                    alert(`${this.t('yaml_import_error')}${e.message}`);
                 }
             },
 
             copyToClipboard() {
                 navigator.clipboard.writeText(this.yamlOutput).then(() => {
-                    this.copyButtonText = 'Copié !';
+                    this.copyButtonText = this.t('copied');
                     setTimeout(() => {
-                        this.copyButtonText = 'Copier';
+                        this.copyButtonText = this.t('copy');
                     }, 2000);
                 }).catch(err => {
                     console.error('Erreur de copie: ', err);
-                    alert("La copie a échoué. Veuillez utiliser la copie manuelle.");
+                    alert(this.t('copy_error'));
                 });
             }
         }
