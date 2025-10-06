@@ -23,25 +23,25 @@
       - exec: |
           # Définition du nom du fichier de sauvegarde avec la date et l'heure.
           TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-          BACKUP_FILE="@option.backup_dir@/@option.db_name@-\$TIMESTAMP.sql.gz"
+          BACKUP_FILE="@option.backup_dir@/@option.db_name@-$TIMESTAMP.sql.gz"
 
           # Affichage des informations de la sauvegarde.
           echo "Démarrage de la sauvegarde de la base de données '@option.db_name@'..."
           echo "Hôte: @option.db_host@"
           echo "Utilisateur: @option.db_user@"
-          echo "Fichier de destination: \$BACKUP_FILE"
+          echo "Fichier de destination: $BACKUP_FILE"
 
           # Commande de sauvegarde avec pg_dump.
           # -U: Utilisateur
           # -h: Hôte
           # -d: Nom de la base de données
           # Le résultat est compressé à la volée avec gzip pour économiser de l'espace.
-          pg_dump -U @option.db_user@ -h @option.db_host@ -d @option.db_name@ | gzip > \$BACKUP_FILE
+          pg_dump -U @option.db_user@ -h @option.db_host@ -d @option.db_name@ | gzip > $BACKUP_FILE
 
           # Vérification de la création du fichier.
-          if [ -f "\$BACKUP_FILE" ]; then
+          if [ -f "$BACKUP_FILE" ]; then
             echo "Sauvegarde terminée avec succès."
-            ls -lh \$BACKUP_FILE
+            ls -lh $BACKUP_FILE
           else
             echo "Erreur: Le fichier de sauvegarde n'a pas été créé."
             exit 1
