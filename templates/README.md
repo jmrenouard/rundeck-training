@@ -1,99 +1,99 @@
-# Documentation des Templates Rundeck
+# Bibliothèque de Templates de Jobs Rundeck
 
-Ce répertoire contient des templates de jobs pour Rundeck, prêts à l'emploi pour différentes plateformes et cas d'usage. Chaque template est fourni au format YAML et peut être importé directement dans votre projet Rundeck.
+Ce répertoire contient une collection de **templates de jobs Rundeck** prêts à l'emploi, conçus pour automatiser une large gamme de tâches d'administration système sur des plateformes **Linux** et **Windows**. Chaque template est fourni au format YAML et peut être importé directement dans votre projet Rundeck.
 
-Les templates sont organisés par système d'exploitation (Linux, Windows) et par catégorie fonctionnelle.
+## Qu'est-ce qu'un Job Rundeck ?
 
-## Templates Linux
+Un job Rundeck est un workflow automatisé qui exécute une série d'étapes (commandes, scripts, etc.) sur des nœuds cibles. Les templates fournis ici sont des définitions de jobs pré-construites qui incluent :
+- Des **options** pour paramétrer l'exécution (ex: nom d'un service, chemin d'un fichier).
+- Des **étapes de workflow** logiques.
+- Des **descriptions** et des **groupes** pour une meilleure organisation.
 
-Les templates pour Linux se trouvent dans le répertoire `templates/linux`.
+## Comment Importer un Template
 
-### Déploiement (`linux/deployment`)
+1.  Naviguez vers votre projet dans l'interface Rundeck.
+2.  Allez dans la section **Jobs**.
+3.  Cliquez sur le bouton **"Upload Definition"** (ou "Charger une définition").
+4.  Sélectionnez le fichier YAML du template que vous souhaitez utiliser.
+5.  Rundeck importera le job, qui sera immédiatement disponible pour être exécuté.
 
-- **`deploy_jar_app.yaml`**: Déploie une application Java (JAR) sur un serveur Linux.
-- **`deploy_war_app.yaml`**: Déploie une application web (WAR) sur un serveur d'applications comme Tomcat.
-- **`deploy_docker_container.yaml`**: Déploie une application conteneurisée avec Docker.
-- **`deploy_from_git.yaml`**: Clone ou met à jour un dépôt Git et exécute une commande de build.
-
-### Maintenance (`linux/maintenance`)
-
-- **`update_system.yaml`**: Met à jour les paquets d'un système Linux basé sur Debian/Ubuntu.
-- **`cleanup_system.yaml`**: Nettoie les fichiers temporaires et les logs pour libérer de l'espace disque.
-- **`restart_service.yaml`**: Redémarre un service `systemd` ou `init.d`.
-- **`check_service_status.yaml`**: Vérifie le statut d'un service.
-- **`execute_remote_script.yaml`**: Télécharge et exécute un script distant.
-
-### Sauvegarde (`linux/backup`)
-
-- **`backup_files.yaml`**: Crée une archive compressée (tar.gz) de fichiers et de répertoires.
-- **`restore_files.yaml`**: Restaure des fichiers à partir d'une archive `tar.gz`.
-- **`backup_database_mysql.yaml`**: Effectue une sauvegarde d'une base de données MySQL.
-- **`restore_database_mysql.yaml`**: Restaure une base de données MySQL à partir d'un dump SQL.
-
-### Reporting (`linux/reporting`)
-
-- **`report_disk_usage.yaml`**: Génère un rapport sur l'utilisation de l'espace disque.
-- **`report_memory_usage.yaml`**: Génère un rapport sur l'utilisation de la mémoire.
-- **`list_running_processes.yaml`**: Liste tous les processus en cours d'exécution.
-- **`audit_report.yaml`**: Génère un rapport d'audit de sécurité de base.
-
-### Sécurité (`linux/security`)
-
-- **`create_user.yaml`**: Crée un nouvel utilisateur.
-- **`delete_user.yaml`**: Supprime un utilisateur et son répertoire personnel.
-- **`add_user_to_group.yaml`**: Ajoute un utilisateur à un groupe.
-- **`remove_user_from_group.yaml`**: Retire un utilisateur d'un groupe.
-- **`change_user_password.yaml`**: Change le mot de passe d'un utilisateur.
-- **`check_suid_guid.yaml`**: Recherche les fichiers avec les bits SUID/GUID.
+**Note :** De nombreux jobs utilisent des options sécurisées pour les mots de passe ou les clés API. Celles-ci doivent être configurées dans le **Key Storage** de votre projet avant l'exécution.
 
 ---
 
-## Templates Windows
+## Organisation des Templates
 
-Les templates pour Windows se trouvent dans le répertoire `templates/windows`.
+Les templates sont organisés par plateforme et par catégorie fonctionnelle.
 
-### Déploiement (`windows/deployment`)
+### Plateforme : Linux
 
-- **`deploy_iis_app.yaml`**: Déploie une application web sur un serveur IIS.
-- **`deploy_windows_service.yaml`**: Déploie et installe un nouveau service Windows.
-- **`deploy_docker_container.yaml`**: Déploie un conteneur Docker sur Windows.
+#### Maintenance
+- **`update_system.yaml`**: Met à jour les paquets (apt).
+- **`cleanup_system.yaml`**: Nettoie les fichiers temporaires et les logs.
+- **`restart_service.yaml`**: Redémarre un service `systemd`.
+- **`check_service_status.yaml`**: Vérifie le statut d'un service.
+- **`execute_remote_script.yaml`**: Télécharge et exécute un script depuis une URL.
 
-### Maintenance (`windows/maintenance`)
+#### Déploiement
+- **`deploy_from_git.yaml`**: Clone ou met à jour un dépôt Git et exécute une commande de build.
+- **`deploy_docker_container.yaml`**: Déploie une application conteneurisée avec Docker.
+- **`deploy_jar_app.yaml`**: Déploie une application Java (JAR).
 
-- **`update_system.yaml`**: Installe les mises à jour Windows via PowerShell.
-- **`cleanup_system.yaml`**: Nettoie les fichiers temporaires et les journaux d'événements.
+#### Sauvegarde & Restauration
+- **`backup_files.yaml`**: Crée une archive `tar.gz` de répertoires spécifiés.
+- **`restore_files.yaml`**: Restaure des fichiers depuis une archive `tar.gz`.
+- **`backup_database_mysql.yaml`**: Sauvegarde une base de données MySQL avec `mysqldump`.
+- **`restore_database_mysql.yaml`**: Restaure une base de données MySQL.
+
+#### Sécurité
+- **`create_user.yaml`**: Crée un nouvel utilisateur système.
+- **`delete_user.yaml`**: Supprime un utilisateur et son répertoire personnel.
+- **`add_user_to_group.yaml`**: Ajoute un utilisateur à un groupe.
+- **`check_suid_guid.yaml`**: Recherche les fichiers avec des permissions potentiellement dangereuses (SUID/GUID).
+
+---
+
+### Plateforme : Windows
+
+#### Maintenance
+- **`update_system.yaml`**: Installe les mises à jour Windows en attente via PowerShell.
+- **`cleanup_system.yaml`**: Nettoie les fichiers temporaires.
 - **`restart_service.yaml`**: Redémarre un service Windows.
-- **`check_service_status.yaml`**: Vérifie le statut d'un service Windows.
+- **`check_service_status.yaml`**: Vérifie le statut d'un service.
 
-### Sauvegarde (`windows/backup`)
+#### Déploiement
+- **`deploy_iis_app.yaml`**: Déploie une application web sur un serveur IIS.
+- **`deploy_windows_service.yaml`**: Installe un nouveau service Windows.
 
-- **`backup_files.yaml`**: Crée une archive compressée (ZIP) de fichiers et de répertoires.
-- **`restore_files.yaml`**: Restaure des fichiers à partir d'une archive ZIP.
-- **`backup_database_mssql.yaml`**: Effectue une sauvegarde d'une base de données Microsoft SQL Server.
+#### Sauvegarde & Restauration
+- **`backup_files.yaml`**: Crée une archive ZIP de répertoires.
+- **`restore_files.yaml`**: Restaure des fichiers depuis une archive ZIP.
+- **`backup_database_mssql.yaml`**: Sauvegarde une base de données Microsoft SQL Server.
 - **`restore_database_mssql.yaml`**: Restaure une base de données Microsoft SQL Server.
 
-### Reporting (`windows/reporting`)
-
-- **`report_disk_usage.yaml`**: Génère un rapport sur l'utilisation de l'espace disque.
-- **`report_memory_usage.yaml`**: Génère un rapport sur l'utilisation de la mémoire.
-- **`list_running_processes.yaml`**: Liste tous les processus en cours d'exécution.
-- **`security_baseline_analysis.yaml`**: Exécute une analyse de la ligne de base de sécurité.
-
-### Sécurité (`windows/security`)
-
+#### Sécurité
 - **`create_user.yaml`**: Crée un nouvel utilisateur local.
 - **`delete_user.yaml`**: Supprime un utilisateur local.
 - **`add_user_to_group.yaml`**: Ajoute un utilisateur à un groupe local.
-- **`remove_user_from_group.yaml`**: Retire un utilisateur d'un groupe local.
-- **`change_user_password.yaml`**: Change le mot de passe d'un utilisateur local.
 - **`check_open_ports.yaml`**: Vérifie les ports TCP ouverts.
 
 ---
 
-## Anciens Templates
+### Intégration & Services
 
-Les templates génériques suivants sont également disponibles :
+#### MinIO / S3
+- **`transfert-s3.yml`**: Transfère un fichier depuis un nœud local vers un bucket S3/MinIO. Idéal pour externaliser les sauvegardes.
 
-- `ansible_job_template.yaml`
-- `bash_job_template.yaml`
-- `python_job_template.yaml`
+#### Reporting
+- **`report_disk_usage.yaml`**: Génère et envoie un rapport sur l'utilisation de l'espace disque.
+- **`report_memory_usage.yaml`**: Génère et envoie un rapport sur l'utilisation de la mémoire.
+
+---
+
+### Templates de Base
+
+Ces templates fournissent un point de départ pour créer vos propres jobs avec des exécuteurs spécifiques.
+
+- **`ansible_job_template.yaml`**: Un job de base pour exécuter un playbook Ansible.
+- **`bash_job_template.yaml`**: Un job simple pour exécuter un script Bash.
+- **`python_job_template.yaml`**: Un job simple pour exécuter un script Python.

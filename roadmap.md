@@ -1,67 +1,62 @@
 # Roadmap du Projet
 
-Ce document présente une feuille de route pour les évolutions futures de ce dépôt. Les propositions sont organisées par thématique pour améliorer la clarté.
+Ce document présente une feuille de route pour les évolutions futures de ce dépôt. Il est régulièrement mis à jour pour refléter les fonctionnalités terminées et les nouvelles idées.
 
-## I. Intégration et Déploiement Continus (CI/CD)
+---
 
-1.  **Mettre en place une pipeline CI/CD avec GitHub Actions** : Automatiser les tests et les déploiements à chaque push sur la branche `main`.
-2.  **Intégrer un linter pour les scripts Bash** : Utiliser `shellcheck` pour garantir la qualité et la robustesse des scripts.
-3.  **Intégrer un linter pour Ansible** : Utiliser `ansible-lint` pour valider les playbooks et les rôles.
-4.  **Intégrer un linter pour les fichiers YAML et Markdown** : Assurer une syntaxe correcte et un formatage cohérent.
-5.  **Construire et pousser les images Docker automatiquement** : Intégrer la construction des images Docker dans la CI/CD et les stocker dans un registre comme Docker Hub ou GitHub Container Registry.
-6.  **Déployer automatiquement sur un environnement de staging** : Après chaque push sur `main`, déployer l'application sur un environnement de pré-production.
+## ✅ Fonctionnalités Réalisées
+
+Cette section met en lumière les objectifs de la roadmap qui ont été atteints.
+
+### Infrastructure et Automatisation
+-   **Rôles Ansible Complets** : Des rôles Ansible robustes ont été créés pour déployer l'ensemble de la stack : **Java, MySQL, Rundeck, Nginx, Keycloak, et MinIO**.
+-   **Scripts d'Installation Alternatifs** : Des scripts Bash complets pour l'installation, la sauvegarde et la restauration de la stack sur Ubuntu sont disponibles comme alternative à Ansible.
+-   **Environnement Docker** : Un environnement `docker-compose` est fourni pour un démarrage rapide et isolé de Rundeck et MySQL, idéal pour le développement.
+
+### Utilitaires et Outils
+-   **Générateur d'ACL (`aclpolicy`)** : Un outil web pour créer et gérer les politiques de contrôle d'accès de Rundeck.
+-   **Générateur de Ressources (`ressources`)** : Un outil web pour créer et gérer les fichiers de modèle de ressources (nœuds).
+-   **Générateur de Jobs (`jobs`)** : Un nouvel outil web pour construire des définitions de jobs, y compris des étapes d'exécution Ansible.
+-   **Bibliothèque de 40+ Templates de Jobs** : Une collection riche de templates de jobs pour Linux, Windows, et des intégrations de services (MinIO).
+
+### Documentation et Internationalisation
+-   **Documentation Complète et Enrichie** : Tous les composants du projet (Ansible, Docker, scripts, templates, utilitaires) ont une documentation `README.md` détaillée.
+-   **Internationalisation (i18n)** : Les utilitaires web (`aclpolicy`, `ressources`, `jobs`) supportent le **Français** et l'**Anglais**.
+
+---
+
+## I. Intégration Continue et Qualité du Code (CI/CD)
+
+1.  **Mettre en place une pipeline CI/CD avec GitHub Actions** : Automatiser les tests et les validations à chaque push.
+2.  **Intégrer des Linters** :
+    -   `shellcheck` pour les scripts Bash.
+    -   `ansible-lint` pour les playbooks et les rôles.
+    -   `yamllint` et `markdownlint` pour la cohérence des fichiers de configuration et de la documentation.
+3.  **Intégrer un Scanner de Secrets** : Utiliser `trufflehog` ou `gitleaks` pour empêcher la publication accidentelle de secrets.
+4.  **Tester les Rôles Ansible avec Molecule** : Mettre en place des tests d'infrastructure pour valider le comportement des rôles Ansible dans un environnement isolé.
 
 ## II. Sécurité
 
-7.  **Intégrer un scanner de vulnérabilités pour les images Docker** : Utiliser des outils comme Trivy ou Clair pour scanner les images Docker à la recherche de vulnérabilités connues.
-8.  **Intégrer un scanner de secrets** : Utiliser `trufflehog` ou `gitleaks` pour empêcher la publication de secrets dans le code.
-9.  **Gestion des secrets avec Ansible Vault** : Chiffrer les données sensibles (mots de passe, clés API) dans les playbooks Ansible.
-10. **Mettre en place des audits de sécurité réguliers** : Planifier des revues de sécurité périodiques du code et de l'infrastructure.
-11. **Renforcer la configuration de Keycloak** : Appliquer les meilleures pratiques de sécurité pour Keycloak (MFA, politiques de mot de passe robustes).
+5.  **Intégrer un Scanner de Vulnérabilités pour Docker** : Utiliser `Trivy` ou `Clair` pour scanner les images Docker.
+6.  **Renforcer la Configuration de Keycloak** : Appliquer les meilleures pratiques de sécurité (MFA, politiques de mot de passe robustes).
+7.  **Intégrer Rundeck avec un Gestionnaire de Secrets Externe** : Utiliser HashiCorp Vault pour gérer les secrets des jobs Rundeck.
 
 ## III. Monitoring et Logging
 
-12. **Centraliser les logs avec une stack ELK/EFK** : Mettre en place Elasticsearch, Logstash/Fluentd, et Kibana pour collecter, analyser et visualiser les logs de toutes les applications.
-13. **Mettre en place un système de monitoring avec Prometheus et Grafana** : Superviser les performances des services (Rundeck, Keycloak, MySQL) et de l'infrastructure.
-14. **Ajouter des alertes avec Alertmanager** : Configurer des alertes pour être notifié en cas de problème critique sur l'un des services.
-15. **Créer des dashboards Grafana personnalisés** : Développer des tableaux de bord pour visualiser l'état de santé de l'application en un coup d'œil.
+8.  **Centraliser les Logs avec une Stack ELK/Loki** : Mettre en place une solution de centralisation des logs pour tous les composants.
+9.  **Mettre en place un Système de Monitoring avec Prometheus & Grafana** :
+    -   Créer un rôle Ansible pour déployer la stack de monitoring.
+    -   Développer des dashboards Grafana personnalisés pour superviser la santé de Rundeck, Keycloak, et des serveurs.
+10. **Ajouter des Alertes avec Alertmanager** : Configurer des alertes pour être notifié en cas de problème critique.
 
-## IV. Améliorations de l'Infrastructure et d'Ansible
+## IV. Évolutions de l'Infrastructure
 
-16. **Créer un rôle Ansible pour Keycloak** : Automatiser entièrement l'installation et la configuration de Keycloak.
-17. **Créer un rôle Ansible pour la stack de monitoring** : Automatiser le déploiement de Prometheus, Grafana et Alertmanager.
-18. **Utiliser des collections Ansible** : Organiser les rôles et les modules dans des collections pour une meilleure réutilisabilité.
-19. **Mettre en place des tests d'infrastructure avec Molecule** : Tester les rôles Ansible dans un environnement isolé avant de les appliquer en production.
-20. **Gérer l'infrastructure avec Terraform** : Utiliser Terraform pour provisionner les serveurs sur un cloud public (AWS, GCP, Azure) ou privé (OpenStack).
+11. **Gérer l'Infrastructure avec Terraform** : Utiliser Terraform pour provisionner les serveurs sur un cloud public (AWS, GCP, Azure) ou privé.
+12. **Utiliser des Collections Ansible** : Organiser les rôles et modules dans des collections pour une meilleure réutilisabilité et distribution.
+13. **Développer des Plugins Rundeck Personnalisés** : Créer des plugins pour étendre les fonctionnalités de Rundeck.
 
-## V. Évolutions de Rundeck
+## V. Documentation
 
-21. **Développer des plugins Rundeck personnalisés** : Créer des plugins pour étendre les fonctionnalités de Rundeck et l'intégrer à d'autres outils.
-22. **Intégrer Rundeck avec un gestionnaire de secrets externe** : Utiliser HashiCorp Vault ou CyberArk pour gérer les secrets utilisés par les jobs Rundeck.
-23. **Créer des jobs Rundeck pour le déploiement applicatif** : Développer des workflows de déploiement pour des applications Java, Python, ou Node.js.
-24. **Sauvegarde et restauration de Rundeck** : Créer des jobs pour automatiser la sauvegarde et la restauration de l'instance Rundeck (base de données et projets).
-
-## VI. Documentation
-
-25. **Créer un site de documentation avec MkDocs ou Docusaurus** : Générer un site web statique à partir des fichiers Markdown pour une navigation plus aisée.
-26. **Traduire la documentation en anglais** : Rendre le projet accessible à une audience plus large.
-27. **Documenter l'architecture globale** : Créer des diagrammes d'architecture (par exemple avec `draw.io` ou `PlantUML`) pour visualiser les interactions entre les différents composants.
-
-## VII. Infrastructure Web et Accès
-
-28. **Mettre en place un frontal Nginx avec HTTPS** : Configurer Nginx en tant que reverse proxy pour Rundeck et Keycloak, avec génération automatique de certificats SSL/TLS via Let's Encrypt.
-29. **Créer un rôle Ansible pour Nginx** : Automatiser l'installation et la configuration du reverse proxy Nginx.
-
-## VIII. Client en Ligne de Commande (CLI) et Scripts API
-
-30. **Développer un client en ligne de commande (CLI)** : Créer un outil CLI dédié (en Python, Go, ou Bash) pour simplifier les interactions avec Rundeck et les autres services de la stack.
-31. **Fournir des exemples de scripts pour l'API Rundeck** : Rédiger des scripts (avec `curl`, Python) montrant comment déclencher des jobs, récupérer des logs et gérer des projets via l'API REST de Rundeck.
-
-## IX. Catalogue de Jobs Rundeck
-
-32. **Créer 40 templates de jobs Rundeck** : Développer une bibliothèque riche et variée de templates de jobs pour différentes plateformes (Linux, Windows) et cas d'usage :
-    *   Déploiement d'applications (WAR, JAR, Docker).
-    *   Maintenance système (mises à jour, nettoyage).
-    *   Opérations de sauvegarde et de restauration.
-    *   Reporting et audits de conformité.
-    *   Gestion des utilisateurs et des permissions.
+14. **Créer un Site de Documentation avec MkDocs** : Générer un site web statique à partir des fichiers Markdown pour une navigation plus aisée.
+15. **Documenter l'Architecture Globale** : Créer des diagrammes d'architecture (avec `PlantUML` ou `draw.io`) pour visualiser les interactions entre les composants.
+16. **Traduire l'ensemble de la documentation en Anglais**.

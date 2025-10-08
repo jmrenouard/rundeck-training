@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr" x-data="rundeckJobGenerator()" x-init="init()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title x-text="t('title')"></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <style>
+        body { font-family: sans-serif; }
+        [x-cloak] { display: none !important; }
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d2d6dc;
+            border-radius: 6px;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        }
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background-color: #333;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .has-tooltip:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="container mx-auto p-4 sm:p-8" x-cloak>
+    <header class="text-center mb-8">
+        <div class="flex justify-center items-center mb-4">
+            <button @click="setLang('fr')" :class="{ 'bg-blue-500 text-white': lang === 'fr', 'bg-gray-200': lang !== 'fr' }" class="px-4 py-2 rounded-l-lg">FR</button>
+            <button @click="setLang('en')" :class="{ 'bg-blue-500 text-white': lang === 'en', 'bg-gray-200': lang !== 'en' }" class="px-4 py-2 rounded-r-lg">EN</button>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-700" x-text="t('title')"></h1>
+        <p class="text-lg text-gray-500 mt-2" x-text="t('subtitle')"></p>
+    </header>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Colonne de Gauche: Formulaires -->
+        <div class="lg:w-1/2 space-y-8">
+            <!-- Section Informations Générales -->
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2" x-text="t('section_general')"></h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="job-name" class="block text-sm font-medium text-gray-600 has-tooltip" x-text="t('job_name_label')"></label>
+                        <input id="job-name" type="text" x-model="job.name" class="form-input" :placeholder="t('job_name_placeholder')">
+                    </div>
+                    <div>
+                        <label for="job-group" class="block text-sm font-medium text-gray-600 has-tooltip" x-text="t('job_group_label')"></label>
+                        <input id="job-group" type="text" x-model="job.group" class="form-input" :placeholder="t('job_group_placeholder')">
+                    </div>
+                    <div>
+                        <label for="job-description" class="block text-sm font-medium text-gray-600 has-tooltip" x-text="t('job_description_label')"></label>
+                        <textarea id="job-description" x-model="job.description" class="form-input" rows="3" :placeholder="t('job_description_placeholder')"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Étape Ansible -->
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2" x-text="t('section_ansible')"></h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="ansible-playbook" class="block text-sm font-medium text-gray-600" x-text="t('ansible_playbook_label')"></label>
+                        <input id="ansible-playbook" type="text" x-model="ansibleStep.playbook" class="form-input" :placeholder="t('ansible_playbook_placeholder')">
+                    </div>
+                    <div>
+                        <label for="ansible-inventory" class="block text-sm font-medium text-gray-600" x-text="t('ansible_inventory_label')"></label>
+                        <input id="ansible-inventory" type="text" x-model="ansibleStep.inventory" class="form-input" :placeholder="t('ansible_inventory_placeholder')">
+                    </div>
+                    <div>
+                        <label for="ansible-limit" class="block text-sm font-medium text-gray-600" x-text="t('ansible_limit_label')"></label>
+                        <input id="ansible-limit" type="text" x-model="ansibleStep.limit" class="form-input" :placeholder="t('ansible_limit_placeholder')">
+                    </div>
+                    <div>
+                        <label for="ansible-tags" class="block text-sm font-medium text-gray-600" x-text="t('ansible_tags_label')"></label>
+                        <input id="ansible-tags" type="text" x-model="ansibleStep.tags" class="form-input" :placeholder="t('ansible_tags_placeholder')">
+                    </div>
+                     <div>
+                        <label for="ansible-extra-vars" class="block text-sm font-medium text-gray-600" x-text="t('ansible_extravars_label')"></label>
+                        <input id="ansible-extra-vars" type="text" x-model="ansibleStep.extraVars" class="form-input" :placeholder="t('ansible_extravars_placeholder')">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne de Droite: YAML -->
+        <div class="lg:w-1/2">
+            <div class="bg-white shadow-md rounded-lg p-6 sticky top-8">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2" x-text="t('yaml_output_title')"></h2>
+                <div class="relative">
+                    <pre class="bg-gray-800 text-white p-4 rounded-lg overflow-x-auto h-[700px]"><code x-text="yamlOutput"></code></pre>
+                    <button @click="copyToClipboard" class="px-4 py-2 font-bold text-white rounded-lg bg-blue-500 hover:bg-blue-700 absolute top-4 right-4">
+                        <span x-text="copyButtonText"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function rundeckJobGenerator() {
+        return {
+            lang: 'fr',
+            copyButtonText: 'Copier',
+            yamlOutput: '',
+            job: {
+                name: '',
+                group: '',
+                description: '',
+                loglevel: 'INFO',
+            },
+            ansibleStep: {
+                playbook: '',
+                inventory: '',
+                limit: '',
+                tags: '',
+                extraVars: ''
+            },
+            translations: {
+                fr: {
+                    title: 'Générateur de Job Rundeck',
+                    subtitle: 'Construisez vos jobs Rundeck avec exécution Ansible.',
+                    yaml_output_title: 'Résultat YAML',
+                    copy: 'Copier',
+                    copied: 'Copié !',
+                    section_general: 'Informations Générales',
+                    job_name_label: 'Nom du Job',
+                    job_name_placeholder: 'Ex: Deploy-App-Production',
+                    job_group_label: 'Groupe',
+                    job_group_placeholder: 'Ex: Deploiements/Web',
+                    job_description_label: 'Description',
+                    job_description_placeholder: 'Une description claire et concise du rôle de ce job.',
+                    section_ansible: 'Étape : Exécution Ansible',
+                    ansible_playbook_label: 'Chemin du Playbook',
+                    ansible_playbook_placeholder: '/path/to/your/playbook.yml',
+                    ansible_inventory_label: 'Inventaire',
+                    ansible_inventory_placeholder: 'laisser vide pour utiliser ansible.cfg',
+                    ansible_limit_label: 'Limite',
+                    ansible_limit_placeholder: 'Ex: webservers,&staging',
+                    ansible_tags_label: 'Tags',
+                    ansible_tags_placeholder: 'Ex: deploy,configure',
+                    ansible_extravars_label: 'Variables Supplémentaires',
+                    ansible_extravars_placeholder: 'Ex: app_version=1.2.3',
+                    yaml_start_message: "# Renseignez au minimum le nom du job ou un playbook pour commencer."
+                },
+                en: {
+                    title: 'Rundeck Job Generator',
+                    subtitle: 'Build your Rundeck jobs with Ansible execution.',
+                    yaml_output_title: 'YAML Output',
+                    copy: 'Copy',
+                    copied: 'Copied!',
+                    section_general: 'General Information',
+                    job_name_label: 'Job Name',
+                    job_name_placeholder: 'E.g., Deploy-App-Production',
+                    job_group_label: 'Group',
+                    job_group_placeholder: 'E.g., Deployments/Web',
+                    job_description_label: 'Description',
+                    job_description_placeholder: 'A clear and concise description of what this job does.',
+                    section_ansible: 'Step: Ansible Execution',
+                    ansible_playbook_label: 'Playbook Path',
+                    ansible_playbook_placeholder: '/path/to/your/playbook.yml',
+                    ansible_inventory_label: 'Inventory',
+                    ansible_inventory_placeholder: 'leave empty to use ansible.cfg',
+                    ansible_limit_label: 'Limit',
+                    ansible_limit_placeholder: 'E.g., webservers,&staging',
+                    ansible_tags_label: 'Tags',
+                    ansible_tags_placeholder: 'E.g., deploy,configure',
+                    ansible_extravars_label: 'Extra Variables',
+                    ansible_extravars_placeholder: 'E.g., app_version=1.2.3',
+                    yaml_start_message: "# Fill in at least the job name or a playbook to get started."
+                }
+            },
+
+            init() {
+                this.$watch('job', () => this.generateYaml(), { deep: true });
+                this.$watch('ansibleStep', () => this.generateYaml(), { deep: true });
+                this.generateYaml();
+                this.copyButtonText = this.t('copy');
+                document.title = this.t('title');
+            },
+
+            setLang(lang) {
+                this.lang = lang;
+                this.copyButtonText = this.t('copy');
+                document.title = this.t('title');
+            },
+
+            t(key, replacements = {}) {
+                let translation = this.translations[this.lang][key] || key;
+                for (const placeholder in replacements) {
+                    translation = translation.replace(`{${placeholder}}`, replacements[placeholder]);
+                }
+                return translation;
+            },
+
+            generateYaml() {
+                if (typeof jsyaml === 'undefined') {
+                    this.yamlOutput = "Chargement de la librairie js-yaml...";
+                    return;
+                }
+
+                try {
+                    const jobDefinition = {
+                        name: this.job.name || 'Unnamed Job',
+                        group: this.job.group,
+                        description: this.job.description,
+                        loglevel: this.job.loglevel,
+                        sequence: {
+                            keepgoing: false,
+                            strategy: 'node-first',
+                            steps: []
+                        }
+                    };
+
+                    // Build Ansible step configuration
+                    const ansibleConfig = {
+                        'ansible-playbook-path': this.ansibleStep.playbook,
+                        'ansible-inventory-inline': this.ansibleStep.inventory,
+                        'ansible-limit': this.ansibleStep.limit,
+                        'ansible-tags': this.ansibleStep.tags,
+                        'ansible-extra-vars': this.ansibleStep.extraVars
+                    };
+
+                    // Remove empty values from ansibleConfig
+                    Object.keys(ansibleConfig).forEach(key => {
+                        if (!ansibleConfig[key]) {
+                            delete ansibleConfig[key];
+                        }
+                    });
+
+                    if (Object.keys(ansibleConfig).length > 0) {
+                        jobDefinition.sequence.steps.push({
+                            type: 'ansible-playbook',
+                            plugin: 'ansible-playbook',
+                            configuration: ansibleConfig
+                        });
+                    }
+
+                    if (!this.job.name && !this.job.group && !this.ansibleStep.playbook) {
+                        this.yamlOutput = this.t('yaml_start_message');
+                        return;
+                    }
+
+                    this.yamlOutput = jsyaml.dump([jobDefinition], { indent: 2, lineWidth: -1 });
+                } catch (e) {
+                    this.yamlOutput = `Erreur de génération YAML: ${e.message}`;
+                }
+            },
+
+            copyToClipboard() {
+                navigator.clipboard.writeText(this.yamlOutput).then(() => {
+                    this.copyButtonText = this.t('copied');
+                    setTimeout(() => {
+                        this.copyButtonText = this.t('copy');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erreur de copie: ', err);
+                    alert("La copie a échoué.");
+                });
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
