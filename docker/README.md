@@ -1,67 +1,81 @@
-# Documentation de l'environnement Docker
+# Environnement de Développement Docker pour Rundeck
 
-Ce répertoire contient la configuration Docker pour déployer Rundeck et une base de données MySQL. Il est conçu pour être utilisé avec Docker Compose pour le développement local et Docker Swarm pour un environnement de production.
+Ce répertoire fournit une configuration **Docker** pour déployer rapidement un environnement **Rundeck minimaliste**, idéal pour le développement local, le test de jobs, ou l'apprentissage.
 
-## Contenu
+## Philosophie de cet Environnement
 
-- [`docker-compose.yml`](#docker-compose)
-- [`docker-swarm.yml`](#docker-swarm)
-- [`Makefile`](#makefile)
-- `jobs/` : Ce répertoire est destiné à contenir des définitions de jobs Rundeck qui peuvent être montées en volume dans le conteneur Rundeck.
+Contrairement aux déploiements Ansible ou via les scripts qui installent une stack complète (avec Keycloak, MinIO, etc.), cet environnement Docker se concentre sur le strict nécessaire : **Rundeck et sa base de données MySQL**.
 
----
+L'objectif est de fournir un environnement :
+-   **Rapide** : Démarre en quelques secondes avec une seule commande.
+-   **Isolé** : Ne pollue pas votre machine locale avec des dépendances.
+-   **Reproductible** : Garantit que tous les développeurs travaillent avec la même configuration de base.
+-   **Simple** : Facile à comprendre, à modifier et à maintenir.
 
-### Docker Compose
+## Contenu du Répertoire
 
-Le fichier `docker-compose.yml` est utilisé pour lancer un environnement de développement local. Il définit deux services :
-- `rundeck` : L'application Rundeck.
-- `db` : La base de données MySQL.
+-   `docker-compose.yml`: Le fichier principal pour définir et lancer les services avec Docker Compose.
+-   `docker-swarm.yml`: Une configuration alternative pour un déploiement sur un cluster Docker Swarm.
+-   `.env.example`: Un fichier d'exemple pour les variables d'environnement.
+-   `Makefile`: Un ensemble de raccourcis pour simplifier la gestion de l'environnement.
+-   `data/`: Ce répertoire est créé au premier lancement et contient toutes les données persistantes de Rundeck et MySQL.
 
-**Caractéristiques :**
-- Les données de Rundeck et de MySQL sont persistées dans des répertoires locaux (`./data/rundeck` et `./data/mysql`) pour un accès facile.
-- La configuration (ports, identifiants) est gérée via un fichier `.env`.
+## Démarrage Rapide
 
-**Utilisation :**
-1. Créez un fichier `.env` à la racine du répertoire `docker` en vous basant sur `.env.example`.
-2. Exécutez `make up` pour démarrer les conteneurs.
+Suivez ces étapes pour lancer l'environnement :
 
----
+### 1. Prérequis
 
-### Docker Swarm
+-   Docker
+-   Docker Compose
 
-Le fichier `docker-swarm.yml` est conçu pour un déploiement sur un cluster Docker Swarm.
+### 2. Créer le Fichier d'Environnement
 
-**Caractéristiques :**
-- Utilise des volumes nommés gérés par Swarm pour la persistance des données.
-- Configuré pour un déploiement sur un nœud manager (peut être ajusté).
+Copiez le fichier d'exemple `.env.example` pour créer votre propre configuration locale.
 
-**Utilisation :**
-1. Assurez-vous que votre environnement Swarm est initialisé.
-2. Assurez-vous que les variables d'environnement nécessaires sont disponibles sur le nœud manager.
-3. Déployez la stack avec `make swarm-deploy`.
+```bash
+cp .env.example .env
+```
 
----
+Le fichier `.env` vous permet de personnaliser les ports, les mots de passe et les chemins de données sans modifier les fichiers `docker-compose`. **Ne modifiez les valeurs par défaut que si nécessaire.**
 
-### Makefile
+### 3. Démarrer les Conteneurs
 
-Le `Makefile` simplifie la gestion de l'environnement Docker avec des commandes courtes et faciles à retenir.
+Utilisez la commande `make` pour démarrer la stack en arrière-plan.
 
-**Commandes principales :**
+```bash
+make up
+```
 
-*   **Pour Docker Compose :**
-    *   `make up` : Démarre les conteneurs en arrière-plan.
-    *   `make down` : Arrête et supprime les conteneurs.
-    *   `make logs` : Affiche les logs des conteneurs.
-    *   `make ps` : Liste les conteneurs en cours d'exécution.
-    *   `make restart` : Redémarre les services.
+Cette commande va :
+1.  Lire le fichier `docker-compose.yml`.
+2.  Télécharger les images Docker de Rundeck et MySQL.
+3.  Créer et démarrer les conteneurs.
+4.  Créer les répertoires `./data/rundeck` et `./data/mysql` pour stocker les données.
 
-*   **Pour Docker Swarm :**
-    *   `make swarm-deploy` : Déploie la stack sur le cluster Swarm.
-    *   `make swarm-rm` : Supprime la stack du cluster.
-    *   `make swarm-services` : Liste les services de la stack.
+### 4. Accéder à Rundeck
 
-*   **Nettoyage :**
-    *   `make clean` : Arrête les conteneurs et supprime tous les volumes de données (local et Docker). **Attention, cette commande est destructive.**
+-   Ouvrez votre navigateur et allez à l'adresse [http://localhost:4440](http://localhost:4440) (ou le port que vous avez défini dans `.RUNDECK_PORT`).
+-   Connectez-vous avec les identifiants par défaut :
+    -   **Utilisateur** : `admin`
+    -   **Mot de passe** : `admin`
 
-*   **Aide :**
-    *   `make help` : Affiche la liste de toutes les commandes disponibles.
+## Gestion de l'Environnement avec `make`
+
+Le `Makefile` fournit des commandes simples pour gérer le cycle de vie de l'environnement.
+
+-   `make up`: Démarre les conteneurs.
+-   `make down`: Arrête et supprime les conteneurs (les données dans `./data` sont conservées).
+-   `make logs`: Affiche les logs en temps réel de tous les services.
+-   `make ps`: Liste les conteneurs en cours d'exécution.
+-   `make restart`: Redémarre les services.
+-   `make clean`: **Commande destructive.** Arrête les conteneurs ET supprime le répertoire `./data`, effaçant ainsi toutes les données de Rundeck et de la base de données.
+-   `make help`: Affiche toutes les commandes disponibles.
+
+## Persistance des Données
+
+Les données sont persistées sur votre machine locale dans le répertoire `docker/data/`.
+-   `data/rundeck/`: Contient les projets, jobs, logs, clés, etc. de Rundeck.
+-   `data/mysql/`: Contient les fichiers de la base de données MySQL.
+
+Cela signifie que même si vous détruisez les conteneurs avec `make down`, vos données seront conservées et réutilisées la prochaine fois que vous ferez `make up`. Pour repartir de zéro, utilisez `make clean`.

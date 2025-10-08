@@ -1,124 +1,99 @@
-# Documentation des Scripts
+# Scripts d'Installation et de Maintenance pour Rundeck
 
-Ce répertoire contient une collection de scripts Bash conçus pour automatiser l'installation, la configuration, la sauvegarde et la restauration d'une stack Rundeck complète sur un système Ubuntu.
+Ce répertoire contient une collection de scripts Bash conçus pour l'installation, la configuration, la sauvegarde et la restauration d'une stack Rundeck complète sur un système **Ubuntu**.
 
-## Organisation des Scripts
+## Philosophie des Scripts
 
-Les scripts sont organisés en deux catégories principales :
+Ces scripts offrent une alternative **transparente et directe** à l'automatisation avec Ansible. Ils sont idéaux pour :
+-   Des déploiements sur des serveurs "bare-metal".
+-   Des environnements où Ansible n'est pas disponible ou souhaité.
+-   Comprendre en détail chaque étape de l'installation.
 
-- **Scripts d'Installation** : Pour déployer les composants de la stack.
-- **Scripts de Sauvegarde et Restauration** : Pour gérer le cycle de vie des données de Rundeck.
+Tous les scripts suivent des principes de robustesse :
+-   **`set -e` et `set -o pipefail`** : Le script s'arrête immédiatement si une commande échoue.
+-   **Journalisation** : Toutes les actions sont journalisées dans `/var/log/` pour un débogage facile.
+-   **Sorties Colorées** : Des fonctions `info`, `success`, `warn`, `error` sont utilisées pour une lisibilité accrue lors de l'exécution.
+-   **Vérification des Droits** : La plupart des scripts vérifient qu'ils sont exécutés avec les privilèges `root`.
 
 ---
 
 ## Scripts d'Installation
 
-Ces scripts installent et configurent les différents services nécessaires au fonctionnement de Rundeck.
+Ces scripts installent et configurent les services de la stack.
 
-### Script Principal: `install_ubuntu.sh`
+### 1. Script Orchestrateur : `install_ubuntu.sh`
 
-C'est le script principal à exécuter. Il orchestre l'exécution des autres scripts d'installation dans le bon ordre pour installer la stack complète.
-
-**Fonctionnalités :**
-- Vérifie les droits `root`.
-- Exécute séquentiellement `install_java.sh`, `install_mysql.sh`, et `install_rundeck.sh`.
-- Centralise les logs de l'ensemble du processus d'installation dans `/var/log/rundeck_install_*.log`.
-- Affiche un résumé à la fin avec l'URL d'accès à Rundeck.
+C'est le **point d'entrée principal**. Il exécute les autres scripts d'installation dans le bon ordre.
 
 **Utilisation :**
-Assurez-vous que tous les scripts sont dans le même répertoire, puis exécutez :
 ```bash
+# Assurez-vous que tous les scripts sont présents et exécutables
 sudo ./install_ubuntu.sh
 ```
 
-### Script d'installation de Java: `install_java.sh`
+### 2. Scripts Composants
 
-Le script `install_java.sh` installe OpenJDK 11, qui est une dépendance requise pour Rundeck.
-
-**Fonctionnalités :**
-- Vérifie si Java 11 est déjà installé.
-- Installe `openjdk-11-jdk`.
-- Configure la variable d'environnement `JAVA_HOME` dans `/etc/environment` pour l'ensemble du système.
-
-### Script d'installation de MySQL: `install_mysql.sh`
-
-Le script `install_mysql.sh` installe le serveur de base de données MySQL et le prépare pour Rundeck.
-
-**Fonctionnalités :**
-- Installe `mysql-server`.
-- Démarre et active le service MySQL.
-- Crée une base de données (`rundeck`) et un utilisateur (`rundeckuser`) pour que Rundeck puisse s'y connecter.
-- **Note :** Les identifiants sont codés en dur dans le script. Pour un usage en production, il est fortement recommandé de les modifier et de sécuriser l'installation MySQL.
-
-### Script d'installation de Rundeck: `install_rundeck.sh`
-
-Le script `install_rundeck.sh` installe l'application Rundeck elle-même.
-
-**Fonctionnalités :**
-- Ajoute le référentiel officiel de Rundeck.
-- Installe le paquet `rundeck`.
-- Configure Rundeck pour se connecter à la base de données MySQL créée précédemment.
-- Configure l'URL du serveur et l'adresse d'écoute pour rendre Rundeck accessible sur le réseau.
-- Démarre et active le service `rundeckd`.
-- Attend que l'application soit pleinement démarrée et teste l'accès.
-
-### Script d'installation de MinIO: `install_minio.sh`
-
-Le script `install_minio.sh` installe et configure un serveur de stockage d'objets MinIO.
-
-**Fonctionnalités :**
-- Crée un utilisateur (`minio-user`) et un groupe dédiés pour le service.
-- Met en place les répertoires de configuration (`/etc/minio`) et de données (`/var/minio`).
-- Télécharge le binaire officiel de MinIO.
-- Configure un service `systemd` (`minio.service`) pour une gestion propre du serveur.
-- Démarre et active le service MinIO.
-- **Note :** Le script génère un fichier d'environnement (`/etc/minio/minio.env`) avec des identifiants par défaut. Il est crucial de les modifier pour un environnement de production.
-
-**Utilisation :**
-```bash
-sudo ./install_minio.sh
-```
+-   **`install_java.sh`**: Installe OpenJDK 11, une dépendance critique pour Rundeck.
+-   **`install_mysql.sh`**: Installe le serveur MySQL, crée la base de données `rundeck` et l'utilisateur `rundeckuser`.
+    -   **⚠️ SÉCURITÉ :** Ce script utilise des identifiants par défaut. Pour un usage en production, modifiez le script pour utiliser des mots de passe forts ou, mieux encore, exécutez `mysql_secure_installation` après coup.
+-   **`install_rundeck.sh`**: Installe Rundeck, le configure pour utiliser la base de données MySQL et le rend accessible sur le réseau.
+-   **`install_minio.sh`**: Installe le serveur de stockage objet MinIO et le configure comme un service `systemd`.
+    -   **⚠️ SÉCURITÉ :** Les identifiants root de MinIO sont définis dans `/etc/minio/minio.env`. Modifiez ce fichier après l'installation pour sécuriser votre instance.
 
 ---
 
-## Scripts de Sauvegarde et Restauration
+## Scripts d'Opérations
 
-Ces scripts sont dédiés à la gestion des sauvegardes et des restaurations de votre instance Rundeck pour assurer la sécurité de vos données.
+Ces scripts sont essentiels pour la maintenance et la reprise après sinistre.
 
-### Script de Sauvegarde: `backup_rundeck.sh`
+### Sauvegarde : `backup_rundeck.sh`
 
-Ce script permet de créer une sauvegarde complète de l'instance Rundeck.
+Ce script crée une sauvegarde **complète et cohérente** de l'instance Rundeck.
 
-**Fonctionnalités :**
-- Arrête le service `rundeckd` pour assurer la cohérence des données.
-- Sauvegarde la base de données MySQL `rundeck` via `mysqldump`.
-- Crée une archive `.tar.gz` contenant :
-  - Le dump de la base de données.
-  - Les logs (`/var/lib/rundeck/logs`).
-  - Les keystores (`/var/lib/rundeck/keystore`).
-  - Les définitions de projets (`/var/lib/rundeck/projects`).
-  - Les fichiers de configuration (`/etc/rundeck`).
-- Redémarre le service `rundeckd` une fois la sauvegarde terminée.
-- Stocke la sauvegarde dans `/var/backups/rundeck/` avec un horodatage.
+**Processus :**
+1.  Arrête le service `rundeckd` pour garantir qu'aucune donnée n'est en cours d'écriture.
+2.  Sauvegarde la base de données MySQL avec `mysqldump`.
+3.  Crée une archive `.tar.gz` unique contenant :
+    -   Le dump SQL.
+    -   Les définitions de projets (`/var/lib/rundeck/projects`).
+    -   Les clés de sécurité (`/var/lib/rundeck/keystore`).
+    -   Les logs d'exécution (`/var/lib/rundeck/logs`).
+    -   Les fichiers de configuration (`/etc/rundeck`).
+4.  Redémarre le service `rundeckd`.
 
 **Utilisation :**
 ```bash
 sudo ./backup_rundeck.sh
 ```
+La sauvegarde est stockée dans `/var/backups/rundeck/` avec un nom horodaté.
 
-### Script de Restauration: `restore_rundeck.sh`
+### Restauration : `restore_rundeck.sh`
 
-Ce script permet de restaurer Rundeck à partir d'un fichier de sauvegarde créé par `backup_rundeck.sh`.
+Ce script restaure une instance Rundeck à partir d'une archive de sauvegarde.
 
-**Fonctionnalités :**
-- Prend le chemin vers un fichier de sauvegarde en argument.
-- Arrête le service `rundeckd`.
-- Restaure la base de données MySQL à partir du dump SQL contenu dans l'archive.
-- Supprime les anciennes données et restaure les fichiers et répertoires de Rundeck.
-- Rétablit les permissions (`chown`) pour l'utilisateur `rundeck`.
-- Redémarre le service `rundeckd`.
+**⚠️ ATTENTION :** Ce script est **destructif**. Il effacera les données actuelles de Rundeck pour les remplacer par celles de la sauvegarde.
+
+**Processus :**
+1.  Prend le chemin d'un fichier de sauvegarde en argument.
+2.  Arrête le service `rundeckd`.
+3.  Supprime les anciens répertoires de données et de configuration.
+4.  Restaure les fichiers et les répertoires depuis l'archive.
+5.  Restaure la base de données MySQL.
+6.  Rétablit les permissions des fichiers pour l'utilisateur `rundeck`.
+7.  Redémarre le service `rundeckd`.
 
 **Utilisation :**
 ```bash
 sudo ./restore_rundeck.sh /var/backups/rundeck/rundeck_backup_YYYYMMDD_HHMMSS.tar.gz
 ```
+
+## Bonnes Pratiques en Production
+
+-   **Automatisez les Sauvegardes** : Utilisez `cron` pour exécuter `backup_rundeck.sh` automatiquement.
+    ```bash
+    # /etc/crontab
+    # Exécute une sauvegarde tous les jours à 2h du matin
+    0 2 * * * root /path/to/scripts/backup_rundeck.sh
+    ```
+-   **Externalisez les Sauvegardes** : Ne laissez pas les sauvegardes sur le même serveur que Rundeck. Utilisez un job Rundeck (comme le template `transfert-s3.yml`) ou un autre script pour copier les archives de sauvegarde vers un stockage externe (MinIO, S3, etc.).
+-   **Sécurisez MySQL et MinIO** : Changez tous les mots de passe par défaut immédiatement après l'installation.
