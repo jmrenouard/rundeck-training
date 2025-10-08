@@ -24,3 +24,6 @@ Ce répertoire contient un générateur de fichier `ACLPolicy` pour Rundeck. Il 
 
 ### [ressources](./ressources/README.md)
 Ce répertoire contient un générateur de fichier de modèle de ressources pour Rundeck. C'est un outil web qui simplifie la création de fichiers YAML définissant les nœuds cibles pour les jobs.
+
+### [jobs](./jobs/README.md)
+Ce répertoire contient un générateur de jobs Rundeck. C'est un outil web qui permet de créer des jobs complexes avec plusieurs étapes, des options, et de générer le fichier YAML correspondant. Il supporte l'importation de jobs existants et l'internationalisation (FR/EN).

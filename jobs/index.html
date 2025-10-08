@@ -77,31 +77,47 @@
 </head>
 <body class="p-4 sm:p-8" x-cloak x-data="jobBuilder()">
     <div class="max-w-screen-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Rundeck Job YAML Generator</h1>
-        <p class="text-gray-600 mb-8">Create multi-step job definitions using the form below. The YAML output will be generated on the right.</p>
+        <div class="flex justify-end mb-4">
+            <div class="flex rounded-md shadow-sm">
+                <button @click="setLang('fr')" :class="lang === 'fr' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-4 py-2 border border-gray-300 rounded-l-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">FR</button>
+                <button @click="setLang('en')" :class="lang === 'en' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-4 py-2 border-t border-b border-r border-gray-300 rounded-r-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">EN</button>
+            </div>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2" x-text="t('main_title')"></h1>
+        <p class="text-gray-600 mb-8" x-text="t('main_subtitle')"></p>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Left Side: Form -->
             <div class="space-y-6">
+                <!-- Import Section -->
+                <div class="form-section">
+                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4" x-text="t('import_title')"></h2>
+                    <p class="text-gray-600 mb-4" x-text="t('import_subtitle')"></p>
+                    <textarea x-model="yamlInput" rows="6" class="form-textarea" :placeholder="t('import_placeholder')"></textarea>
+                    <div class="mt-4 flex justify-end">
+                        <button @click="importYaml()" class="btn btn-secondary" x-text="t('import_button')"></button>
+                    </div>
+                </div>
+
                 <!-- Job Details -->
                 <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Job Details</h2>
+                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4" x-text="t('job_details_title')"></h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="font-medium text-gray-700">Name</label>
-                            <input type="text" x-model="job.name" placeholder="my-awesome-job" class="form-input mt-1">
+                            <label for="job_name" class="font-medium text-gray-700" x-text="t('job_name_label')"></label>
+                            <input id="job_name" type="text" x-model="job.name" :placeholder="t('job_name_placeholder')" class="form-input mt-1">
                         </div>
                         <div>
-                            <label class="font-medium text-gray-700">Group</label>
-                            <input type="text" x-model="job.group" placeholder="jobs/production" class="form-input mt-1">
+                            <label for="job_group" class="font-medium text-gray-700" x-text="t('job_group_label')"></label>
+                            <input id="job_group" type="text" x-model="job.group" :placeholder="t('job_group_placeholder')" class="form-input mt-1">
                         </div>
                         <div>
-                            <label class="font-medium text-gray-700">Description</label>
-                            <textarea x-model="job.description" rows="4" placeholder="First line is the short description.&#10;Subsequent lines are the extended description (Markdown supported)." class="form-textarea mt-1"></textarea>
+                            <label for="job_description" class="font-medium text-gray-700" x-text="t('job_description_label')"></label>
+                            <textarea id="job_description" x-model="job.description" rows="4" :placeholder="t('job_description_placeholder')" class="form-textarea mt-1"></textarea>
                         </div>
                         <div>
-                            <label class="font-medium text-gray-700">Log Level</label>
-                            <select x-model="job.loglevel" class="form-select mt-1">
+                            <label for="job_loglevel" class="font-medium text-gray-700" x-text="t('job_loglevel_label')"></label>
+                            <select id="job_loglevel" x-model="job.loglevel" class="form-select mt-1">
                                 <option>DEBUG</option>
                                 <option>VERBOSE</option>
                                 <option>INFO</option>
@@ -114,18 +130,18 @@
 
                 <!-- Workflow Sequence -->
                 <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Workflow Sequence</h2>
+                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4" x-text="t('workflow_title')"></h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <div>
-                            <label class="font-medium text-gray-700">On Step Failure</label>
-                            <select x-model="job.sequence.keepgoing" class="form-select mt-1">
-                                <option :value="false">Stop at failed step</option>
-                                <option :value="true">Run remaining steps</option>
+                            <label for="workflow_keepgoing" class="font-medium text-gray-700" x-text="t('workflow_on_failure_label')"></label>
+                            <select id="workflow_keepgoing" x-model="job.sequence.keepgoing" class="form-select mt-1">
+                                <option :value="false" x-text="t('workflow_on_failure_stop')"></option>
+                                <option :value="true" x-text="t('workflow_on_failure_continue')"></option>
                             </select>
                         </div>
                         <div>
-                            <label class="font-medium text-gray-700">Strategy</label>
-                            <select x-model="job.sequence.strategy" class="form-select mt-1">
+                            <label for="workflow_strategy" class="font-medium text-gray-700" x-text="t('workflow_strategy_label')"></label>
+                            <select id="workflow_strategy" x-model="job.sequence.strategy" class="form-select mt-1">
                                 <option>node-first</option>
                                 <option>step-first</option>
                                 <option>parallel</option>
@@ -134,44 +150,43 @@
                     </div>
 
                     <!-- Steps -->
-                    <h3 class="text-lg font-medium text-gray-700 mb-2">Steps</h3>
-                    <div x-show="job.sequence.commands.length === 0" class="text-center text-gray-500 py-4 border-2 border-dashed rounded-md">
-                        No steps defined. Add one below.
+                    <h3 class="text-lg font-medium text-gray-700 mb-2" x-text="t('steps_title')"></h3>
+                    <div x-show="job.sequence.commands.length === 0" class="text-center text-gray-500 py-4 border-2 border-dashed rounded-md" x-text="t('steps_empty_message')">
                     </div>
 
                     <div x-show="job.sequence.commands.length > 0" class="space-y-4">
                         <template x-for="(step, index) in job.sequence.commands" :key="index">
                             <div class="p-4 border rounded-lg bg-gray-50">
                                 <div class="flex justify-between items-center mb-2">
-                                    <h4 class="font-semibold text-gray-800" x-text="`Step ${index + 1}: ${step.type}`"></h4>
-                                    <button @click="removeStep(index)" class="btn btn-danger btn-sm">Remove</button>
+                                    <h4 class="font-semibold text-gray-800" x-text="t('step_title', {index: index + 1, type: step.type})"></h4>
+                                    <button @click="removeStep(index)" class="btn btn-danger btn-sm" x-text="t('remove_button')"></button>
                                 </div>
 
                                 <div class="space-y-3">
                                     <div>
-                                        <label class="font-medium text-gray-600 text-sm">Description</label>
-                                        <input type="text" x-model="step.description" placeholder="Optional step description" class="form-input text-sm mt-1">
+                                        <label :for="'step_description_' + index" class="font-medium text-gray-600 text-sm" x-text="t('step_description_label')"></label>
+                                        <input :id="'step_description_' + index" type="text" x-model="step.description" :placeholder="t('step_description_placeholder')" class="form-input text-sm mt-1">
                                     </div>
                                     <!-- Exec -->
                                     <div x-show="step.type === 'exec'">
-                                        <label class="font-medium text-gray-600 text-sm">Command</label>
-                                        <input type="text" x-model="step.details.exec" placeholder="echo 'hello world'" class="form-input text-sm font-mono mt-1">
+                                        <label :for="'step_exec_' + index" class="font-medium text-gray-600 text-sm" x-text="t('step_command_label')"></label>
+                                        <input :id="'step_exec_' + index" type="text" x-model="step.details.exec" :placeholder="t('step_command_placeholder')" class="form-input text-sm font-mono mt-1">
                                     </div>
                                     <!-- Script -->
                                     <div x-show="step.type === 'script'">
-                                        <label class="font-medium text-gray-600 text-sm">Script Content</label>
-                                        <textarea x-model="step.details.script" rows="5" class="form-textarea text-sm font-mono mt-1" placeholder="#!/bin/bash&#10;echo &quot;Hello @option.name@&quot;"></textarea>
-                                        <label class="font-medium text-gray-600 text-sm mt-2">Arguments</label>
-                                        <input type="text" x-model="step.details.args" placeholder="Optional script arguments" class="form-input text-sm font-mono mt-1">
+                                        <label :for="'step_script_content_' + index" class="font-medium text-gray-600 text-sm" x-text="t('step_script_content_label')"></label>
+                                        <textarea :id="'step_script_content_' + index" x-model="step.details.script" rows="5" class="form-textarea text-sm font-mono mt-1" :placeholder="t('step_script_content_placeholder')"></textarea>
+                                        <label :for="'step_script_args_' + index" class="font-medium text-gray-600 text-sm mt-2" x-text="t('step_script_args_label')"></label>
+                                        <input :id="'step_script_args_' + index" type="text" x-model="step.details.args" :placeholder="t('step_script_args_placeholder')" class="form-input text-sm font-mono mt-1">
                                     </div>
                                     <!-- Job Reference -->
                                     <div x-show="step.type === 'jobref'" class="space-y-2">
-                                        <label class="font-medium text-gray-600 text-sm">Job Name</label>
-                                        <input type="text" x-model="step.details.name" placeholder="Referenced job name" class="form-input text-sm mt-1">
-                                        <label class="font-medium text-gray-600 text-sm">Group</label>
-                                        <input type="text" x-model="step.details.group" placeholder="Referenced job group (optional)" class="form-input text-sm mt-1">
-                                        <label class="font-medium text-gray-600 text-sm">Arguments</label>
-                                        <input type="text" x-model="step.details.args" placeholder="-opt1 value1 -opt2 value2" class="form-input text-sm font-mono mt-1">
+                                        <label :for="'step_jobref_name_' + index" class="font-medium text-gray-600 text-sm" x-text="t('step_jobref_name_label')"></label>
+                                        <input :id="'step_jobref_name_' + index" type="text" x-model="step.details.name" :placeholder="t('step_jobref_name_placeholder')" class="form-input text-sm mt-1">
+                                        <label :for="'step_jobref_group_' + index" class="font-medium text-gray-600 text-sm" x-text="t('step_jobref_group_label')"></label>
+                                        <input :id="'step_jobref_group_' + index" type="text" x-model="step.details.group" :placeholder="t('step_jobref_group_placeholder')" class="form-input text-sm mt-1">
+                                        <label :for="'step_jobref_args_' + index" class="font-medium text-gray-600 text-sm" x-text="t('step_jobref_args_label')"></label>
+                                        <input :id="'step_jobref_args_' + index" type="text" x-model="step.details.args" :placeholder="t('step_jobref_args_placeholder')" class="form-input text-sm font-mono mt-1">
                                     </div>
                                 </div>
                             </div>
@@ -179,56 +194,55 @@
                     </div>
 
                     <div class="mt-4 pt-4 border-t">
-                        <label class="font-medium text-gray-700">Add a new step:</label>
+                        <label class="font-medium text-gray-700" x-text="t('add_step_label')"></label>
                         <div class="flex items-center space-x-2 mt-2">
                             <select x-ref="newStepType" class="form-select">
-                                <option value="exec">Command (exec)</option>
-                                <option value="script">Inline Script</option>
-                                <option value="jobref">Job Reference</option>
-                                <option value="scriptfile">Script File</option>
-                                <option value="scripturl">Script URL</option>
+                                <option value="exec" x-text="t('step_type_exec')"></option>
+                                <option value="script" x-text="t('step_type_script')"></option>
+                                <option value="jobref" x-text="t('step_type_jobref')"></option>
+                                <option value="scriptfile" x-text="t('step_type_scriptfile')"></option>
+                                <option value="scripturl" x-text="t('step_type_scripturl')"></option>
                             </select>
-                            <button @click="addStep($refs.newStepType.value)" class="btn btn-primary">Add Step</button>
+                            <button @click="addStep($refs.newStepType.value)" class="btn btn-primary" x-text="t('add_step_button')"></button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Options -->
                 <div class="form-section">
-                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">Options</h2>
-                    <div x-show="job.options.length === 0" class="text-center text-gray-500 py-4 border-2 border-dashed rounded-md">
-                        No options defined. Add one below.
+                    <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 mb-4" x-text="t('options_title')"></h2>
+                    <div x-show="job.options.length === 0" class="text-center text-gray-500 py-4 border-2 border-dashed rounded-md" x-text="t('options_empty_message')">
                     </div>
                     <div x-show="job.options.length > 0" class="space-y-4">
                         <template x-for="(option, index) in job.options" :key="index">
                             <div class="p-4 border rounded-lg bg-gray-50">
                                 <div class="flex justify-between items-center mb-3">
-                                    <h4 class="font-semibold text-gray-800" x-text="`Option: ${option.name || 'new-option'}`"></h4>
-                                    <button @click="removeOption(index)" class="btn btn-danger btn-sm">Remove</button>
+                                    <h4 class="font-semibold text-gray-800" x-text="t('option_title', {name: option.name || 'new-option'})"></h4>
+                                    <button @click="removeOption(index)" class="btn btn-danger btn-sm" x-text="t('remove_button')"></button>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="font-medium text-gray-600 text-sm">Name</label>
-                                        <input type="text" x-model="option.name" class="form-input text-sm mt-1">
+                                        <label :for="'option_name_' + index" class="font-medium text-gray-600 text-sm" x-text="t('option_name_label')"></label>
+                                        <input :id="'option_name_' + index" type="text" x-model="option.name" class="form-input text-sm mt-1">
                                     </div>
                                     <div>
-                                        <label class="font-medium text-gray-600 text-sm">Default Value</label>
-                                        <input type="text" x-model="option.value" class="form-input text-sm mt-1">
+                                        <label :for="'option_value_' + index" class="font-medium text-gray-600 text-sm" x-text="t('option_default_value_label')"></label>
+                                        <input :id="'option_value_' + index" type="text" x-model="option.value" class="form-input text-sm mt-1">
                                     </div>
                                     <div class="sm:col-span-2">
-                                        <label class="font-medium text-gray-600 text-sm">Description</label>
-                                        <input type="text" x-model="option.description" class="form-input text-sm mt-1">
+                                        <label :for="'option_description_' + index" class="font-medium text-gray-600 text-sm" x-text="t('option_description_label')"></label>
+                                        <input :id="'option_description_' + index" type="text" x-model="option.description" class="form-input text-sm mt-1">
                                     </div>
                                     <div class="flex items-center space-x-2 pt-2">
-                                        <input type="checkbox" :id="'required-'+index" x-model="option.required" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                        <label :for="'required-'+index" class="text-gray-700">Required</label>
+                                        <input type="checkbox" :id="'option_required_'+index" x-model="option.required" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                        <label :for="'option_required_'+index" class="text-gray-700" x-text="t('option_required_label')"></label>
                                     </div>
                                 </div>
                             </div>
                         </template>
                     </div>
                     <div class="mt-4 pt-4 border-t">
-                        <button @click="addOption()" class="btn btn-primary">Add Option</button>
+                        <button @click="addOption()" class="btn btn-primary" x-text="t('add_option_button')"></button>
                     </div>
                 </div>
 
@@ -239,8 +253,8 @@
                 <div class="sticky top-8">
                     <div class="form-section">
                         <div class="flex justify-between items-center border-b pb-2 mb-4">
-                            <h2 class="text-xl font-semibold text-gray-700">Generated YAML</h2>
-                            <button @click="copyToClipboard()" x-text="copyButtonText" class="btn btn-secondary">Copy</button>
+                            <h2 class="text-xl font-semibold text-gray-700" x-text="t('yaml_output_title')"></h2>
+                            <button @click="copyToClipboard()" x-text="copyButtonText" class="btn btn-secondary"></button>
                         </div>
                         <pre class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto text-sm"
                              x-text="yamlOutput"></pre>
@@ -265,11 +279,230 @@
                     },
                     options: [],
                 },
+                yamlInput: '',
                 copyButtonText: 'Copy',
+                lang: 'en',
+                translations: {
+                    en: {
+                        main_title: 'Rundeck Job YAML Generator',
+                        main_subtitle: 'Create multi-step job definitions using the form below. The YAML output will be generated on the right.',
+                        import_title: 'Import YAML',
+                        import_subtitle: 'Paste existing job YAML to populate the form.',
+                        import_placeholder: 'Paste your YAML here...',
+                        import_button: 'Import',
+                        job_details_title: 'Job Details',
+                        job_name_label: 'Name',
+                        job_name_placeholder: 'my-awesome-job',
+                        job_group_label: 'Group',
+                        job_group_placeholder: 'jobs/production',
+                        job_description_label: 'Description',
+                        job_description_placeholder: 'First line is the short description.\nSubsequent lines are the extended description (Markdown supported).',
+                        job_loglevel_label: 'Log Level',
+                        workflow_title: 'Workflow Sequence',
+                        workflow_on_failure_label: 'On Step Failure',
+                        workflow_on_failure_stop: 'Stop at failed step',
+                        workflow_on_failure_continue: 'Run remaining steps',
+                        workflow_strategy_label: 'Strategy',
+                        steps_title: 'Steps',
+                        steps_empty_message: 'No steps defined. Add one below.',
+                        step_title: 'Step {index}: {type}',
+                        remove_button: 'Remove',
+                        step_description_label: 'Description',
+                        step_description_placeholder: 'Optional step description',
+                        step_command_label: 'Command',
+                        step_command_placeholder: "echo 'hello world'",
+                        step_script_content_label: 'Script Content',
+                        step_script_content_placeholder: '#!/bin/bash\necho "Hello @option.name@"',
+                        step_script_args_label: 'Arguments',
+                        step_script_args_placeholder: 'Optional script arguments',
+                        step_jobref_name_label: 'Job Name',
+                        step_jobref_name_placeholder: 'Referenced job name',
+                        step_jobref_group_label: 'Group',
+                        step_jobref_group_placeholder: 'Referenced job group (optional)',
+                        step_jobref_args_label: 'Arguments',
+                        step_jobref_args_placeholder: '-opt1 value1 -opt2 value2',
+                        add_step_label: 'Add a new step:',
+                        add_step_button: 'Add Step',
+                        step_type_exec: 'Command (exec)',
+                        step_type_script: 'Inline Script',
+                        step_type_jobref: 'Job Reference',
+                        step_type_scriptfile: 'Script File',
+                        step_type_scripturl: 'Script URL',
+                        options_title: 'Options',
+                        options_empty_message: 'No options defined. Add one below.',
+                        option_title: 'Option: {name}',
+                        option_name_label: 'Name',
+                        option_default_value_label: 'Default Value',
+                        option_description_label: 'Description',
+                        option_required_label: 'Required',
+                        add_option_button: 'Add Option',
+                        yaml_output_title: 'Generated YAML',
+                        copy: 'Copy',
+                        copied: 'Copied!',
+                        error: 'Error',
+                        import_success: 'Job imported successfully!',
+                        import_error: 'Error importing YAML: {message}',
+                        import_invalid_format: 'Invalid YAML format. Expected an array with at least one job definition.',
+                        yaml_lib_not_loaded: 'YAML library not loaded. Please wait and try again.',
+                    },
+                    fr: {
+                        main_title: 'Générateur YAML de Job Rundeck',
+                        main_subtitle: 'Créez des définitions de jobs multi-étapes en utilisant le formulaire ci-dessous. Le YAML sera généré sur la droite.',
+                        import_title: 'Importer du YAML',
+                        import_subtitle: 'Collez un YAML de job existant pour remplir le formulaire.',
+                        import_placeholder: 'Collez votre YAML ici...',
+                        import_button: 'Importer',
+                        job_details_title: 'Détails du Job',
+                        job_name_label: 'Nom du Job',
+                        job_name_placeholder: 'mon-super-job',
+                        job_group_label: 'Groupe du Job',
+                        job_group_placeholder: 'jobs/production',
+                        job_description_label: 'Description',
+                        job_description_placeholder: 'La première ligne est la description courte.\nLes lignes suivantes sont la description étendue (Markdown supporté).',
+                        job_loglevel_label: 'Niveau de Log',
+                        workflow_title: 'Séquence du Workflow',
+                        workflow_on_failure_label: 'En cas d\'échec d\'une étape',
+                        workflow_on_failure_stop: 'Arrêter à l\'étape échouée',
+                        workflow_on_failure_continue: 'Exécuter les étapes restantes',
+                        workflow_strategy_label: 'Stratégie',
+                        steps_title: 'Étapes',
+                        steps_empty_message: 'Aucune étape définie. Ajoutez-en une ci-dessous.',
+                        step_title: 'Étape {index}: {type}',
+                        remove_button: 'Supprimer',
+                        step_description_label: 'Description',
+                        step_description_placeholder: 'Description optionnelle de l\'étape',
+                        step_command_label: 'Commande',
+                        step_command_placeholder: "echo 'bonjour le monde'",
+                        step_script_content_label: 'Contenu du Script',
+                        step_script_content_placeholder: '#!/bin/bash\necho "Bonjour @option.name@"',
+                        step_script_args_label: 'Arguments',
+                        step_script_args_placeholder: 'Arguments optionnels du script',
+                        step_jobref_name_label: 'Nom du Job Référencé',
+                        step_jobref_name_placeholder: 'Nom du job référencé',
+                        step_jobref_group_label: 'Groupe de la Référence',
+                        step_jobref_group_placeholder: 'Groupe du job référencé (optionnel)',
+                        step_jobref_args_label: 'Arguments',
+                        step_jobref_args_placeholder: '-opt1 valeur1 -opt2 valeur2',
+                        add_step_label: 'Ajouter une nouvelle étape:',
+                        add_step_button: 'Ajouter Étape',
+                        step_type_exec: 'Commande (exec)',
+                        step_type_script: 'Script Intégré',
+                        step_type_jobref: 'Référence de Job',
+                        step_type_scriptfile: 'Fichier de Script',
+                        step_type_scripturl: 'URL de Script',
+                        options_title: 'Options',
+                        options_empty_message: 'Aucune option définie. Ajoutez-en une ci-dessous.',
+                        option_title: 'Option: {name}',
+                        option_name_label: 'Nom de l\'Option',
+                        option_default_value_label: 'Valeur par défaut',
+                        option_description_label: 'Description',
+                        option_required_label: 'Requis',
+                        add_option_button: 'Ajouter Option',
+                        yaml_output_title: 'YAML Généré',
+                        copy: 'Copier',
+                        copied: 'Copié !',
+                        error: 'Erreur',
+                        import_success: 'Job importé avec succès !',
+                        import_error: 'Erreur lors de l\'importation du YAML : {message}',
+                        import_invalid_format: 'Format YAML invalide. Un tableau avec au moins une définition de job est attendu.',
+                        yaml_lib_not_loaded: 'La librairie YAML n\'est pas chargée. Veuillez patienter et réessayer.',
+                    }
+                },
 
                 init() {
-                    // This watcher recalculates the YAML output whenever the job object changes.
-                    // A simple getter is used instead for cleaner code. See yamlOutput().
+                    this.copyButtonText = this.t('copy');
+                    this.$watch('lang', () => {
+                        document.title = this.t('main_title');
+                        this.copyButtonText = this.t('copy');
+                    });
+                },
+
+                setLang(lang) {
+                    this.lang = lang;
+                },
+
+                t(key, replacements = {}) {
+                    let translation = this.translations[this.lang][key] || key;
+                    Object.keys(replacements).forEach(rKey => {
+                        translation = translation.replace(`{${rKey}}`, replacements[rKey]);
+                    });
+                    return translation;
+                },
+
+                // IMPORT
+                importYaml() {
+                    if (typeof jsyaml === 'undefined') {
+                        alert(this.t('yaml_lib_not_loaded'));
+                        return;
+                    }
+                    try {
+                        const data = jsyaml.load(this.yamlInput);
+                        if (!Array.isArray(data) || data.length === 0) {
+                            alert(this.t('import_invalid_format'));
+                            return;
+                        }
+
+                        const importedJob = data[0];
+
+                        // Reset current job state
+                        const newJob = {
+                            name: '', group: '', description: '', loglevel: 'INFO',
+                            sequence: { keepgoing: false, strategy: 'node-first', commands: [] },
+                            options: []
+                        };
+
+                        // Map top-level properties
+                        newJob.name = importedJob.name || '';
+                        newJob.group = importedJob.group || '';
+                        newJob.description = importedJob.description || '';
+                        newJob.loglevel = importedJob.loglevel || 'INFO';
+
+                        // Map options
+                        if (importedJob.options) {
+                            newJob.options = importedJob.options.map(opt => ({
+                                name: opt.name,
+                                value: opt.value || '',
+                                description: opt.description || '',
+                                required: opt.required || false,
+                            }));
+                        }
+
+                        // Map sequence and commands
+                        if (importedJob.sequence) {
+                            newJob.sequence.keepgoing = importedJob.sequence.keepgoing || false;
+                            newJob.sequence.strategy = importedJob.sequence.strategy || 'node-first';
+                            if (importedJob.sequence.commands) {
+                                newJob.sequence.commands = importedJob.sequence.commands.map(cmd => {
+                                    const step = { type: '', details: {}, description: cmd.description || '' };
+                                    if (cmd.exec) {
+                                        step.type = 'exec';
+                                        step.details = { exec: cmd.exec };
+                                    } else if (cmd.script) {
+                                        step.type = 'script';
+                                        step.details = { script: cmd.script, args: cmd.args || '' };
+                                    } else if (cmd.jobref) {
+                                        step.type = 'jobref';
+                                        step.details = { ...cmd.jobref };
+                                    } else if (cmd.scriptfile) {
+                                        step.type = 'scriptfile';
+                                        step.details = { scriptfile: cmd.scriptfile, args: cmd.args || '' };
+                                    } else if (cmd.scripturl) {
+                                        step.type = 'scripturl';
+                                        step.details = { scripturl: cmd.scripturl, args: cmd.args || '' };
+                                    }
+                                    return step;
+                                });
+                            }
+                        }
+
+                        this.job = newJob;
+                        this.yamlInput = ''; // Clear input on success
+                        alert(this.t('import_success'));
+
+                    } catch (e) {
+                        console.error('YAML Import Error:', e);
+                        alert(this.t('import_error', {message: e.message}));
+                    }
                 },
 
                 // STEPS
@@ -380,12 +613,12 @@
 
                 copyToClipboard() {
                     navigator.clipboard.writeText(this.yamlOutput).then(() => {
-                        this.copyButtonText = 'Copied!';
-                        setTimeout(() => { this.copyButtonText = 'Copy'; }, 2000);
+                        this.copyButtonText = this.t('copied');
+                        setTimeout(() => { this.copyButtonText = this.t('copy'); }, 2000);
                     }).catch(err => {
                         console.error('Could not copy text: ', err);
-                        this.copyButtonText = 'Error';
-                        setTimeout(() => { this.copyButtonText = 'Copy'; }, 2000);
+                        this.copyButtonText = this.t('error');
+                        setTimeout(() => { this.copyButtonText = this.t('copy'); }, 2000);
                     });
                 }
             };
