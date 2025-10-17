@@ -24,11 +24,22 @@ Ce job est un composant essentiel pour de nombreux workflows d'automatisation :
 Le client MinIO (`mc`) doit être installé sur le nœud où le job sera exécuté.
 
 **Installation du client `mc` sur Linux :**
+
+> **Sécurité :** Il est recommandé de vérifier l'intégrité du binaire téléchargé en comparant sa somme de contrôle SHA256 avec celle publiée par MinIO.
+
 ```bash
+# Télécharger le binaire mc
 wget https://dl.min.io/client/mc/release/linux-amd64/mc
+
+# Télécharger la somme de contrôle SHA256 officielle
+wget https://dl.min.io/client/mc/release/linux-amd64/mc.sha256sum
+
+# Vérifier l'intégrité du binaire
+sha256sum -c mc.sha256sum
+
+# Si la vérification est OK, installer mc
 chmod +x mc
 sudo mv mc /usr/local/bin/
-```
 Le client `mc` doit être accessible dans le `PATH` de l'utilisateur qui exécute les jobs Rundeck.
 
 #### Options du Job
