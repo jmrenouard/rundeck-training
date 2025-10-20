@@ -1,2 +1,9 @@
 # Ignore Docker environment file
 docker/.env
+web_sites/**
+!web_sites/*.pdf
+pdf_conversion_temp/**
+/web_site/all_docs_docker.txt
+/web_site/all_docs_rundeck.txt
+/web_site/doc_ansible_urls.txt
+/pdf_conversion_temp/url-list.txt
