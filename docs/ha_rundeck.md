@@ -98,12 +98,6 @@ rundeck.clusterMode.heartbeat.considerDead=300
 Pour les très grands déploiements, la documentation mentionne des architectures plus complexes :
 
 1.  **Serveurs Spécialisés :** On peut dédier certains nœuds du cluster à des rôles spécifiques. Par exemple, des nœuds "Frontend" (pour l'UI/API) et des nœuds "Backend" (pour l'exécution des jobs).
-2.  **Enterprise Runners (Modèle distribué) :** C'est une fonctionnalité clé de la version Enterprise. Le cluster central Rundeck (lui-même en HA, Modèle 1 ou 2) ne gère que l'interface et la planification. L'exécution réelle des jobs est déléguée à des "Runners". Ces runners sont de petits agents installés dans des réseaux distants (ex: autres data centers, VPC cloud).
+2.  **Enterprise Runners (Modèle 
 
-Ce modèle "Runners" est la forme la plus avancée de HA et de scalabilité :
 
-  * **Isolation :** Une exécution lourde sur un Runner n'impacte pas le serveur central.
-  * **Sécurité :** Les Runners contactent le serveur central ; il n'y a pas besoin d'ouvrir des ports de pare-feu vers les réseaux distants.
-  * **Disponibilité :** Si un Runner tombe, le job peut être ré-exécuté sur un autre Runner du même groupe (tag).
-
-J'espère que cette description clarifie les différentes approches pour mettre en place la haute disponibilité avec Rundeck. La clé absolue reste la base de données partagée \!
