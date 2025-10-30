@@ -61,8 +61,8 @@ success "Rundeck a été installé with succès."
 
 info "Téléchargement du driver JDBC MySQL..."
 mkdir -p /var/lib/rundeck/lib
-curl -L -o /var/lib/rundeck/lib/mysql-connector-java-8.0.28.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar || error "Le téléchargement du driver JDBC a échoué."
-chown rundeck:rundeck /var/lib/rundeck/lib/mysql-connector-java-8.0.28.jar
+curl -L -o /var/lib/rundeck/lib/mariadb-java-client-3.1.4.jar https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.1.4/mariadb-java-client-3.1.4.jar || error "Le téléchargement du driver JDBC a échoué."
+chown rundeck:rundeck /var/lib/rundeck/lib/mariadb-java-client-3.1.4.jar
 success "Driver JDBC MySQL téléchargé."
 
 
@@ -83,11 +83,9 @@ sed -i "s|dataSource.username =.*|dataSource.username = $DB_USER|" "$RUNDECK_CON
 sed -i "s|dataSource.password =.*|dataSource.password = $DB_PASS|" "$RUNDECK_CONFIG"
 # Ajout du driver si absent
 if ! grep -q "dataSource.driverClassName" "$RUNDECK_CONFIG"; then
-    echo "dataSource.driverClassName = com.mysql.cj.jdbc.Driver" >> "$RUNDECK_CONFIG"
+    echo "dataSource.driverClassName = org.mariadb.jdbc.Driver" >> "$RUNDECK_CONFIG"
 fi
-if ! grep -q "dataSource.dialect" "$RUNDECK_CONFIG"; then
-    echo "dataSource.dialect = org.hibernate.dialect.MySQL8Dialect" >> "$RUNDECK_CONFIG"
-fi
+
 success "La configuration de la base de données dans '$RUNDECK_CONFIG' a été mise à jour."
 
 info "Configuration du port et de l'adresse de Rundeck dans le profil..."
