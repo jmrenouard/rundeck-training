@@ -46,8 +46,9 @@ success "Prérequis validés."
 
 # --- Installation ---
 info "Configuration du référentiel Rundeck..."
-rm -f /etc/apt/sources.list.d/rundeck.list
-curl -s https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-setup.sh | bash -s -- rundeck &>/dev/null || error "L'ajout du référentiel Rundeck a échoué."
+    curl -fsSL https://packages.rundeck.com/pagerduty/rundeck/gpgkey | tee /etc/apt/trusted.gpg.d/rundeck-key.asc >/dev/null || error "Échec du téléchargement de la clé GPG de Rundeck."
+    echo "deb https://packages.rundeck.com/pagerduty/rundeck/any/ any main" | tee /etc/apt/sources.list.d/rundeck.list >/dev/null || error "Échec de l'écriture du fichier sources.list de Rundeck."
+    echo "deb-src https://packages.rundeck.com/pagerduty/rundeck/any/ any main" | tee -a /etc/apt/sources.list.d/rundeck.list >/dev/null || error "Échec de l'écriture du fichier sources.list de Rundeck." &>/dev/null || error "L'ajout du référentiel Rundeck a échoué."
 success "Référentiel Rundeck ajouté."
 
 info "Mise à jour de la liste des paquets..."
@@ -55,7 +56,7 @@ apt-get update || error "La mise à jour de la liste des paquets a échoué."
 success "Le cache APT a été mis à jour."
 
 info "Installation de Rundeck..."
-apt-get install -y rundeck &>/dev/null || error "L'installation de Rundeck a échoué."
+apt-get install -y rundeck || error "L'installation de Rundeck a échoué."
 success "Rundeck a été installé avec succès."
 
 # --- Configuration ---
