@@ -112,8 +112,8 @@ systemctl restart rundeckd || error "Le redémarrage du service Rundeck a échou
 success "Le service Rundeck a été démarré et activé."
 
 # --- Pause pour démarrage ---
-warn "Rundeck peut prendre plusieurs minutes pour démarrer la première fois. Pause de 90 secondes..."
-sleep 90s
+warn "Rundeck peut prendre plusieurs minutes pour démarrer la première fois. Pause de 5 secondes..."
+sleep 5s
 
 # --- Tests Post-Installation ---
 info "Validation de l'installation de Rundeck..."
