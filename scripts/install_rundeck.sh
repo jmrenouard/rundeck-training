@@ -51,7 +51,7 @@ curl -s https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-set
 success "Référentiel Rundeck ajouté."
 
 info "Mise à jour de la liste des paquets..."
-apt-get update &>/dev/null || error "La mise à jour de la liste des paquets a échoué."
+apt-get update || error "La mise à jour de la liste des paquets a échoué."
 success "Le cache APT a été mis à jour."
 
 info "Installation de Rundeck..."
