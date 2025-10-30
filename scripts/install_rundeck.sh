@@ -85,6 +85,9 @@ sed -i "s|dataSource.password =.*|dataSource.password = $DB_PASS|" "$RUNDECK_CON
 if ! grep -q "dataSource.driverClassName" "$RUNDECK_CONFIG"; then
     echo "dataSource.driverClassName = com.mysql.cj.jdbc.Driver" >> "$RUNDECK_CONFIG"
 fi
+if ! grep -q "dataSource.dialect" "$RUNDECK_CONFIG"; then
+    echo "dataSource.dialect = org.hibernate.dialect.MySQL8Dialect" >> "$RUNDECK_CONFIG"
+fi
 success "La configuration de la base de données dans '$RUNDECK_CONFIG' a été mise à jour."
 
 info "Configuration du port et de l'adresse de Rundeck dans le profil..."
