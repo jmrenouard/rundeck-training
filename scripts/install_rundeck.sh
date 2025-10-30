@@ -67,26 +67,47 @@ success "Driver JDBC MySQL téléchargé."
 
 
 # --- Configuration ---
-info "Configuration de Rundeck pour utiliser MySQL..."
-if [ ! -f "$RUNDECK_CONFIG" ]; then
-    error "Le fichier de configuration de Rundeck '$RUNDECK_CONFIG' n'a pas été trouvé."
-fi
+info "Génération du fichier de configuration Rundeck..."
+tee "$RUNDECK_CONFIG" > /dev/null <<EOF
+#loglevel.default is the default log level for jobs: ERROR,WARN,INFO,VERBOSE,DEBUG
+loglevel.default=INFO
+rdeck.base=/var/lib/rundeck
+rss.enabled=false
 
-# Sauvegarde du fichier de configuration original
-cp "$RUNDECK_CONFIG" "$RUNDECK_CONFIG.bak"
+# change hostname here
+grails.serverURL=http://$SERVER_IP:$RUNDECK_PORT
 
-# Modification du fichier de configuration
-sed -i "s|grails.server.url=.*|grails.server.url=http://$SERVER_IP:$RUNDECK_PORT|" "$RUNDECK_CONFIG"
-sed -i "s|dataSource.dbCreate =.*|dataSource.dbCreate = update|" "$RUNDECK_CONFIG"
-sed -i "s|dataSource.url =.*|dataSource.url = jdbc:mysql://localhost/$DB_NAME?autoReconnect=true&useSSL=false|" "$RUNDECK_CONFIG"
-sed -i "s|dataSource.username =.*|dataSource.username = $DB_USER|" "$RUNDECK_CONFIG"
-sed -i "s|dataSource.password =.*|dataSource.password = $DB_PASS|" "$RUNDECK_CONFIG"
-# Ajout du driver si absent
-if ! grep -q "dataSource.driverClassName" "$RUNDECK_CONFIG"; then
-    echo "dataSource.driverClassName = org.mariadb.jdbc.Driver" >> "$RUNDECK_CONFIG"
-fi
+# dataSource configuration
+dataSource.dbCreate = update
+dataSource.url = jdbc:mysql://localhost/$DB_NAME?autoReconnect=true&useSSL=false
+dataSource.username = $DB_USER
+dataSource.password = $DB_PASS
+dataSource.driverClassName = org.mariadb.jdbc.Driver
 
-success "La configuration de la base de données dans '$RUNDECK_CONFIG' a été mise à jour."
+grails.plugin.databasemigration.updateOnStart=true
+
+# Encryption for key storage
+rundeck.storage.provider.1.type=db
+rundeck.storage.provider.1.path=keys
+rundeck.storage.converter.1.type=jasypt-encryption
+rundeck.storage.converter.1.path=keys
+rundeck.storage.converter.1.config.encryptorType=custom
+rundeck.storage.converter.1.config.password=changeme
+rundeck.storage.converter.1.config.algorithm=PBEWITHSHA256AND128BITAES-CBC-BC
+rundeck.storage.converter.1.config.provider=BC
+
+# Encryption for project config storage
+rundeck.projectsStorageType=db
+rundeck.config.storage.converter.1.type=jasypt-encryption
+rundeck.config.storage.converter.1.path=projects
+rundeck.config.storage.converter.1.config.password=changeme
+rundeck.config.storage.converter.1.config.encryptorType=custom
+rundeck.config.storage.converter.1.config.algorithm=PBEWITHSHA256AND128BITAES-CBC-BC
+rundeck.config.storage.converter.1.config.provider=BC
+
+rundeck.feature.repository.enabled=true
+EOF
+success "Le fichier de configuration Rundeck a été généré."
 
 info "Configuration du port et de l'adresse de Rundeck dans le profil..."
 if [ ! -f "$RUNDECK_PROFILE" ]; then
