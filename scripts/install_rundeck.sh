@@ -47,7 +47,7 @@ success "Prérequis validés."
 # --- Installation ---
 info "Configuration du référentiel Rundeck..."
 rm -f /etc/apt/sources.list.d/rundeck.list
-curl -s https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-setup.sh | bash &>/dev/null || error "L'ajout du référentiel Rundeck a échoué."
+curl -s https://raw.githubusercontent.com/rundeck/packaging/main/scripts/deb-setup.sh | bash -s -- rundeck &>/dev/null || error "L'ajout du référentiel Rundeck a échoué."
 success "Référentiel Rundeck ajouté."
 
 info "Mise à jour de la liste des paquets..."
