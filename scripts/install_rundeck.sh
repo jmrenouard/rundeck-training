@@ -57,7 +57,14 @@ success "Le cache APT a été mis à jour."
 
 info "Installation de Rundeck..."
 apt-get install -y rundeck || error "L'installation de Rundeck a échoué."
-success "Rundeck a été installé avec succès."
+success "Rundeck a été installé with succès."
+
+info "Téléchargement du driver JDBC MySQL..."
+mkdir -p /var/lib/rundeck/lib
+curl -L -o /var/lib/rundeck/lib/mysql-connector-java-8.0.28.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar || error "Le téléchargement du driver JDBC a échoué."
+chown rundeck:rundeck /var/lib/rundeck/lib/mysql-connector-java-8.0.28.jar
+success "Driver JDBC MySQL téléchargé."
+
 
 # --- Configuration ---
 info "Configuration de Rundeck pour utiliser MySQL..."
