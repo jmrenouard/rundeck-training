@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Fichier de Propriétés Rundeck</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" integrity="sha384-+Qw1Qn6e6QF6UVx/F4WRzEwA4kQn6Qw1Qn6e6QF6UVx/F4WRzEwA4kQn6Qw1Qn6e" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" integrity="sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js" defer></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js"></script>
     <style>
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -93,6 +94,7 @@
                                         <option value="plaintext">Plaintext</option>
                                         <option value="OBF">OBF</option>
                                         <option value="MD5">MD5</option>
+                                        <option value="BCRYPT">BCRYPT</option>
                                     </select>
                                 </div>
                             </div>
@@ -133,6 +135,7 @@
                     password: '',
                     encoding: 'plaintext',
                     groups: ''
+                    // isHashing: false // for BCRYPT
                 }
             ],
             lang: 'fr',
@@ -160,6 +163,7 @@
                     import_button: "Importer et Remplir le Formulaire",
                     import_empty: "Le champ est vide.",
                     import_success: "Importation réussie : {count} utilisateur(s) chargé(s).",
+                    import_error: "Erreur d'importation: format de ligne non valide.",
                     import_no_user: "Aucun utilisateur valide trouvé.",
                 },
                 en: {
@@ -181,6 +185,7 @@
                     import_button: "Import and Fill Form",
                     import_empty: "The field is empty.",
                     import_success: "Import successful: {count} user(s) loaded.",
+                    import_error: "Import error: invalid line format.",
                     import_no_user: "No valid users found.",
                 }
             },
@@ -209,7 +214,8 @@
                     username: '',
                     password: '',
                     encoding: 'plaintext',
-                    groups: ''
+                    groups: '',
+                    isHashing: false
                 }
             },
 
@@ -247,6 +253,9 @@
                     } else if (password.startsWith('MD5:')) {
                         user.encoding = 'MD5';
                         user.password = password.substring(4); // We store the raw hash
+                    } else if (password.startsWith('BCRYPT:')) {
+                        user.encoding = 'BCRYPT';
+                        user.password = password; // Store the full BCRYPT string
                     } else {
                         user.encoding = 'plaintext';
                         user.password = password;
@@ -277,25 +286,48 @@
             },
 
             get generatedFileContent() {
-                return this.users.map(user => {
-                    if (!user.username) return null;
+                const lines = this.users.map(user => {
+                    if (!user.username) return '';
 
-                    let password = user.password;
-                    switch (user.encoding) {
-                        case 'OBF':
-                            password = this.obfuscate(password);
-                            break;
-                        case 'MD5':
-                            password = 'MD5:' + CryptoJS.MD5(password).toString();
-                            break;
+                    let passwordPart = user.password;
+
+                    if (user.isHashing) {
+                        passwordPart = 'Generating...';
+                    } else {
+                        switch (user.encoding) {
+                            case 'OBF':
+                                if (user.password) passwordPart = this.obfuscate(user.password);
+                                break;
+                            case 'MD5':
+                                if (user.password) passwordPart = 'MD5:' + CryptoJS.MD5(user.password).toString();
+                                break;
+                            case 'BCRYPT':
+                                if (user.password && !user.password.startsWith('BCRYPT:')) {
+                                    // This is a new password to hash.
+                                    if (!user.isHashing) {
+                                        user.isHashing = true;
+                                        // Use $2a$ for compatibility as mentioned in Rundeck docs
+                                        bcrypt.hash(user.password, '$2a$10', (err, hash) => {
+                                            if (hash) {
+                                                user.password = 'BCRYPT:' + hash;
+                                            }
+                                            user.isHashing = false;
+                                        });
+                                    }
+                                    passwordPart = 'Generating...';
+                                }
+                                // If it's already hashed (e.g. from import), just use it.
+                                break;
+                        }
                     }
 
-                    let line = `${user.username}: ${password}`;
+                    let line = `${user.username}: ${passwordPart}`;
                     if (user.groups) {
                         line += `,${user.groups}`;
                     }
                     return line;
-                }).filter(Boolean).join('\n');
+                });
+                return lines.filter(Boolean).join('\n');
             },
 
             deobfuscate(password) {

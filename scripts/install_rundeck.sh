@@ -134,6 +134,11 @@ fi
 if ! grep -q "rundeck.jetty.connector.forwarded" "$RUNDECK_PROFILE"; then
     sed -i '/^export RDECK_JVM/ s/"$/ -Drundeck.jetty.connector.forwarded=true"/' "$RUNDECK_PROFILE"
 fi
+# Add Jmx -Dcom.sun.management.jmxremote
+if ! grep -q "com.sun.management.jmxremote" "$RUNDECK_PROFILE"; then
+    echo "export RDECK_JVM_CONFIG=\"$RDECK_JVM_CONFIG -Dcom.sun.management.jmxremote\"" >> "$RUNDECK_PROFILE"
+fi
+
 success "Le profil de Rundeck a été mis à jour."
 
 # --- Démarrage et Activation du Service ---
