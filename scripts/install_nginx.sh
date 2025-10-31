@@ -157,7 +157,7 @@ success "Site activé."
 
 # --- Validation et redémarrage de Nginx ---
 info "Validation de la configuration Nginx..."
-if ! nginx -t; then
+if ! nginx -t &>/dev/null; then
     error "La configuration de Nginx est invalide. Veuillez vérifier le fichier ${NGINX_CONF_FILE}."
 fi
 success "Configuration Nginx validée."

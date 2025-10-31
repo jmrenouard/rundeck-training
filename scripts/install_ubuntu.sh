@@ -18,8 +18,7 @@ end_success() { echo -e "${C_GREEN}[END    ]${C_RESET}🏁 $1"; exit 0; }
 
 # --- Variables ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-LOG_FILE="/var/log/rundeck_install_$(date +%Y%m%d_%H%M%S).log"
-SERVER_NAME=""
+LOG_FILE="/var/log/rundeck_install_$(date +%Y%m%d_%H%M%S).loSERVER_NAME=""
 ADMIN_EMAIL=""
 
 # --- Scripts à exécuter ---
@@ -45,7 +44,6 @@ execute_script() {
     chmod +x "$script_path"
 
     # Exécuter le script et rediriger la sortie vers le fichier de log et stdout/stderr
-    if ! bash "$script_path" | tee -a "$LOG_FILE"; then
     # Passer les arguments nécessaires aux scripts qui en ont besoin
     local args=()
     [[ "$script_name" == "install_nginx.sh" || "$script_name" == "install_certbot.sh" ]] && args+=("$SERVER_NAME")
@@ -90,10 +88,8 @@ done
 
 # --- Message de fin ---
 SERVER_IP=$(hostname -I | awk '{print $1}')
-RUNDECK_PORT="4440"
 success "========================================================================"
 success "Installation de la stack Rundeck terminée !"
-success "URL de Rundeck : http://$SERVER_IP:$RUNDECK_PORT"
 success "URL de Rundeck : https://${SERVER_NAME}"
 success "Login par défaut : admin"
 success "Mot de passe par défaut : admin"

@@ -110,6 +110,13 @@ else
     warn "Une tâche de renouvellement pour Certbot semble déjà exister dans crontab."
 fi
 
+# --- Validation de la configuration Nginx post-Certbot ---
+info "Validation de la configuration Nginx après modification par Certbot..."
+if ! nginx -t &>/dev/null; then
+    error "La configuration Nginx est invalide après l'intervention de Certbot. Vérifiez les fichiers de configuration."
+fi
+success "Configuration Nginx post-Certbot validée."
+
 # --- Validation finale ---
 info "Redémarrage de Nginx pour s'assurer que tout est pris en compte..."
 systemctl restart nginx
