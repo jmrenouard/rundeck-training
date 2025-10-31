@@ -33,16 +33,16 @@ ldap {
     com.dtolabs.rundeck.jetty.jaas.JettyCachingLdapLoginModule required
     debug="true"
     contextFactory="com.sun.jndi.ldap.LdapCtxFactory"
-    providerUrl="ldap://imporelec.local:389"
+    providerUrl="ldap://lightpath.local:389"
     authenticationMethod="simple"
-    bindDn="cn=rundeck-svc,ou=ServiceAccounts,dc=imporelec,dc=local"
+    bindDn="cn=rundeck-svc,ou=ServiceAccounts,dc=lightpath,dc=local"
     // Le mot de passe est stocké de manière sécurisée (voir section 4)
     bindPassword="[storage-path:keys/ldap/bindPassword]"
-    userBaseDn="ou=Users,dc=imporelec,dc=local"
+    userBaseDn="ou=Users,dc=lightpath,dc=local"
     userRdnAttribute="sAMAccountName"
     userIdAttribute="sAMAccountName"
     userObjectClass="user"
-    roleBaseDn="ou=Groups,dc=imporelec,dc=local"
+    roleBaseDn="ou=Groups,dc=lightpath,dc=local"
     roleNameAttribute="cn"
     roleMemberAttribute="member"
     roleObjectClass="group"
@@ -64,7 +64,7 @@ Pour des besoins plus complexes, vous pouvez affiner la manière dont les groupe
 *   **Filtres supplémentaires :** Vous pouvez utiliser `userFilter` ou `roleFilter` pour restreindre les utilisateurs ou les groupes qui peuvent s'authentifier.
     ```
     // N'autorise que les utilisateurs membres du groupe 'RundeckUsers'
-    userFilter="(&(sAMAccountName={0})(memberOf=cn=RundeckUsers,ou=Groups,dc=imporelec,dc=local))"
+    userFilter="(&(sAMAccountName={0})(memberOf=cn=RundeckUsers,ou=Groups,dc=lightpath,dc=local))"
     ```
 
 ### 🐧 Le module `JettyPamLoginModule` (PAM)
