@@ -112,7 +112,7 @@ server {
         # 1. Informer Rundeck du protocole et du host corrects
         #    (X-Forwarded-Host était déjà là, mais Host et X-Forwarded-Proto sont vitaux)
 
-        proxy_set_header Host $host;
+        proxy_set_header Host \$host;
         proxy_set_header X-Forwarded-Host \$host;
         proxy_set_header X-Forwarded-Server \$host;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
