@@ -19,12 +19,16 @@ end_success() { echo -e "${C_GREEN}[END    ]${C_RESET}🏁 $1"; exit 0; }
 # --- Variables ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 LOG_FILE="/var/log/rundeck_install_$(date +%Y%m%d_%H%M%S).log"
+SERVER_NAME=""
+ADMIN_EMAIL=""
 
 # --- Scripts à exécuter ---
 INSTALL_SCRIPTS=(
     "install_java.sh"
     "install_mysql.sh"
     "install_rundeck.sh"
+    "install_nginx.sh"
+    "install_certbot.sh"
 )
 
 # --- Fonctions du script principal ---
@@ -42,6 +46,12 @@ execute_script() {
 
     # Exécuter le script et rediriger la sortie vers le fichier de log et stdout/stderr
     if ! bash "$script_path" | tee -a "$LOG_FILE"; then
+    # Passer les arguments nécessaires aux scripts qui en ont besoin
+    local args=()
+    [[ "$script_name" == "install_nginx.sh" || "$script_name" == "install_certbot.sh" ]] && args+=("$SERVER_NAME")
+    [[ "$script_name" == "install_certbot.sh" ]] && args+=("$ADMIN_EMAIL")
+
+    if ! bash "$script_path" "${args[@]}" | tee -a "$LOG_FILE"; then
         error "L'exécution du script '$script_name' a échoué. Consultez '$LOG_FILE' pour plus de détails."
     fi
     success "Le script '$script_name' a été exécuté avec succès."
@@ -58,6 +68,19 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 success "Vérification des droits root : OK."
 
+# --- Demande des informations utilisateur ---
+info "Veuillez fournir les informations suivantes pour la configuration de Nginx et Certbot."
+while [ -z "$SERVER_NAME" ]; do
+    read -p "Entrez le nom de domaine complet (ex: rundeck.votredomaine.com): " SERVER_NAME
+    [ -z "$SERVER_NAME" ] && warn "Le nom de domaine ne peut pas être vide."
+done
+
+while [ -z "$ADMIN_EMAIL" ]; do
+    read -p "Entrez votre adresse email (pour les alertes Certbot): " ADMIN_EMAIL
+    [ -z "$ADMIN_EMAIL" ] && warn "L'adresse email ne peut pas être vide."
+done
+success "Informations enregistrées : Domaine=${SERVER_NAME}, Email=${ADMIN_EMAIL}"
+
 # --- Exécution des scripts d'installation ---
 for script in "${INSTALL_SCRIPTS[@]}"; do
     execute_script "$script"
@@ -71,6 +94,7 @@ RUNDECK_PORT="4440"
 success "========================================================================"
 success "Installation de la stack Rundeck terminée !"
 success "URL de Rundeck : http://$SERVER_IP:$RUNDECK_PORT"
+success "URL de Rundeck : https://${SERVER_NAME}"
 success "Login par défaut : admin"
 success "Mot de passe par défaut : admin"
 warn "N'oubliez pas de changer le mot de passe par défaut et de sécuriser votre installation MySQL."
