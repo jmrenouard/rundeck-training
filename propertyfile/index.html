@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js" integrity="sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du" crossorigin="anonymous" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
-    <script src="bcrypt.min.js" defer></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs/dist/bcrypt.min.js" defer></script>
     <style>
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -339,11 +339,13 @@
                     user.isHashing = false;
                     return;
                 }
-                bcrypt.hash(user.password, '$2a$10', (err, hash) => {
+                // Utiliser un coût de 10 est un bon compromis sécurité/performance.
+                const saltRounds = 10;
+                bcrypt.hash(user.password, saltRounds, (err, hash) => {
                     if (err) {
-                        console.error("Bcrypt error:", err);
-                        user.password = 'BCRYPT:error';
-                    } else {
+                        console.error("Bcrypt hashing error:", err);
+                        user.password = "Error during hashing.";
+                    } else if (hash) {
                         user.password = 'BCRYPT:' + hash;
                     }
                     user.isHashing = false;
