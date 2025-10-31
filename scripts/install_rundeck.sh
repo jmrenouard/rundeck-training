@@ -20,9 +20,10 @@ end_success() { echo -e "${C_GREEN}[END    ]${C_RESET}🏁 $1"; exit 0; }
 DB_NAME="rundeck"
 DB_USER="rundeckuser"
 DB_PASS="rundeckpassword"
-RUNDECK_PORT="4440"
+RUNDECK_PORT=${2:-"4440"}
 # Récupération de l'adresse IP de la machine pour la configuration de Rundeck
-SERVER_IP=$(hostname -I | awk '{print $1}')
+#SERVER_IP=$(hostname -I | awk '{print $1}')
+SERVER_IP=${1:-"rundeck.srv.lightpath.fr"}
 
 # --- Fichiers de Configuration ---
 RUNDECK_CONFIG="/etc/rundeck/rundeck-config.properties"
@@ -61,8 +62,8 @@ success "Rundeck a été installé with succès."
 
 info "Téléchargement du driver JDBC MySQL..."
 mkdir -p /var/lib/rundeck/lib
-curl -L -o /var/lib/rundeck/lib/mariadb-java-client-3.1.4.jar https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.1.4/mariadb-java-client-3.1.4.jar || error "Le téléchargement du driver JDBC a échoué."
-chown rundeck:rundeck /var/lib/rundeck/lib/mariadb-java-client-3.1.4.jar
+curl -L -o /var/lib/rundeck/lib/mysql-connector-java-8.0.28.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar || error "Le téléchargement du driver JDBC a échoué."
+chown rundeck:rundeck /var/lib/rundeck/lib/mysql-connector-java-8.0.28.jar
 success "Driver JDBC MySQL téléchargé."
 
 
@@ -82,8 +83,8 @@ dataSource.dbCreate = update
 dataSource.url = jdbc:mysql://localhost/$DB_NAME?autoReconnect=true&useSSL=false
 dataSource.username = $DB_USER
 dataSource.password = $DB_PASS
-dataSource.driverClassName = org.mariadb.jdbc.Driver
-
+dataSource.driverClassName = com.mysql.cj.jdbc.Driver
+dataSource.dialect = org.hibernate.dialect.MySQL8Dialect
 grails.plugin.databasemigration.updateOnStart=true
 
 # Encryption for key storage
@@ -106,6 +107,11 @@ rundeck.config.storage.converter.1.config.algorithm=PBEWITHSHA256AND128BITAES-CB
 rundeck.config.storage.converter.1.config.provider=BC
 
 rundeck.feature.repository.enabled=true
+server.useForwardHeaders = true
+
+# Autoriser l'URL spécifique dans form-action
+rundeck.security.httpHeaders.provider.csp.config.form-action='self' https://$SERVER_IP
+
 EOF
 success "Le fichier de configuration Rundeck a été généré."
 
@@ -121,7 +127,12 @@ sed -i 's/export RDECK_JVM_SETTINGS="-Xmx1024m -Xms256m -server"/export RDECK_JV
 sed -i "s|-Drundeck.server.http.port=4440|-Drundeck.server.http.port=$RUNDECK_PORT|" "$RUNDECK_PROFILE"
 # Assurer que l'adresse d'écoute est 0.0.0.0 pour être accessible de l'extérieur
 if ! grep -q "rundeck.server.address" "$RUNDECK_PROFILE"; then
-    echo "export RDECK_SERVER_CONFIG=\"\$RDECK_SERVER_CONFIG -Drundeck.server.address=0.0.0.0\"" >> "$RUNDECK_PROFILE"
+    echo "export RDECK_SERVER_CONFIG=\"$RDECK_SERVER_CONFIG -Drundeck.server.address=0.0.0.0\"" >> "$RUNDECK_PROFILE"
+fi
+
+# Add forwarded option for reverse proxy
+if ! grep -q "rundeck.jetty.connector.forwarded" "$RUNDECK_PROFILE"; then
+    sed -i '/^export RDECK_JVM/ s/"$/ -Drundeck.jetty.connector.forwarded=true"/' "$RUNDECK_PROFILE"
 fi
 success "Le profil de Rundeck a été mis à jour."
 

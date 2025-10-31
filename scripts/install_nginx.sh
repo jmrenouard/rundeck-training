@@ -107,24 +107,41 @@ server {
     location / {
         proxy_pass http://localhost:4440;
 
-        proxy_set_header X-Forwarded-Host \$host:\$server_port;
-        proxy_set_header X-Forwarded-Server \$host;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        # --- Début des modifications ---
 
-        # Support pour WebSocket
+        # 1. Informer Rundeck du protocole et du host corrects
+        #    (X-Forwarded-Host était déjà là, mais Host et X-Forwarded-Proto sont vitaux)
+        
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme; # <-- AJOUT TRÈS IMPORTANT
+
+        # 2. Support pour WebSocket (votre configuration est correcte)
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-   }
+
+        # 3. Remplacer la CSP de Rundeck
+        #    Nous cachons celle de Rundeck pour la remplacer par la nôtre.
+        proxy_hide_header Content-Security-Policy;
+
+        #    Cette nouvelle CSP autorise explicitement Google Fonts
+        add_header Content-Security-Policy "script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; form-action 'self'; connect-src 'self' wss: ws:; frame-ancestors 'self'; img-src 'self' data:; object-src 'none';" always;
+
+        # --- Fin des modifications ---
+    }
 }
 
 server {
     listen 80;
-    server_name ${SERVER_NAME};
+    server_name rundeck.srv.lightpath.fr;
 
     # Redirection HTTP vers HTTPS
-    return 301 https://\$host\$request_uri;
+    return 301 https://$host$request_uri;
 }
+
 EOF
 success "Fichier de configuration créé."
 
