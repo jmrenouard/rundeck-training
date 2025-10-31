@@ -111,16 +111,16 @@ server {
 
         # 1. Informer Rundeck du protocole et du host corrects
         #    (X-Forwarded-Host était déjà là, mais Host et X-Forwarded-Proto sont vitaux)
-        
+
         proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Server $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme; # <-- AJOUT TRÈS IMPORTANT
+        proxy_set_header X-Forwarded-Host \$host;
+        proxy_set_header X-Forwarded-Server \$host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme; # <-- AJOUT TRÈS IMPORTANT
 
         # 2. Support pour WebSocket (votre configuration est correcte)
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
 
         # 3. Remplacer la CSP de Rundeck
@@ -136,10 +136,10 @@ server {
 
 server {
     listen 80;
-    server_name rundeck.srv.lightpath.fr;
+    server_name ${SERVER_NAME};
 
     # Redirection HTTP vers HTTPS
-    return 301 https://$host$request_uri;
+    return 301 https://\$host\$request_uri;
 }
 
 EOF
