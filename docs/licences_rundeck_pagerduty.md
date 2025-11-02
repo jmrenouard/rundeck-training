@@ -6,9 +6,169 @@ Ce document présente un guide complet des différents modèles de licences disp
 
 ---
 
-## 1. Définitions des Licences
+## 1. Définitions et Principes des Versions Rundeck
 
-### 1.1 PagerDuty SaaS (Software as a Service)
+Voici un récapitulatif didactique des trois versions principales de Rundeck, leurs licences et leurs cas d'usage.
+
+### 1.1 Rundeck Community Edition
+
+**Licence :** Apache v2.0 (open source, gratuit)
+
+**Usage :** Automatisation pour équipes de petite/moyenne taille
+
+**Support :** Pas de support professionnel, communauté uniquement
+
+**Téléchargement :** Gratuit sur le site officiel
+
+**Caractéristiques principales :**
+- Licence très permissive permettant l'utilisation libre, modification et redistribution
+- Idéale pour tests, développement, usage interne
+- Fonctionnalités de base d'automatisation
+- Hébergement et maintenance à la charge de l'utilisateur
+- Pas de SLA officiel
+
+### 1.2 Rundeck Enterprise / Pro / Runbook Automation
+
+**Licence :** Commerciale, vendue par PagerDuty
+
+**Usage :** Automatisation à l'échelle entreprise, fonctionnalités avancées
+
+**Support :** Accès au support officiel PagerDuty + mises à jour prioritaires
+
+**Fonctionnalités additionnelles :**
+- Haute disponibilité (clustering, HA)
+- ACL améliorées, gestion avancée des rôles (RBAC)
+- Tableaux de bord enrichis, plugins exclusifs
+- SSO, LDAP/Active Directory
+- Sécurité accrue, audits et conformité
+- Garanties de maintien et conformité cruciales pour production
+
+**Installation :** Via fichier de licence à uploader ou déposer sur le serveur (voir section gestion de licence)
+
+### 1.3 Rundeck Cloud
+
+**Licence :** SaaS, abonnement commercial
+
+**Usage :** Plateforme managée, accès instantané sans gestion d'infrastructure
+
+**Support :** Géré par PagerDuty avec niveau de disponibilité élevé
+
+**Caractéristiques principales :**
+- Mises à jour automatiques
+- Infrastructure gérée par PagerDuty
+- Haute disponibilité garantie
+- Sécurité et conformité gérées
+- Différents rôles administrateurs comparé à l'édition Enterprise locale
+- Déploiement rapide (minutes)
+- Licence embarquée automatiquement
+
+---
+
+## 2. Tableau Comparatif des Versions & Licences
+
+| Version | Licence | Prix | Support | Fonctionnalités clés | Utilisation recommandée |
+|---------|---------|------|---------|---------------------|-------------------------|
+| **Community / Open Source** | Apache v2.0 | Gratuit | Communauté | Automatisation, jobs, plugins OSS | Équipes techniques, test, développement |
+| **Enterprise / Pro** | Commerciale PagerDuty | Payant* | Professionnel | HA, clustering, plugins exclusifs, RBAC avancé, SSO | Production, besoins avancés, conformité |
+| **Cloud (SaaS)** | Abonnement commercial | Payant** | Professionnel | Mises à jour auto, sécurité gérée, infrastructure managée | Entreprise, devops cloud, déploiement rapide |
+
+**Tarifs indicatifs*** :
+- **Enterprise/Pro** : D'après certains témoignages, environ $20k/cluster + $1k/utilisateur/an
+- À comparer à d'autres solutions payantes comme Ansible Tower (tarif au nœud)
+- **Cloud** : Modèle à l'utilisateur ou à l'instance
+
+---
+
+## 3. Installation et Gestion de Licence Enterprise
+
+### 3.1 Méthodes d'Installation de la Licence
+
+La licence Enterprise (`rundeckpro-license.key`) peut être installée de plusieurs façons :
+
+**Option 1 : Via l'interface graphique (GUI)**
+- Uploader le fichier de licence directement via l'interface web de Rundeck
+- Méthode recommandée pour les débutants
+
+**Option 2 : Dépôt manuel du fichier**
+- Placer le fichier `rundeckpro-license.key` dans `/etc/rundeck/` (selon l'OS)
+- Redémarrer le service Rundeck
+
+**Option 3 : Stockage avancé**
+- Configuration dans la base de données
+- Stockage dans un storage tree (ex : Amazon S3)
+- Options configurables selon l'architecture
+
+### 3.2 Particularités SaaS/Cloud
+
+- La version SaaS/Cloud embarque la licence automatiquement
+- Pas de gestion manuelle de fichier de licence nécessaire
+- Activation immédiate lors de la souscription
+
+---
+
+## 4. Versions Supportées en 2025
+
+Rundeck publie régulièrement des versions majeures. Les versions actuellement en support (fin 2025) sont :
+
+- **5.16.0** (octobre 2025)
+- **5.15.0** (septembre 2025)
+- **5.14.1 / 5.14.0** (août 2025)
+- **5.13.0** (juin 2025)
+
+**Politique de support** : Les versions sont généralement supportées jusqu'à 1 an après leur sortie.
+
+**Recommandation** : Maintenir à jour votre installation avec les versions supportées pour bénéficier des correctifs de sécurité et du support technique.
+
+---
+
+## 5. Points Pédagogiques sur les Modèles de Licence
+
+### 5.1 Licence Apache v2.0 (Open Source)
+
+**Avantages :**
+- Très permissive : utilisation libre, modification et redistribution autorisées
+- Idéale pour tests, développement, usage interne
+- Aucun coût de licence
+- Transparence du code source
+
+**Limitations :**
+- Pas de support professionnel
+- Fonctionnalités limitées comparé à l'édition Enterprise
+- Pas de garantie de disponibilité (SLA)
+
+### 5.2 Licence Commerciale (Enterprise/Pro)
+
+**Avantages :**
+- Garanties de maintien et conformité
+- Support technique professionnel crucial pour la production
+- Fonctionnalités avancées indispensables pour les entreprises
+- SLA défini par contrat
+
+**Fonctionnalités clés pour l'entreprise :**
+- **HA/Clustering** : Haute disponibilité indispensable pour forte exigence de disponibilité
+- **Plugins exclusifs** : Intégrations avancées non disponibles en open source
+- **ACL et RBAC** : Contrôle d'accès fin pour la sécurité et la conformité
+- **Monitoring avancé** : Tableaux de bord enrichis et métriques détaillées
+- **SSO/LDAP/Active Directory** : Intégration avec les systèmes d'authentification d'entreprise
+
+### 5.3 Modèle SaaS (Cloud)
+
+**Quand choisir le SaaS ?**
+- Déploiement rapide requis
+- Pas de ressources pour gérer l'infrastructure
+- Besoin de haute disponibilité garantie
+- Mises à jour automatiques souhaitées
+
+**Considérations :**
+- Coût récurrent à l'utilisateur
+- Dépendance au fournisseur cloud
+- Moins de personnalisation que l'on-premise
+
+---
+
+## 6. Définitions des Licences PagerDuty
+
+### 6.1 PagerDuty SaaS (Software as a Service)
 
 **Définition :** Service hébergé dans le cloud de PagerDuty, accessible via navigateur web ou applications mobiles.
 
@@ -20,7 +180,7 @@ Ce document présente un guide complet des différents modèles de licences disp
 - Facturation par utilisateur/mois
 - Déploiement rapide (minutes à heures)
 
-### 1.2 PagerDuty On-Premise
+### 6.2 PagerDuty On-Premise
 
 **Définition :** Version installée et hébergée sur l'infrastructure de l'entreprise cliente.
 
@@ -31,244 +191,3 @@ Ce document présente un guide complet des différents modèles de licences disp
 - Gestion des mises à jour par l'entreprise
 - Facturation par licence perpétuelle + maintenance
 - Temps de déploiement plus long (semaines à mois)
-
-### 1.3 Rundeck Open Source
-
-**Définition :** Version communautaire gratuite de Rundeck, sous licence Apache 2.0.
-
-**Caractéristiques principales :**
-- Gratuit et open source
-- Fonctionnalités de base d'automatisation
-- Support communautaire
-- Pas de SLA officiel
-- Hébergement et maintenance à la charge de l'utilisateur
-
-### 1.4 Rundeck Enterprise
-
-**Définition :** Version commerciale de Rundeck avec fonctionnalités avancées et support professionnel.
-
-**Caractéristiques principales :**
-- Fonctionnalités avancées (RBAC, clustering, etc.)
-- Support technique professionnel
-- SLA défini par contrat
-- Facturation par nœud géré
-- Mises à jour et correctifs prioritaires
-
----
-
-## 2. Tableau Récapitulatif des Types de Licences
-
-| Critère | PagerDuty SaaS | PagerDuty On-Premise | Rundeck Open Source | Rundeck Enterprise |
-|---------|----------------|----------------------|---------------------|--------------------|
-| **Modèle de déploiement** | Cloud hébergé | On-premise | Auto-hébergé | Auto-hébergé ou cloud |
-| **Coût initial** | Aucun | Élevé | Gratuit | Moyen |
-| **Modèle de facturation** | Abonnement mensuel | Licence + maintenance | Gratuit | Licence annuelle |
-| **Maintenance** | Incluse | Optionnelle | Communautaire | Incluse |
-| **Support** | 24/7 selon plan | 24/7 selon contrat | Communautaire | Professionnel 24/7 |
-| **Sécurité** | Gérée par PagerDuty | Gérée par client | Gérée par client | Gérée par client |
-| **Personnalisation** | Limitée | Élevée | Élevée | Élevée |
-| **Temps de déploiement** | Immédiat | 4-12 semaines | 1-4 semaines | 2-6 semaines |
-| **Évolutivité** | Automatique | Manuelle | Manuelle | Semi-automatique |
-| **Conformité** | SOC2, ISO27001 | Selon implémentation | Selon implémentation | Support conformité |
-
----
-
-## 3. Tableau des Tarifs et Paramètres Principaux
-
-### 3.1 PagerDuty SaaS - Tarification 2024
-
-| Plan | Prix/Utilisateur/Mois (USD) | Utilisateurs Inclus | Fonctionnalités Clés |
-|------|----------------------------|--------------------|-----------------------|
-| **Starter** | 21 $ | Minimum 5 | Alertes de base, intégrations limitées |
-| **Professional** | 41 $ | Minimum 5 | Workflows automatisés, API complète |
-| **Business** | 61 $ | Minimum 10 | Analytics avancés, business services |
-| **Enterprise** | Sur devis | Variable | SSO, support prioritaire, formations |
-
-**Options supplémentaires :**
-- Modern Incident Response : +19$/utilisateur/mois
-- Event Intelligence : +9$/utilisateur/mois
-- Runbook Automation : +15$/utilisateur/mois
-
-### 3.2 PagerDuty On-Premise - Tarification 2024
-
-| Composant | Prix Unitaire (USD) | Unité de Mesure | Notes |
-|-----------|---------------------|-----------------|-------|
-| **Licence de base** | 150 000 $ | Par instance | Jusqu'à 100 utilisateurs |
-| **Utilisateur supplémentaire** | 500 $ | Par utilisateur/an | Au-delà de 100 utilisateurs |
-| **Maintenance annuelle** | 25% du prix licence | Par an | Support et mises à jour |
-| **Services professionnels** | 2 000 $/jour | Par consultant | Installation et formation |
-| **Formation** | 5 000 $ | Par session | Jusqu'à 20 participants |
-
-### 3.3 Rundeck - Tarification 2024
-
-| Version | Prix/Nœud/An (USD) | Minimum de Nœuds | Fonctionnalités Incluses |
-|---------|-------------------|------------------|--------------------------|
-| **Open Source** | 0 $ | Illimité | Fonctionnalités de base |
-| **Enterprise** | 50 $ | 25 nœuds | RBAC, clustering, support |
-| **Enterprise Plus** | 75 $ | 50 nœuds | Workflow designer, analytics |
-| **Enterprise Premium** | 100 $ | 100 nœuds | Toutes fonctionnalités, support prioritaire |
-
-**Services additionnels :**
-- Support Premium : +25% du coût des licences
-- Services professionnels : 2 500 $/jour
-- Formation : 3 000 $/session (jusqu'à 15 participants)
-
----
-
-## 4. Formules de Calcul de Coût
-
-### 4.1 PagerDuty SaaS
-
-#### Formule de base :
-```
-Coût Annuel = (Prix par utilisateur × Nombre d'utilisateurs × 12) + Options
-```
-
-#### Exemple de calcul :
-```
-Scénario : 25 utilisateurs, Plan Professional + Modern Incident Response
-
-Coût de base = 41$ × 25 utilisateurs × 12 mois = 12 300 $
-Option MIR = 19$ × 25 utilisateurs × 12 mois = 5 700 $
-Coût Total Annuel = 12 300 $ + 5 700 $ = 18 000 $
-```
-
-### 4.2 PagerDuty On-Premise
-
-#### Formule année 1 :
-```
-Coût Année 1 = Licence de base + (Utilisateurs supplémentaires × Prix unitaire) + Services
-```
-
-#### Formule années suivantes :
-```
-Coût Annuel = (Coût total des licences × 25%) + Services additionnels
-```
-
-#### Exemple de calcul :
-```
-Scénario : 150 utilisateurs
-
-Année 1 :
-Licence de base = 150 000 $ (100 premiers utilisateurs)
-Utilisateurs supplémentaires = 50 × 500 $ = 25 000 $
-Services professionnels = 10 jours × 2 000 $ = 20 000 $
-Coût Année 1 = 150 000 $ + 25 000 $ + 20 000 $ = 195 000 $
-
-Années suivantes :
-Maintenance = (150 000 $ + 25 000 $) × 25% = 43 750 $
-Coût Annuel Récurrent = 43 750 $
-```
-
-### 4.3 Rundeck Enterprise
-
-#### Formule de base :
-```
-Coût Annuel = (Nombre de nœuds × Prix par nœud) + Support + Services
-```
-
-#### Avec support premium :
-```
-Coût avec Support Premium = Coût Annuel + (Coût des licences × 25%)
-```
-
-#### Exemple de calcul :
-```
-Scénario : 200 nœuds, Enterprise Plus avec support premium
-
-Coût des licences = 200 nœuds × 75 $ = 15 000 $
-Support premium = 15 000 $ × 25% = 3 750 $
-Coût Total Annuel = 15 000 $ + 3 750 $ = 18 750 $
-```
-
----
-
-## 5. Calculateur de Coût Rapide
-
-### Variables à définir :
-- **N_users** = Nombre d'utilisateurs
-- **N_nodes** = Nombre de nœuds à gérer
-- **Plan** = Type de plan choisi
-- **Options** = Fonctionnalités supplémentaires
-- **Support** = Niveau de support souhaité
-
-### Formules résumées :
-
-```
-# PagerDuty SaaS
-PD_SaaS_Annual = (Plan_Price × N_users × 12) + (Options_Price × N_users × 12)
-
-# PagerDuty On-Premise (Année 1)
-PD_OnPrem_Y1 = 150000 + max(0, (N_users - 100) × 500) + Professional_Services
-
-# PagerDuty On-Premise (Années suivantes)
-PD_OnPrem_Recurring = Total_Licenses × 0.25
-
-# Rundeck Enterprise
-Rundeck_Annual = max(N_nodes, Minimum_Nodes) × Node_Price × (1 + Support_Multiplier)
-```
-
----
-
-## 6. Recommandations par Scénario
-
-### Petite entreprise (< 50 utilisateurs, < 100 nœuds)
-- **Recommandé :** PagerDuty SaaS Starter + Rundeck Open Source
-- **Coût estimé :** 12 600 $ + 0 $ = 12 600 $/an
-
-### Moyenne entreprise (50-200 utilisateurs, 100-500 nœuds)
-- **Recommandé :** PagerDuty SaaS Professional + Rundeck Enterprise
-- **Coût estimé :** 49 200 $ + 25 000 $ = 74 200 $/an
-
-### Grande entreprise (> 200 utilisateurs, > 500 nœuds)
-- **Recommandé :** PagerDuty Enterprise + Rundeck Enterprise Plus
-- **Coût estimé :** Sur devis + 37 500 $+
-
-### Environnement hautement sécurisé
-- **Recommandé :** PagerDuty On-Premise + Rundeck Enterprise Premium
-- **Coût estimé :** Variable selon infrastructure
-
----
-
-## 7. Facteurs de Décision
-
-### Choisir PagerDuty SaaS si :
-- Déploiement rapide requis
-- Budget prévisible souhaité
-- Équipe IT limitée
-- Intégrations multiples nécessaires
-
-### Choisir PagerDuty On-Premise si :
-- Contraintes de sécurité strictes
-- Données sensibles ne pouvant quitter l'infrastructure
-- Personnalisations importantes requises
-- Budget d'investissement disponible
-
-### Choisir Rundeck Open Source si :
-- Budget très limité
-- Équipe technique expérimentée
-- Besoins d'automatisation simples
-- Acceptation du support communautaire
-
-### Choisir Rundeck Enterprise si :
-- Environnement de production critique
-- Besoins de support professionnel
-- Fonctionnalités avancées requises
-- ROI justifié par l'automatisation
-
----
-
-## Conclusion
-
-Le choix entre ces différentes options dépend principalement de :
-1. **La taille de l'organisation**
-2. **Les contraintes de sécurité et conformité**
-3. **Le budget disponible (CAPEX vs OPEX)**
-4. **L'expertise technique interne**
-5. **Les besoins en support et formation**
-
-Il est recommandé de réaliser une évaluation pilote avant tout déploiement en production, particulièrement pour les solutions on-premise qui nécessitent un investissement initial important.
-
----
-
-*Document créé à des fins pédagogiques - Les tarifs peuvent évoluer, consultez les sites officiels pour les prix actuels.*
