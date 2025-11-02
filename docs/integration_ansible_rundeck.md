@@ -1,35 +1,29 @@
 # Intégration d’Ansible avec Rundeck
 
-Ce document pédagogique présente les stratégies d’intégration d’Ansible dans Rundeck et fournit des exemples concrets (tableaux comparatifs, champs d’interface, et un job YAML complet) pour intégrer playbooks, rôles, secrets et nodes.
-
----
-
 ## 1) Principales stratégies d’intégration Ansible dans Rundeck
+- Commandes locales (CLI) via étapes « Command » ou « Script »  
+  Principe: exécuter `ansible`/`ansible-playbook` installés sur le Node d’exécution (server Rundeck ou Node ciblé) avec inventaire et variables fournis via fichiers ou options.  
+  Points forts: simplicité, contrôle total des flags; fonctionne avec toute version d’Ansible.  
+  Points d’attention: gestion manuelle des chemins, secrets, environnements Python/venv.
 
-- Commandes locales (CLI) via étapes « Command » ou « Script »
-  - Principe: exécuter `ansible`/`ansible-playbook` installés sur le Node d’exécution (server Rundeck ou Node ciblé) avec inventaire et variables fournis via fichiers ou options.
-  - Points forts: simplicité, contrôle total des flags; fonctionne avec toute version d’Ansible.
-  - Points d’attention: gestion manuelle des chemins, secrets, environnements Python/venv.
+- Plugins natifs Ansible pour Rundeck (Node Executor et File Copier, ou plugins Ansible-Runner)  
+  Principe: utiliser des étapes dédiées « Ansible Playbook » ou configurer l’exécuteur de nœuds pour Ansible.  
+  Points forts: meilleure intégration UI, passage d’inventaire/variables simplifié, logs structurés.  
+  Points d’attention: dépend des plugins installés; champs à renseigner précisément.
 
-- Plugins natifs Ansible pour Rundeck (Node Executor et File Copier, ou plugins Ansible-Runner)
-  - Principe: utiliser des étapes dédiées « Ansible Playbook » ou configurer l’exécuteur de nœuds pour Ansible.
-  - Points forts: meilleure intégration UI, passage d’inventaire/variables simplifié, logs structurés.
-  - Points d’attention: dépend des plugins installés; champs à renseigner précisément.
+- API (Webhook ou Job API) déclenchant des orchestrations Ansible externes  
+  Principe: Rundeck appelle une API (AWX/Ansible Tower, GitLab CI, Jenkins) qui exécute le playbook, puis récupère le statut.  
+  Points forts: séparation des responsabilités, sécurité centralisée, réutilisation d’un contrôleur Ansible.  
+  Points d’attention: dépendance externe, gestion des jetons et mapping des paramètres.
 
-- API (Webhook ou Job API) déclenchant des orchestrations Ansible externes
-  - Principe: Rundeck appelle une API (AWX/Ansible Tower, GitLab CI, Jenkins) qui exécute le playbook, puis récupère le statut.
-  - Points forts: séparation des responsabilités, sécurité centralisée, réutilisation d’un contrôleur Ansible.
-  - Points d’attention: dépendance externe, gestion des jetons et mapping des paramètres.
-
-- Ansible Runner (local ou via plugin)
-  - Principe: empaqueter exécutions via Ansible Runner (répertoires `project/`, `inventory/`, `env/`) pour isolation et reproductibilité.
-  - Points forts: exécutions déterministes, intégration simple des secrets via env vars/volumes.
-  - Points d’attention: structure projet runner à respecter, packaging/release du contenu.
+- Ansible Runner (local ou via plugin)  
+  Principe: empaqueter exécutions via Ansible Runner (répertoires `project/`, `inventory/`, `env/`) pour isolation et reproductibilité.  
+  Points forts: exécutions déterministes, intégration simple des secrets via env vars/volumes.  
+  Points d’attention: structure projet runner à respecter, packaging/release du contenu.
 
 ---
 
 ## 2) Tableau comparatif des intégrations
-
 | Critère | Commandes locales | Plugin natif | API (AWX/Tower) | Ansible Runner |
 |---|---|---|---|---|
 | Simplicité | Haute (si Ansible dispo) | Haute (UI guidée) | Moyenne | Moyenne |
@@ -45,99 +39,23 @@ Remarque: la « meilleure » approche dépend de votre contexte (sécurité, gou
 
 ## 3) Intégrer playbooks, rôles, secrets et nodes dans un Job Rundeck (par méthode)
 
-Pré-requis communs
-- Playbook et rôles versionnés (Git) ou disponibles sur le node d’exécution
-- Secrets (SSH, vault, tokens) stockés dans Key Storage Rundeck: `keys/` (private) ou `passwords/`
-- Nodes définis via: inventory YAML/INI, Resource Model (projects), ou inline Node filters
+A) CLI locale (exec/script)
+- Pré-requis: Ansible installé sur le node d’exécution; accès réseau aux cibles; Key Storage pour secrets.
+- Étapes typiques: préparer venv/config, installer rôles, récupérer secrets, exécuter `ansible-playbook`.
 
-A) Commandes locales (CLI)
-1. Étape « Command »: `ansible-playbook -i inventories/prod.ini site.yml -l webservers -e @group_vars/all.yml`
-2. Variables secrètes: exposer via env depuis Key Storage, ex: option secure « VAULT_PASS » -> export `ANSIBLE_VAULT_PASSWORD_FILE` via script wrapper, ou utiliser `--vault-password-file` pointant vers un fichier temporaire créé depuis Key Storage.
-3. Rôles/collections: installer en étape préalable: `ansible-galaxy install -r requirements.yml` (cache dans `.ansible/` ou dossier projet).
-4. Nodes: passer `-l` (limit) basé sur un filtre Rundeck `${node.name}` ou options de job.
-
-Exemple de commande:
-```
-ansible-playbook -i ${option.inventory} ${option.playbook} -l ${option.limit} \
-  -e env=${option.env} --vault-password-file ${env.VAULT_FILE}
-```
-
-B) Plugin natif « Ansible Playbook » (si installé)
-1. Étape « Ansible Playbook »: renseigner « Playbook Path », « Inventory », « Extra Vars », « Limit ».
-2. Secrets: lier des champs « SSH Key Storage Path », « Vault Password » à des entrées Key Storage.
-3. Rôles: ajouter une étape « Galaxy Install » (selon plugin) ou exécution préalable de `ansible-galaxy`.
-4. Nodes: via « Limit/Hosts » ou mapping automatisé depuis le Resource Model.
-
-C) API vers AWX/Ansible Tower
-1. Étape « HTTP Request »: POST sur `/api/v2/job_templates/{id}/launch/` avec token.
-2. Inventaire/vars: fournis via `extra_vars` et `inventory`/`limit` dans le payload.
-3. Secrets: stocker le token dans Key Storage; injecter via header `Authorization: Bearer ${option.token}`.
-4. Rôles: gérés côté AWX (job template et project sync).
-
-Exemple payload minimal:
-```
-{
-  "extra_vars": {"env": "prod", "version": "${option.version}"},
-  "limit": "webservers"
-}
-```
-
-D) Ansible Runner
-1. Préparer structure runner: `project/` (playbooks), `inventory/`, `env/`.
-2. Étape « Command »: `ansible-runner run . -p site.yml -i inventory/hosts --limit webservers -e @env/extravars.json`
-3. Secrets: monter en env vars ou fichiers dans `env/` depuis Key Storage.
-4. Rôles: présents dans `project/roles` ou via requirements avant exécution.
-
----
-
-## 4) Champs de l’interface web Rundeck pour un job Ansible
-
-| Champ | Définition | Exemple |
-|---|---|---|
-| Name | Nom du Job | "Déploiement Web Prod"
-| Group | Dossier logique | "ansible/deploy"
-| Description | But du job | "Déploie l’application sur webservers"
-| Project | Projet Rundeck cible | "training"
-| Nodes (Filter) | Sélection des nœuds d’exécution/targets | tags: role:web AND env:prod
-| Workflow | Suite d’étapes | 1) Galaxy install 2) Playbook
-| Node Executor | Mécanisme d’exécution | SSH/Ansible/Local
-| File Copier | Copie de fichiers vers nodes | SCP/Ansible copier
-| Options | Paramètres utilisateur | env=prod, version=1.2.3
-| Retry | Relance en cas d’échec | 2
-| Timeout | Durée max | 30m
-| Log level | Verbosité | INFO/DEBUG
-| Notification | Webhook/Email à la fin | Email équipe
-| ACL/Permissions | Qui peut lancer/voir | team-devops
-| Key Storage paths | Secrets référencés | keys/ssh/prod, passwords/vault
-| Ansible Playbook Path | Fichier playbook | playbooks/site.yml
-| Ansible Inventory | Fichier/inventory inline | inventories/prod.ini
-| Extra Vars | Variables extra (`-e`) | env=prod version=${option.version}
-| Limit | Hôtes ciblés | webservers
-| Vault Password | Secret vault | keys/vaults/prod
-
-Remarque: certains champs n’apparaissent que si les plugins Ansible sont installés.
-
----
-
-## 5) Exemple complet de Job Rundeck (YAML)
-
-Ce job illustre: options utilisateur, intégration playbook, variables secrètes, multiples rôles et nodes.
-
+Exemple de Job YAML (exec) — avec Key Storage pour le vault
 ```yaml
 - defaultTab: nodes
-  description: Déploiement applicatif avec Ansible (playbook + secrets + roles)
+  description: Déploiement applicatif via ansible-playbook (CLI)
   executionEnabled: true
-  group: ansible/deploy
+  group: ansible/cli
   loglevel: INFO
-  name: deploy_app_prod
-  nodeFilterEditable: true
-  nodesSelectedByDefault: true
-  scheduleEnabled: false
-  uuid: 11111111-2222-3333-4444-555555555555
+  name: deploy_with_cli
   options:
     - name: env
-      required: true
       value: prod
+      required: true
+      description: Environnement ciblé
     - name: version
       required: true
       description: Version applicative à déployer
@@ -182,10 +100,87 @@ Notes pédagogiques
 - Le secret Vault est récupéré depuis Key Storage via la CLI `rd` et conservé dans un fichier temporaire.
 - Le filtre `limit` est optionnel; s’il est vide, Ansible ciblera l’inventaire complet.
 
+B) Plugin natif « Ansible Playbook » (si installé)
+- Pré-requis: plugin Ansible pour Rundeck présent et activé au niveau du projet/instance.
+- Avantages: champs dédiés (playbook, inventory, extra vars, limit, creds…), logs structurés.
+
+Champs courants de l’étape « Ansible Playbook »
+- playbook-path: chemin vers le playbook
+- inventory: chemin (ou contenu) d’inventaire
+- extra-vars: variables supplémentaires
+- limit: filtre d’hôtes
+- vault-password, ssh-key-storage-path: secrets via Key Storage
+
+### Exemple avec plugins natifs (Node Executor & File Copier)
+
+Principes :
+- Utiliser les étapes dédiées « Ansible Playbook » pour piloter le lancement de playbooks directement depuis l’interface Rundeck.
+- Configurer l’exécuteur de nœuds pour qu’il utilise les modules natifs Ansible (Node Executor, File Copier) pour la connexion et la gestion des secrets.
+
+Exemple : Job Rundeck en YAML avec plugin natif Ansible
+
+```yaml
+- defaultTab: nodes
+  description: Déploiement applicatif via plugin natif Ansible
+  executionEnabled: true
+  group: ansible/natif
+  loglevel: INFO
+  name: deploy_with_plugin
+  options:
+    - name: env
+      value: prod
+      required: true
+      description: Environnement ciblé
+    - name: playbook
+      value: playbooks/site.yml
+      required: true
+      description: Chemin du playbook
+    - name: inventory
+      value: inventories/prod.ini
+      required: true
+      description: Fichier inventory
+    - name: limit
+      value: webservers
+      required: false
+      description: Filtre d’hôtes Ansible
+  nodefilters:
+    filter: "tags: role:web AND env:${option.env}"
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - description: Exécuter le playbook via le plugin natif
+        ansible-playbook:
+          playbook-path: "${option.playbook}"
+          inventory: "${option.inventory}"
+          extra-vars: "env=${option.env}"
+          limit: "${option.limit}"
+          vault-password: "keys/vaults/prod"
+          ssh-key-storage-path: "keys/ssh/prod"
+```
+
+Explications sur les champs :
+- ansible-playbook : étape dédiée du plugin (remplacera exec), permet d’utiliser tous les champs natifs.
+- playbook-path : chemin vers le playbook à exécuter.
+- inventory : path vers l’inventaire.
+- extra-vars : variables supplémentaires pour la session Ansible.
+- limit : filtre d’hôtes Ansible pour cibler un sous-ensemble.
+- vault-password et ssh-key-storage-path : secrets récupérés via Key Storage Rundeck.
+
+Ce mode offre :
+- Une meilleure intégration des logs,
+- Un passage simplifié des secrets,
+- Une UI dédiée pour renseigner les champs nécessaires à une exécution sûre et reproductible.
+
+C) API vers AWX/Ansible Tower
+- Déclenchement d’un Template/job côté contrôleur, passage des variables via API, suivi de statut.
+
+D) Ansible Runner
+- Préparer la structure Runner (`project/`, `inventory/`, `env/`), puis appeler l’étape Runner ou le binaire runner.
+
 ---
 
 ## Annexes: snippets utiles
-
 - Exemple d’inventory INI minimal
 ```
 [webservers]
