@@ -1,27 +1,41 @@
-# Guide  Complet des ACL Rundeck et PagerDuty Runbook Automation
+Voici le contenu reformaté selon vos préférences, avec une hiérarchisation claire, des icônes pour la lisibilité, et un tableau récapitulatif pour la comparaison.
+
+-----
+
+# 🛡️ Guide Complet des ACL Rundeck et PagerDuty Runbook Automation
 
 Les Access Control Lists (ACL) de Rundeck et PagerDuty Runbook Automation permettent de contrôler finement les permissions des utilisateurs et groupes. Ce guide détaille cinq cas d'usage courants avec des exemples précis pour chaque scénario, ainsi qu'une comparaison entre Rundeck OSS et les versions Enterprise.
 
-## Comprendre les ACL Rundeck
+## 🧠 Comprendre les ACL Rundeck
 
-Les ACL Rundeck fonctionnent selon deux contextes principaux : le **contexte application** (pour les actions au niveau système) et le **contexte project** (pour les actions au sein d'un projet). Chaque règle ACL doit définir ces deux contextes pour fonctionner correctement.[1][2]
+Les ACL Rundeck fonctionnent selon deux contextes principaux : le **contexte application** (pour les actions au niveau système) et le **contexte project** (pour les actions au sein d'un projet). Chaque règle ACL doit définir ces deux contextes pour fonctionner correctement.
 
-### Structure de Base d'une ACL
+### 📝 Structure de Base d'une ACL
 
-Une politique ACL se compose de quatre éléments essentiels:[2][1]
+Une politique ACL se compose de quatre éléments essentiels :
 
-- **description** : description textuelle de la politique
-- **context** : définit la portée (application ou project)
-- **for** : déclare les types de ressources et règles d'autorisation
-- **by** : définit à qui s'applique la politique (username, group, ou urn)
+  * **description** : description textuelle de la politique
+  * **context** : définit la portée (application ou project)
+  * **for** : déclare les types de ressources et règles d'autorisation
+  * **by** : définit à qui s'applique la politique (username, group, ou urn)
 
-Les règles permettent d'**autoriser** (`allow`) ou de **refuser** (`deny`) des actions. Le mécanisme de décision fonctionne ainsi : si une règle correspond et autorise l'action, elle est marquée et continue ; si une règle correspond et refuse l'action, le système retourne DENIED et s'arrête. Pour qu'une action soit autorisée, il faut qu'une règle la permette et qu'aucune règle ne la refuse.[1]
+Les règles permettent d'**autoriser** (`allow`) ou de **refuser** (`deny`).
 
-## Cas d'Usage 1 : Groupe d'Administrateurs Rundeck
+> **Logique de Décision des ACL :**
+>
+> 1.  Si une règle correspond et **autorise** (`allow`) l'action, l'action est marquée comme "permise" et l'évaluation continue.
+> 2.  Si une règle correspond et **refuse** (`deny`) l'action, le système retourne immédiatement `DENIED` et s'arrête.
+> 3.  Pour qu'une action soit autorisée, il faut qu'au moins une règle la permette et qu'**aucune** règle ne la refuse.
 
-Un groupe d'administrateurs nécessite un accès complet à tous les projets, à la création de projets, à la gestion des utilisateurs et au système. Cela requiert **deux politiques ACL** : une pour le contexte application et une pour le contexte project.[3][2][1]
+## ⚙️ Cas d'Usage Courants
 
-### ACL Administrateur - Contexte Project```yaml
+### 1️⃣ Cas d'Usage 1 : Groupe d'Administrateurs Rundeck
+
+Un groupe d'administrateurs nécessite un accès complet à tous les projets, à la création de projets, à la gestion des utilisateurs et au système. Cela requiert **deux politiques ACL** : une pour le contexte application et une pour le contexte project.
+
+#### ACL Administrateur - Contexte Project
+
+```yaml
 description: Accès administrateur niveau projet - tous les projets
 context:
   project: '.*'  # Tous les projets via regex
@@ -49,7 +63,7 @@ by:
   group: admin_rundeck
 ```
 
-### ACL Administrateur - Contexte Application
+#### ACL Administrateur - Contexte Application
 
 ```yaml
 description: Accès administrateur niveau application
@@ -86,13 +100,15 @@ by:
   group: admin_rundeck
 ```
 
-**Points clés** : L'action `admin` sur les ressources donne un accès complet. Pour un contrôle total, il faut obligatoirement définir les deux contextes.[2][3][1]
+**Points clés** : L'action `admin` sur les ressources donne un accès complet. Pour un contrôle total, il faut obligatoirement définir les deux contextes.
 
-## Cas d'Usage 2 : Administrateur par Projet
+-----
 
-Un administrateur de projet peut gérer entièrement un projet spécifique (créer/modifier/supprimer des jobs, gérer les nœuds, configurer le projet) mais ne peut pas créer de nouveaux projets ou accéder aux autres projets.[4][3][2]
+### 2️⃣ Cas d'Usage 2 : Administrateur par Projet
 
-### ACL Admin Projet - Contexte Project
+Un administrateur de projet peut gérer entièrement un projet spécifique (créer/modifier/supprimer des jobs, gérer les nœuds, configurer le projet) mais ne peut pas créer de nouveaux projets ou accéder aux autres projets.
+
+#### ACL Admin Projet - Contexte Project
 
 ```yaml
 description: Administrateur du projet MyProject uniquement
@@ -122,7 +138,7 @@ by:
   group: admin_myproject
 ```
 
-### ACL Admin Projet - Contexte Application
+#### ACL Admin Projet - Contexte Application
 
 ```yaml
 description: Accès application pour admin projet MyProject
@@ -149,13 +165,15 @@ by:
   group: admin_myproject
 ```
 
-**Différence Enterprise** : Dans PagerDuty Runbook Automation, les ACL granulaires pour le key storage par projet sont disponibles depuis la version 3.4.1, permettant une isolation complète des secrets par projet. En OSS, l'accès au storage est uniquement au niveau système.[5][6]
+> **Différence Enterprise** : Dans PagerDuty Runbook Automation, les ACL granulaires pour le key storage par projet sont disponibles depuis la version 3.4.1, permettant une isolation complète des secrets par projet. En OSS, l'accès au storage est uniquement au niveau système.
 
-## Cas d'Usage 3 : Compte en Lecture sur Toutes les Ressources Rundeck
+-----
 
-Un compte en lecture seule peut visualiser tous les projets, tous les jobs, toutes les exécutions et l'historique, mais ne peut rien modifier ni exécuter.[7][8][9][10]
+### 3️⃣ Cas d'Usage 3 : Compte en Lecture Seule (Global)
 
-### ACL Lecture Seule - Contexte Project
+Un compte en lecture seule peut visualiser tous les projets, tous les jobs, toutes les exécutions et l'historique, mais ne peut rien modifier ni exécuter.
+
+#### ACL Lecture Seule - Contexte Project
 
 ```yaml
 description: Lecture seule sur tous les projets
@@ -174,7 +192,7 @@ by:
   group: readonly_all
 ```
 
-### ACL Lecture Seule - Contexte Application
+#### ACL Lecture Seule - Contexte Application
 
 ```yaml
 description: Lecture seule niveau application
@@ -195,13 +213,15 @@ by:
   group: readonly_all
 ```
 
-**Note importante** : L'action `read` sur les jobs permet de voir la définition complète du job, y compris le workflow. Si tu veux permettre de voir l'existence du job sans sa définition, utilise uniquement `view` au lieu de `read`.[3][2]
+> **Note importante** : L'action `read` sur les jobs permet de voir la définition complète du job, y compris le workflow. Si vous voulez permettre de voir l'existence du job sans sa définition, utilisez uniquement `view` au lieu de `read`.
 
-## Cas d'Usage 4 : Lecture et Lancement de Jobs par Projet
+-----
 
-Ce profil permet de voir et exécuter les jobs d'un projet spécifique, ainsi que d'arrêter les exécutions, mais sans pouvoir modifier les jobs ou la configuration du projet.[11][12][13][4][3]
+### 4️⃣ Cas d'Usage 4 : Lecture et Lancement (Par Projet)
 
-### ACL Read/Run - Contexte Project
+Ce profil permet de voir et exécuter les jobs d'un projet spécifique, ainsi que d'arrêter les exécutions, mais sans pouvoir modifier les jobs ou la configuration du projet.
+
+#### ACL Read/Run - Contexte Project
 
 ```yaml
 description: Lecture et exécution des jobs sur ProjectX
@@ -225,7 +245,7 @@ by:
   group: executors_projectx
 ```
 
-### ACL Read/Run - Contexte Application
+#### ACL Read/Run - Contexte Application
 
 ```yaml
 description: Accès application pour executors ProjectX
@@ -248,23 +268,26 @@ by:
   group: executors_projectx
 ```
 
-**Variante pour un groupe de jobs spécifique** : Si tu veux limiter l'exécution à un dossier de jobs uniquement (par exemple `/prod/maintenance`), ajoute une règle `match` sur le groupe de jobs:[12][13][14]
+> **Variante pour un groupe de jobs spécifique** :
+> Si vous voulez limiter l'exécution à un dossier de jobs uniquement (par exemple `/prod/maintenance`), ajoutez une règle `match` sur le groupe de jobs :
+>
+> ```yaml
+>   job:
+>     - equals:
+>         group: 'prod/maintenance'  # Limiter à un dossier spécifique
+>       allow: [read,run,kill]
+>     - match:
+>         group: '.*'  # Tous les autres jobs
+>       allow: [read]  # Lecture seule
+> ```
 
-```yaml
-  job:
-    - equals:
-        group: 'prod/maintenance'  # Limiter à un dossier spécifique
-      allow: [read,run,kill]
-    - match:
-        group: '.*'  # Tous les autres jobs
-      allow: [read]  # Lecture seule
-```
+-----
 
-## Cas d'Usage 5 : Compte en Lecture par Projet
+### 5️⃣ Cas d'Usage 5 : Compte en Lecture (Par Projet)
 
-Ce profil permet uniquement de visualiser un projet spécifique, ses jobs et l'historique des exécutions, sans pouvoir exécuter quoi que ce soit.[8][9][7]
+Ce profil permet uniquement de visualiser un projet spécifique, ses jobs et l'historique des exécutions, sans pouvoir exécuter quoi que ce soit.
 
-### ACL Lecture Projet - Contexte Project
+#### ACL Lecture Projet - Contexte Project
 
 ```yaml
 description: Lecture seule sur ProjectY
@@ -283,7 +306,7 @@ by:
   group: readonly_projecty
 ```
 
-### ACL Lecture Projet - Contexte Application
+#### ACL Lecture Projet - Contexte Application
 
 ```yaml
 description: Accès application pour lecture ProjectY
@@ -306,67 +329,57 @@ by:
   group: readonly_projecty
 ```
 
-**Masquer les autres projets** : Avec cette configuration, l'utilisateur ne verra que ProjectY dans la liste des projets car il n'a pas l'autorisation `read` au niveau application pour les autres projets.[4][2]
+> **Masquer les autres projets** : Avec cette configuration, l'utilisateur ne verra que ProjectY dans la liste des projets car il n'a pas l'autorisation `read` au niveau application pour les autres projets.
 
-## Différences entre Rundeck OSS et PagerDuty Runbook
+## ⚖️ Différences : Rundeck OSS vs PagerDuty Runbook
 
+### Tableau Comparatif de la Gestion des ACL
 
+| Caractéristique | Rundeck OSS (Community Edition) | PagerDuty Runbook Automation (Enterprise/SaaS) |
+| :--- | :--- | :--- |
+| **Édition ACL** | Éditeur de texte simple (GUI) | **Wizard graphique** pour créer des règles sans YAML |
+| **Stockage ACL** | Fichiers `.aclpolicy` sur le filesystem | Base de données (pour performance) ou filesystem |
+| **Test & Validation** | Outil CLI `rd-acl` (externe) | **Testeur ACL intégré au GUI** (simuler un utilisateur) |
+| **Key Storage** | Accès au niveau **système** uniquement | Accès granulaire **par projet** (depis v3.4.1) |
+| **Délégation** | Géré au niveau système | Délégation de l'admin ACL aux admins de projet |
+| **Interface** | Gestion via fichiers de configuration | Gestion complète via GUI (SaaS) ou BDD (Self-Hosted) |
 
-### Gestion des ACL : Principales Différences
+### ✨ Fonctionnalités Enterprise Additionnelles
 
-**Rundeck OSS (Community Edition)**:[15][16][17][1][2]
-- Édition ACL via GUI avec éditeur de texte simple et validation syntaxique
-- Fichiers `.aclpolicy` stockés sur le filesystem (`/etc/rundeck` ou `$RDECK_BASE/etc`)
-- Outil en ligne de commande `rd-acl` pour tester et valider les ACL
-- Support complet des fonctionnalités ACL de base (contexts, regex, deny, notBy)
-- Accès au key storage au niveau système uniquement
-- Pas de wizard graphique pour créer les ACL
-- Pas de fonctionnalité de test ACL intégrée dans l'interface
+Les versions Enterprise et SaaS incluent également :
 
-**PagerDuty Runbook Automation (Enterprise/SaaS)**:[16][17][6][18][15][5]
-- **ACL Policy Editor avec wizard graphique** : interface guidée pour créer des règles sans écrire de YAML manuellement
-- **ACL Storage Layer optimisé** (depuis v3.4.0) : stockage des ACL dans la base de données pour de meilleures performances avec de nombreuses ACL[6]
-- **Test ACL via GUI** : possibilité de tester les permissions directement dans l'interface pour un utilisateur ou groupe donné[19]
-- **ACL granulaires pour Key Storage par projet** (depuis v3.4.1) : isolation complète des secrets au niveau projet au lieu du niveau système[5]
-- **Délégation de l'administration des ACL projet** : les administrateurs peuvent déléguer la gestion des ACL projet aux admins de projet[17][15][4]
-- **Configuration via GUI** : les paramètres sont stockés en base de données et peuvent être partagés entre les membres d'un cluster[5]
-- Version SaaS : gestion uniquement via GUI, pas d'accès filesystem aux fichiers `.aclpolicy`[20][16]
+  * **Clustering et High Availability** : plusieurs instances Rundeck avec auto-takeover.
+  * **Runners** : exécution sécurisée d'automation dans des environnements isolés.
+  * **Webhooks avancés** : intégration avec PagerDuty, GitHub, AWS SNS.
+  * **Load Balanced Workloads** : distribution de charge entre membres du cluster.
+  * **Support professionnel** et SLA.
 
-### Fonctionnalités Enterprise Additionnelles
+### 🤝 Compatibilité des ACL
 
-Les versions Enterprise et SaaS incluent également:[21][15][16][20]
-- **Clustering et High Availability** : plusieurs instances Rundeck avec auto-takeover en cas de panne
-- **Runners** (Process Runner pour Self-Hosted, Runbook Runner pour SaaS) : exécution sécurisée d'automation dans des environnements isolés
-- **Webhooks avancés** : intégration avec PagerDuty, GitHub, AWS SNS avec signatures V3
-- **Load Balanced Workloads** : distribution de charge entre membres du cluster
-- **Support professionnel** et SLA 99.9% (SaaS uniquement)
+**Important** : La syntaxe YAML des fichiers ACL est **identique entre toutes les versions** (OSS, Enterprise Self-Hosted, et SaaS). Les exemples fournis dans ce guide fonctionnent sur toutes les versions. La différence réside dans l'interface de gestion et les fonctionnalités avancées, pas dans le format des ACL.
 
-### Compatibilité des ACL
+Les versions modernes supportent toutes :
 
-**Important** : La syntaxe YAML des fichiers ACL est **identique entre toutes les versions** (OSS, Enterprise Self-Hosted, et SaaS). Les exemples fournis dans ce guide fonctionnent sur toutes les versions. La différence réside dans l'interface de gestion et les fonctionnalités avancées, pas dans le format des ACL.[18][15][1][2]
+  * Regex dans `username` et `group`
+  * Clause `deny` (depuis v1.2)
+  * Clause `notBy` (depuis v3.1)
+  * Support `urn:` dans `by` et `notBy` (depuis v3.4)
 
-Les versions modernes supportent toutes:[1]
-- Regex dans `username` et `group`
-- Clause `deny` (depuis v1.2)
-- Clause `notBy` (depuis v3.1)
-- Support `urn:` dans `by` et `notBy` (depuis v3.4)
+## ✅ Bonnes Pratiques et Conseils
 
+### 🗂️ Organisation des Fichiers ACL
 
-## Bonnes Pratiques et Conseils
+**Séparez vos ACL par groupe ou par usage** : Au lieu d'un seul fichier monolithique, créez plusieurs fichiers `.aclpolicy` :
 
-### Organisation des Fichiers ACL
+  * `admin.aclpolicy` : groupe admin
+  * `project-admins.aclpolicy` : administrateurs de projets
+  * `readonly-users.aclpolicy` : utilisateurs en lecture seule
+  * `project-dev-executors.aclpolicy` : exécuteurs du projet dev
 
-**Sépare tes ACL par groupe ou par usage** : Au lieu d'un seul fichier monolithique, crée plusieurs fichiers `.aclpolicy` :[2][1]
-- `admin.aclpolicy` : groupe admin
-- `project-admins.aclpolicy` : administrateurs de projets
-- `readonly-users.aclpolicy` : utilisateurs en lecture seule
-- `project-dev-executors.aclpolicy` : exécuteurs du projet dev
+### 🧬 Utilisation de Regex et URN
 
-Cela facilite la maintenance et évite les conflits.
+Pour **correspondances exactes** (éviter l'évaluation regex), utilisez le format URN :
 
-### Utilisation de Regex et URN
-
-Pour **correspondances exactes** (éviter l'évaluation regex), utilise le format URN:[1]
 ```yaml
 by:
   urn: 'group:exact_group_name'  # Correspondance exacte
@@ -374,78 +387,59 @@ by:
   group: 'exact_group_name'  # Évalué comme regex
 ```
 
-Pour **plusieurs projets similaires**, utilise les regex intelligemment:[2][1]
+Pour **plusieurs projets similaires**, utilisez les regex intelligemment :
+
 ```yaml
 context:
   project: '(dev|test|qa)_.*'  # Tous les projets dev_, test_, qa_
 ```
 
-### Hiérarchie Allow/Deny
+### 🚦 Hiérarchie Allow/Deny
 
-**Le deny l'emporte toujours sur allow**. Si une règle autorise une action mais qu'une autre la refuse, l'action sera refusée. Utilise `deny` avec précaution et de préférence avec `notBy` pour exclure certains utilisateurs:[1]
+**Le `deny` l'emporte toujours sur `allow`**. Si une règle autorise une action mais qu'une autre la refuse, l'action sera refusée.
 
-```yaml
-# Tout le monde peut exécuter SAUF les stagiaires
-for:
-  job:
-    - allow: [run]
-      deny: []
-by:
-  group: 'team_.*'
+### 🐞 Débogage et Validation
 
-notBy:
-  group: 'stagiaires'
-```
+**Avant de déployer en production** :
 
-### Débogage et Validation
+1.  Validez la syntaxe YAML avec `rd-acl validate <fichier.aclpolicy>`
+2.  Testez avec `rd-acl test` pour simuler les permissions
+3.  Consultez `/var/log/rundeck/rundeck.audit.log` pour voir les décisions GRANTED/REJECTED/DENIED
+4.  (Enterprise) Utilisez l'évaluateur ACL intégré dans le GUI.
 
-**Avant de déployer en production**:[9][2]
-1. Valide la syntaxe YAML avec `rd-acl validate <fichier.aclpolicy>`
-2. Teste avec `rd-acl test` pour simuler les permissions
-3. Consulte `/var/log/rundeck/rundeck.audit.log` pour voir les décisions d'autorisation GRANTED/REJECTED/DENIED
-4. Active le mode debug temporairement pour comprendre les évaluations de règles
+### 📈 Délégation Progressive
 
-**Dans PagerDuty Runbook Enterprise**, utilise l'évaluateur ACL intégré dans le GUI pour tester les permissions d'un utilisateur ou groupe avant déploiement.[19]
+Commencez par des **permissions restrictives** et ajoutez progressivement (principe du moindre privilège) :
 
-### Délégation Progressive
+1.  Lecture seule sur un projet.
+2.  Ajout de `run` sur des jobs spécifiques.
+3.  Ajout de `kill` pour gérer les exécutions.
+4.  Ajout de `update`/`create` si nécessaire.
 
-Commence par des **permissions restrictives** et ajoute progressivement :[3][4]
-1. Commence avec lecture seule sur un projet
-2. Ajoute run sur jobs spécifiques
-3. Ajoute kill pour gérer les exécutions
-4. Enfin, ajoute update/create si nécessaire
+### 🔑 Gestion du Key Storage
 
-Cette approche limite les risques et suit le principe du moindre privilège.
+  * **OSS** : accès au storage au niveau système uniquement via `storage:`.
+  * **Enterprise 3.4.1+** : utilisez les ACL granulaires par projet via le path `keys/project/<ProjectName>/.*`.
 
-### Gestion du Key Storage
+### 🔍 Troubleshooting Commun
 
-Pour les projets nécessitant des clés SSH ou secrets :[5][2]
-- **OSS** : accès au storage au niveau système uniquement via `storage:`
-- **Enterprise 3.4.1+** : utilise les ACL granulaires par projet via le path `keys/project/<ProjectName>/.*`
+> **Problème** : L'utilisateur voit "Unauthorized" alors que l'ACL semble correcte.
+>
+> **Solutions** :
+>
+> 1.  Vérifiez que l'utilisateur appartient bien au groupe (page profil utilisateur).
+> 2.  Vérifiez qu'il y a **à la fois** un contexte `application` ET `project` défini.
+> 3.  Consultez `rundeck.audit.log` pour voir la dernière décision.
+> 4.  Vérifiez qu'il n'y a pas de règle `deny` qui s'applique.
+> 5.  Pour accéder à un projet, l'utilisateur doit avoir `read` sur le projet dans le contexte `application`.
 
-Exemple Enterprise :
-```yaml
-storage:
-  - match:
-      path: 'keys/project/MyProject/.*'
-    allow: [read]  # Lecture seule des clés du projet
-```
+> **Problème** : L'utilisateur ne peut pas créer de jobs alors qu'il a `allow: [create]` sur `job:`.
+>
+> **Solution** : Il faut **deux autorisations** pour créer un job :
+>
+>   * `allow: [create]` sur `resource: kind: job` (générique)
+>   * `allow: [create]` sur `job:` (spécifique)
 
-### Troubleshooting Commun
+-----
 
-**Problème** : L'utilisateur voit "Unauthorized" alors que l'ACL semble correcte.[9][2]
-
-**Solutions** :
-1. Vérifie que l'utilisateur appartient bien au groupe (page profil utilisateur)
-2. Vérifie qu'il y a **à la fois** un contexte application ET project défini
-3. Consulte `rundeck.audit.log` pour voir la dernière décision (GRANTED/REJECTED/DENIED)
-4. Vérifie qu'il n'y a pas de règle `deny` qui s'applique
-5. Pour accéder à un projet, l'utilisateur doit avoir `read` sur le projet dans le contexte application[4][2]
-
-**Problème** : L'utilisateur ne peut pas créer de jobs alors qu'il a `allow: [create]` sur `job:`.[22]
-
-**Solution** : Il faut **deux autorisations** pour créer un job :[22][2]
-- `allow: [create]` sur `resource: kind: job` (générique)
-- `allow: [create]` sur `job:` (spécifique)
-
-Les ACL Rundeck offrent une granularité exceptionnelle pour contrôler précisément qui peut faire quoi dans ton environnement d'automatisation. En maîtrisant les contextes application et project, ainsi que la différence entre ressources génériques et spécifiques, tu peux créer des politiques de sécurité robustes adaptées à ton organisation.
+Les ACL Rundeck offrent une granularité exceptionnelle pour contrôler précisément qui peut faire quoi dans votre environnement d'automatisation. En maîtrisant les contextes application et project, vous pouvez créer des politiques de sécurité robustes adaptées à votre organisation.
