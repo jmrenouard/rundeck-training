@@ -1,6 +1,3 @@
-Voici le contenu reformaté selon vos préférences, avec une hiérarchisation claire, des icônes pour la lisibilité, et un tableau récapitulatif pour la comparaison.
-
------
 
 # 🛡️ Guide Complet des ACL Rundeck et PagerDuty Runbook Automation
 
