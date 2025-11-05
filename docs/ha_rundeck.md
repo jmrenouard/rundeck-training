@@ -98,6 +98,53 @@ rundeck.clusterMode.heartbeat.considerDead=300
 Pour les très grands déploiements, la documentation mentionne des architectures plus complexes :
 
 1.  **Serveurs Spécialisés :** On peut dédier certains nœuds du cluster à des rôles spécifiques. Par exemple, des nœuds "Frontend" (pour l'UI/API) et des nœuds "Backend" (pour l'exécution des jobs).
-2.  **Enterprise Runners (Modèle 
+2. **Enterprise Runners :** Ces runners permettent d'exécuter des jobs dans des réseaux distants ou isolés. Ils fonctionnent en mode "pull" (polling) du cluster principal, ce qui sécurise l'accès dans des réseaux cloisonnés.
+3. **Multi-clusters :** Pour les très grandes entreprises ou les besoins multi-environnements (DEV/QA/PROD), avec gestion centralisée du code des jobs via SCM (Git).
+
+### Définition
+
+Ce modèle vise les contextes d'automatisation à grande échelle. Il combine des mécanismes permettant :
+- la spécialisation de serveurs (UI/API vs exécution de jobs),
+- l'utilisation de Runners d'Entreprise pour orchestrer des exécutions dans des réseaux isolés/restreints,
+- une répartition flexible ou segmentée des charges métier avec haute résilience.
+
+#### Concepts clés
+
+- **Serveurs spécialisés** : distinction entre nœuds "Frontend" (UI/API) et "Backend/Workers" (exécution jobs), afin d'optimiser les performances sous forte charge.
+- **Enterprise Runners** : micro-services déléguant l'exécution de jobs dans des réseaux distants ou segmentés, en mode "pull" (polling du cluster principal).
+- **Multi-clusters** : pour très grandes entreprises ou besoins multi-environnements (DEV/QA/PROD), gestion centralisée du code des jobs via SCM (Git).
+
+### Tableau de récapitulatif – Modèle 3 avancé
+
+| Paramètre | Description/Utilisation | Valeur par défaut / Recommandée | Définition |
+|-----------|------------------------|--------------------------------|------------|
+| Serveur spécialisé (UI / Worker) | Spécialiser des instances selon leur rôle : UI/API ou exécution de Jobs | N/A (dépend du sizing) | Au moins 1 UI et 1 Worker dès forte charge |
+| Enterprise Runner | Service à déployer dans des réseaux distants. Exécute les jobs tagués selon des "Runner Tags" | Désactivé par défaut | Isoler/externaliser des exécutions réseaux |
+| Nombre recommandé d'instances | Adapter à la charge (ex : 3+ pour la tolérance, 10+ si haute volumétrie) | 3 mini, 6+ en prod/secteur critique | Par ex : 4 UI + 6 Workers sur gros cluster |
+| Base de données partagée | Même fonctionnement que modèle 1/2 : tous les membres du cluster et runners référencent la même base externalisée | Obligatoire | PostgreSQL, MariaDB, MySQL, Oracle |
+| Stockage partagé (logs) | Obligatoire pour lecture des executions entre membres du cluster | S3, Azure Blob, NFS | Object storage compatible, checkpoint logs |
+| Load balancer | Toujours requis pour distribuer UI/API (side "frontend") | HAProxy, NGINX, AWS ELB | Répartition/haute disponibilité interface |
+| Authentification centralisée | Idem autre modèle (LDAP/AD/SSO) | SSO (OpenID v2 supporté, pas SAML 2023) | Cohérence utilisateurs/droits |
+| Tag de runner | Attribut clé pour associer des jobs à exécuter sur un Runner spécifique (ex : "runner-paris", "runner-aws") | À définir selon organisation | Facilite la gestion multi-sites/enviro |
+| Mode poll sur Runners | Les Runners n'exposent pas d'API directe, mais "poll" la tour principale pour prendre du travail | Activé | Sécurise accès dans réseaux cloisonnés |
+
+### Compléments didactiques et bonnes pratiques
+
+- **Raisonner en spécialisation spatiale** : dédier les Workers (exécutions lourdes) pour éviter de saturer l'UI sous charge importante.
+- **Tagging des jobs pour runners** : s'assurer que chaque Runner a un tag unique ou partagé pour permettre la répartition adaptée/flexible.
+- **Résilience** : il est recommandé d'avoir au moins deux Runners par "network zone" pour assurer la continuité de service en cas de panne locale.
+- **Automatisation SCM/CI** : avec des multi-clusters, privilégier la gestion du code des jobs via Git pour intégration continue, promotions, DRP.
+- **Sécurité** : les Runners n'ont pas besoin d'accès entrant, ils "pollent" (sortant uniquement), ce qui simplifie la configuration réseau/pare-feu.
+
+### Exemple de flux d'exécution
+
+1. Un utilisateur crée un job avec un tag Runner (ex : "runner-site-B").
+2. Le cluster central attribue ce job au Runner correspondant, via polling.
+3. Le Runner exécute la tâche sur les nœuds de son réseau local, et renvoie le statut au cluster central.
+4. Les logs d'exécution sont centralisés (S3 ou équivalent), accessibles de tout le cluster.
+
+---
+
+**Ce modèle s'adresse aux plateformes nécessitant souplesse, isolation réseau, répartition massive des charges ou multitenancy.**
 
 
