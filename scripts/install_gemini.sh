@@ -19,7 +19,6 @@ end_success() { echo -e "${C_GREEN}[END    ]${C_RESET}🏁 $1"; exit 0; }
 # --- Variables de Configuration ---
 NODE_PCK_LIST="nodejs npm"
 GEMINI_PCK="@google/gemini-cli"
-
 # --- Début du script ---
 start_script "### Installation de Gemini CLI ###"
 
@@ -33,22 +32,33 @@ fi
 # --- Vérification et Installation de Node.js ---
 if command -v node &>/dev/null; then
   info "Node.js est déjà installé (version: $(node --version))."
+  # Check if Node.js version is at least 20
+  NODE_MAJOR_VERSION=$(node -v | cut -d. -f1 | sed 's/v//')
+  if [ "$NODE_MAJOR_VERSION" -lt 20 ]; then
+    warn "Node.js version est inférieure à 20. Mise à jour vers Node.js 20."
+    # Remove existing Node.js installation
+    apt-get purge -y nodejs npm &>/dev/null
+    # Install Node.js 20 using NodeSource
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js 20 a échoué."
+    success "Node.js 20 a été installé avec succès."
+  fi
 else
-  info "Node.js n'est pas installé. Installation en cours..."
+  info "Node.js n'est pas installé. Installation de Node.js 20 en cours..."
   info "Mise à jour du cache APT..."
   apt-get update >/dev/null || error "La mise à jour APT a échoué."
-  info "Installation de Node.js..."
-  apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js a échoué."
-  success "Node.js a été installé avec succès."
+  # Install Node.js 20 using NodeSource
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js 20 a échoué."
+  success "Node.js 20 a été installé avec succès."
 fi
 
 # --- Vérification et Installation de NPM ---
+# NPM est installé avec Node.js via NodeSource, donc cette section peut être simplifiée.
 if command -v npm &>/dev/null; then
   info "NPM est déjà installé (version: $(npm --version))."
 else
-  info "NPM n'est pas installé. Installation en cours..."
-  apt-get install -y npm &>/dev/null || error "L'installation de NPM a échoué."
-  success "NPM a été installé avec succès."
+  error "NPM n'a pas été installé avec Node.js. Veuillez vérifier l'installation de Node.js."
 fi
 
 # --- Installation de Gemini CLI ---
