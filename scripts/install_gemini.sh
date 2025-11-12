@@ -30,15 +30,25 @@ if command -v gemini &>/dev/null; then
     gemini --version
     end_success "Gemini CLI est déjà présent sur le système."
 fi
+# --- Vérification et Installation de Node.js ---
 if command -v node &>/dev/null; then
-    warn "Node.js semble déjà installé. Le script continuera l'installation de Gemini CLI."
+  info "Node.js est déjà installé (version: $(node --version))."
 else
-    # --- Installation de Node.js ---
-    info "Mise à jour du cache APT..."
-    apt-get update >/dev/null
-    info "Installation de Node.js et NPM..."
-    apt-get install -y $NODE_PCK_LIST &>/dev/null || error "L'installation de Node.js ou NPM a échoué."
-    success "Node.js et NPM ont été installés avec succès."
+  info "Node.js n'est pas installé. Installation en cours..."
+  info "Mise à jour du cache APT..."
+  apt-get update >/dev/null || error "La mise à jour APT a échoué."
+  info "Installation de Node.js..."
+  apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js a échoué."
+  success "Node.js a été installé avec succès."
+fi
+
+# --- Vérification et Installation de NPM ---
+if command -v npm &>/dev/null; then
+  info "NPM est déjà installé (version: $(npm --version))."
+else
+  info "NPM n'est pas installé. Installation en cours..."
+  apt-get install -y npm &>/dev/null || error "L'installation de NPM a échoué."
+  success "NPM a été installé avec succès."
 fi
 
 # --- Installation de Gemini CLI ---
