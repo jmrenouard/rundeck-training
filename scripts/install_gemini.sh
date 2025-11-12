@@ -32,25 +32,25 @@ fi
 # --- Vérification et Installation de Node.js ---
 if command -v node &>/dev/null; then
   info "Node.js est déjà installé (version: $(node --version))."
-  # Check if Node.js version is at least 20
+  # Check if Node.js version is at least 24
   NODE_MAJOR_VERSION=$(node -v | cut -d. -f1 | sed 's/v//')
-  if [ "$NODE_MAJOR_VERSION" -lt 20 ]; then
-    warn "Node.js version est inférieure à 20. Mise à jour vers Node.js 20."
+  if [ "$NODE_MAJOR_VERSION" -lt 24]; then
+    warn "Node.js version est inférieure à 24 Mise à jour vers Node.js 20."
     # Remove existing Node.js installation
     apt-get purge -y nodejs npm &>/dev/null
     # Install Node.js 20 using NodeSource
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js 20 a échoué."
-    success "Node.js 20 a été installé avec succès."
+    curl -fsSL https://deb.nodesource.com/setup_24x | bash -
+    apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js 24a échoué."
+    success "Node.js 24 a été installé avec succès."
   fi
 else
-  info "Node.js n'est pas installé. Installation de Node.js 20 en cours..."
+  info "Node.js n'est pas installé. Installation de Node.js 24 en cours..."
   info "Mise à jour du cache APT..."
   apt-get update >/dev/null || error "La mise à jour APT a échoué."
-  # Install Node.js 20 using NodeSource
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-  apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js 20 a échoué."
-  success "Node.js 20 a été installé avec succès."
+  # Install Node.js 24 using NodeSource
+  curl -fsSL https://deb.nodesource.com/setup_24x | bash -
+  apt-get install -y nodejs &>/dev/null || error "L'installation de Node.js 24 a échoué."
+  success "Node.js 24 a été installé avec succès."
 fi
 
 # --- Vérification et Installation de NPM ---
