@@ -18,8 +18,8 @@ Le fichier `docker-compose.yml` est utilisé pour lancer un environnement de dé
 - `db` : La base de données MySQL.
 
 **Caractéristiques :**
-- Les données de Rundeck et de MySQL sont persistées dans des répertoires locaux (`./data/rundeck` et `./data/mysql`) pour un accès facile.
-- La configuration (ports, identifiants) est gérée via un fichier `.env`.
+- Les données de Rundeck et de MySQL sont persistées par défaut dans des répertoires locaux (`./rundeck-data` et `./mysql-data` selon `.env.example`).
+- La configuration (ports, identifiants) est gérée via un fichier `.env` ; validez le manifeste avec `docker compose --env-file .env -f docker-compose.yml config -q`.
 
 **Utilisation :**
 1. Créez un fichier `.env` à la racine du répertoire `docker` en vous basant sur `.env.example`.

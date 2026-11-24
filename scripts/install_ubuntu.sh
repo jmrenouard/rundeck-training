@@ -18,7 +18,8 @@ end_success() { echo -e "${C_GREEN}[END    ]${C_RESET}🏁 $1"; exit 0; }
 
 # --- Variables ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-LOG_FILE="/var/log/rundeck_install_$(date +%Y%m%d_%H%M%S).loSERVER_NAME=""
+LOG_FILE="/var/log/rundeck_install_$(date +%Y%m%d_%H%M%S).log"
+SERVER_NAME=""
 ADMIN_EMAIL=""
 
 # --- Scripts à exécuter ---

@@ -1,3 +1,7 @@
+# Ignore Python bytecode artifacts
+__pycache__/
+*.pyc
+
 # Ignore Docker environment file
 docker/.env
 web_sites/**
