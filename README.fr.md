@@ -4,7 +4,7 @@
 
 > **Langue :** Français | [English](README.md)
 
-Ce projet fournit une collection complète d'outils pour déployer, configurer et gérer un environnement **Rundeck** sous **Docker Compose**, **Docker Swarm**, **Ansible** et scripts **Ubuntu**, avec une intégration **MinIO/S3**, 64 templates de jobs YAML et quatre générateurs web interactifs.
+Ce projet fournit une collection complète d'outils pour déployer, configurer et gérer un environnement **Rundeck** sous **Docker Compose**, **Docker Swarm**, **Ansible** et scripts **Ubuntu**, avec une intégration **MinIO/S3**, 68 templates de jobs YAML et quatre générateurs web interactifs.
 
 ## Architecture Globale
 
@@ -40,7 +40,7 @@ Configurations Docker Compose et Docker Swarm (`docker-compose.yml`, `docker-swa
 Collection de scripts Bash pour l'installation sur Ubuntu, la configuration Docker, la sauvegarde et la restauration de Rundeck ainsi que MinIO.
 
 ### [Templates](./templates/README.md)
-Bibliothèque de 64 templates de jobs Rundeck YAML pour Linux et Windows (déploiement, intégration MinIO/S3, maintenance, sauvegarde/restauration, reporting et sécurité).
+Bibliothèque de 68 templates de jobs Rundeck YAML pour Linux et Windows (déploiement, intégration MinIO/S3, maintenance, sauvegarde/restauration, reporting et sécurité).
 
 ### [Feuille de route](./roadmap.md)
 Propositions d'évolution CI/CD, sécurité, observabilité et tests Ansible.

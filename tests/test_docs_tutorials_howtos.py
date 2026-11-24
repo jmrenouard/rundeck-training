@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -265,6 +266,12 @@ class TestDocsTutorialsAndHowTos(unittest.TestCase):
         except ImportError:
             yaml = None
         if yaml is not None:
+            template_ymls = [
+                *(REPO_ROOT / "templates").rglob("*.yml"),
+                *(REPO_ROOT / "templates").rglob("*.yaml"),
+            ]
+            self.assertEqual(len(template_ymls), 68)
+
             yml_files = sorted([*REPO_ROOT.rglob("*.yml"), *REPO_ROOT.rglob("*.yaml")])
             self.assertGreaterEqual(len(yml_files), 97)
             for yml_file in yml_files:
@@ -278,7 +285,12 @@ class TestDocsTutorialsAndHowTos(unittest.TestCase):
                 parsed = list(yaml.safe_load_all(str(b["code"])))
                 self.assertGreater(len(parsed), 0)
 
-        py_compile.compile(str(REPO_ROOT / "scripts" / "crawl_site.py"), doraise=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            py_compile.compile(
+                str(REPO_ROOT / "scripts" / "crawl_site.py"),
+                cfile=str(Path(tmpdir) / "crawl_site.pyc"),
+                doraise=True,
+            )
 
         if os.name != "nt" and shutil.which("docker"):
             res = subprocess.run(

@@ -11,11 +11,11 @@
 
 ## Ansible et Générateurs Web
 
-- **Playbooks (`ansible/playbooks/`):** `site.yml`, `java.yml`, `mysql.yml`, `rundeck.yml`, `nginx.yml`, `keycloak.yml`, `minio.yml`
+- **Playbooks (`ansible/playbooks/`):** `site.yml` (`java`, `mysql`, `rundeck`, `keycloak`, `minio`), `java.yml`, `mysql.yml`, `rundeck.yml`, `nginx.yml`, `keycloak.yml`, `minio.yml`
 - **Rôles (`ansible/roles/`):** `java`, `mysql`, `rundeck` (`5.3.0.20240813-1`, port `4440`), `nginx`, `keycloak`, `minio`
 - **Outils web :** `aclpolicy/index.html`, `ressources/index.html`, `jobs/index.html`, `propertyfile/index.html` (`plaintext`, `OBF`, `MD5`, `BCRYPT`)
 
 ## Templates et Scripts
 
-- **Templates (`templates/` et `docker/jobs/`):** `64` fichiers YAML sous `templates/` (`linux/`, `windows/`, `rundeck/`) plus `docker/jobs/sample-job.yml`
+- **Templates (`templates/` et `docker/jobs/`):** `68` fichiers YAML sous `templates/` (`linux/`, `windows/`, `rundeck/`) plus `docker/jobs/sample-job.yml`
 - **Scripts (`scripts/`):** `install_ubuntu.sh`, `install_docker_env.sh`, `install_java.sh`, `install_mysql.sh`, `install_rundeck.sh`, `install_rundeck_enterprise.sh`, `install_rundeck_runner.sh`, `install_nginx.sh`, `install_certbot.sh`, `install_minio.sh`, `install_gemini.sh`, `backup_rundeck.sh`, `restore_rundeck.sh`, `tuning_linux.sh`, `site_to_pdf.sh`, `crawl_site.py`

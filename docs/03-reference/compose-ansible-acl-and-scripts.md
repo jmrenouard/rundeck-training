@@ -12,7 +12,7 @@
 ## Ansible Roles & Playbooks (`ansible/`)
 
 - **Configuration:** `ansible/ansible.cfg`, `ansible/inventory/hosts`
-- **Playbooks:** `site.yml` (full stack), `java.yml`, `mysql.yml`, `rundeck.yml`, `nginx.yml`, `keycloak.yml`, `minio.yml`
+- **Playbooks:** `site.yml` (`java`, `mysql`, `rundeck`, `keycloak`, `minio`), `java.yml`, `mysql.yml`, `rundeck.yml`, `nginx.yml`, `keycloak.yml`, `minio.yml`
 - **Roles:** `java`, `mysql`, `rundeck`, `nginx`, `keycloak`, `minio`
 - **Rundeck defaults (`ansible/roles/rundeck/defaults/main.yml`):** `rundeck_version: "5.3.0.20240813-1"`, `rundeck_port: "4440"`, `rundeck_db_name: "rundeck"`, `rundeck_service: "rundeckd"` (requires encrypted vault `rundeck_db_password`)
 
@@ -25,7 +25,7 @@
 | `jobs/` | `index.html`, `README.md` | Multi-step Rundeck job YAML (`exec`, `script`, `jobref`, `scriptfile`, `scripturl`) |
 | `propertyfile/` | `index.html`, `bcrypt.min.js`, `README.md`, `README.en.md` | `realm.properties` (`plaintext`, `OBF`, `MD5`, `BCRYPT`) |
 
-## Job Templates (`templates/`, `docker/jobs/`)
+## Job Templates (`templates/` — 68 YAML files, `docker/jobs/`)
 
 - **Root & Sample Templates:** `docker/jobs/sample-job.yml`, `templates/ansible_job_template.yaml`, `templates/bash_job_template.yaml`, `templates/python_job_template.yaml`
 - **Linux Categories (`templates/linux/`):** `ansible/`, `backup/`, `deployment/`, `maintenance/`, `reporting/`, `security/`, `webhooks/`

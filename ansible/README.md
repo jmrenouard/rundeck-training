@@ -20,16 +20,16 @@ flowchart LR
     Site["playbooks/site.yml"] --> Java["Rôle java"]
     Site --> MySQL["Rôle mysql"]
     Site --> Rundeck["Rôle rundeck"]
-    Site --> Nginx["Rôle nginx"]
     Site --> Keycloak["Rôle keycloak"]
     Site --> MinIO["Rôle minio"]
+    NginxPB["playbooks/nginx.yml / rundeck.yml"] --> Nginx["Rôle nginx"]
 ```
 
 | Chemin (`ansible/`) | Rôle / Description |
 | :--- | :--- |
 | `ansible.cfg` | Configuration Ansible globale |
 | `inventory/hosts` | Fichier d'inventaire des serveurs cibles |
-| `playbooks/site.yml` | Playbook principal déployant toute la stack |
+| `playbooks/site.yml` | Playbook principal (`java`, `mysql`, `rundeck`, `keycloak`, `minio`) |
 | `playbooks/{java,mysql,rundeck,nginx,keycloak,minio}.yml` | Playbooks unitaires par composant |
 | `roles/{java,mysql,rundeck,nginx,keycloak,minio}/` | Rôles Ansible (tâches, défauts, modèles `.j2`, handlers) |
 | `README.md` | Ce fichier de documentation |
@@ -70,7 +70,7 @@ Toutes les commandes doivent être exécutées depuis le répertoire `ansible/`.
 
 ### Déployer la Stack Complète
 
-Pour déployer Java, MySQL, Rundeck et Keycloak en une seule fois :
+Pour déployer Java, MySQL, Rundeck, Keycloak et MinIO en une seule fois (`nginx` s'exécute via `playbooks/nginx.yml` ou `playbooks/rundeck.yml`) :
 
 ```bash
 ansible-playbook -i inventory/hosts playbooks/site.yml

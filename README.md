@@ -34,7 +34,7 @@ French operational documentation and localized subproject guides live in [README
 | :--- | :--- | :--- |
 | **Docker & Swarm Stack** | [`docker/docker-compose.yml`](docker/docker-compose.yml) | Containerized Rundeck `4.17.6` + MySQL `8.0` Compose and Swarm definitions |
 | **Ansible Playbooks** | [`ansible/playbooks/`](ansible/playbooks/site.yml) | Modular roles for `java`, `mysql`, `rundeck`, `nginx`, `keycloak`, and `minio` |
-| **Job YAML Templates** | [`templates/`](templates/README.md) | 64 ready-to-import YAML job definitions for Linux, Windows, and MinIO/S3 |
+| **Job YAML Templates** | [`templates/`](templates/README.md) | 68 ready-to-import YAML job definitions for Linux, Windows, and MinIO/S3 |
 | **Shell Scripts** | [`scripts/`](scripts/README.md) | Ubuntu bare-metal installers, backup/restore automation, and Docker setup |
 | **ACLPolicy Generator** | [`aclpolicy/index.html`](aclpolicy/index.html) | Bilingual web builder for `.aclpolicy` YAML documents |
 | **Resources Generator** | [`ressources/index.html`](ressources/index.html) | Bilingual web builder for Rundeck node `resources.yml` files |

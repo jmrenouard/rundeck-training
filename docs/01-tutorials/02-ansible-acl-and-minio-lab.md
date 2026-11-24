@@ -30,7 +30,7 @@ Validate YAML syntax across every Ansible playbook and role variable file:
 python3 -c "import yaml, pathlib; [list(yaml.safe_load_all(p.read_text())) for p in sorted(pathlib.Path('ansible').rglob('*.yml'))]"
 ```
 
-Review `ansible/playbooks/site.yml` to see the deployment order: `java` -> `mysql` -> `rundeck` -> `nginx` -> `keycloak` -> `minio`.
+Review `ansible/playbooks/site.yml` to see the 5-role stack order (`java` -> `mysql` -> `rundeck` -> `keycloak` -> `minio`), then inspect `ansible/playbooks/nginx.yml` (or `rundeck.yml`) for the Nginx reverse-proxy role.
 
 ## Step 2: Create User Credentials and ACL Policies
 
@@ -63,7 +63,7 @@ for:
 
 ## Step 3: Validate Job Templates and MinIO S3 Integration
 
-Check that `templates/rundeck/minio/transfert-s3.yml` and all 64 YAML templates parse cleanly:
+Check that `templates/rundeck/minio/transfert-s3.yml` and all 68 YAML templates parse cleanly:
 
 ```bash
 python3 -c "import yaml, pathlib; files = sorted(pathlib.Path('templates').rglob('*.y*ml')); [list(yaml.safe_load_all(f.read_text())) for f in files]; print(f'Templates validated: {len(files)}')"

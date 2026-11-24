@@ -90,7 +90,7 @@ Les templates pour Windows se trouvent dans le répertoire `templates/windows`.
 
 ---
 
-## Webhooks, Stockage MinIO/S3 et Reporting Complémentaires (`64` templates YAML au total)
+## Webhooks, Stockage MinIO/S3 et Reporting Complémentaires (`68` templates YAML au total)
 
 - **Webhooks Linux (`linux/webhooks/`):** `job-linux-webhook-generic.yaml`, `job-linux-webhook-slack.yaml`, `job-linux-webhook-teams.yaml`
 - **Bases PostgreSQL & Sécurité Linux (`linux/backup/`, `linux/security/`):** `job-linux-postgres-backup.yaml`, `job-linux-postgres-restore.yaml`, `job-linux-security-listening-ports.yaml`, `job-linux-security-tls-check.yaml`
