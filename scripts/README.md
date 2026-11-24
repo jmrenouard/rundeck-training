@@ -122,3 +122,18 @@ Ce script permet de restaurer Rundeck à partir d'un fichier de sauvegarde cré�
 ```bash
 sudo ./restore_rundeck.sh /var/backups/rundeck/rundeck_backup_YYYYMMDD_HHMMSS.tar.gz
 ```
+
+---
+
+## Autres Scripts Disponibles dans `scripts/`
+
+| Script | Rôle |
+| :--- | :--- |
+| `install_docker_env.sh` | Vérifie Docker/Compose, initialise `docker/.env` depuis `docker/.env.example` et démarre les conteneurs |
+| `install_nginx.sh` | Installe Nginx en reverse proxy HTTP/HTTPS pour Rundeck |
+| `install_certbot.sh` | Configure les certificats TLS Let's Encrypt via Certbot |
+| `install_rundeck_enterprise.sh` | Installation de Rundeck Enterprise |
+| `install_rundeck_runner.sh` | Installation d'un Rundeck Runner en service `systemd` |
+| `install_gemini.sh` | Script d'installation de l'outil Gemini CLI |
+| `tuning_linux.sh` | Optimisation système Linux pour l'hébergement Rundeck |
+| `crawl_site.py` / `site_to_pdf.sh` | Parcours du site web et export PDF dans `web_site/` |

@@ -62,8 +62,6 @@ Voici les fichiers de politique pour chaque profil. Je vous recommande de créer
   * **Description :** Contrôle total sur l'instance Rundeck. Peut tout voir, tout configurer, créer/supprimer des projets, gérer les utilisateurs et la configuration système.
   * **Fichier :** `admin_global.aclpolicy`
 
-<!-- end list -->
-
 ```yaml
 # Fichier: admin_global.aclpolicy
 description: "Profil 1: Admin généraux - Accès total."
@@ -86,8 +84,6 @@ for:
   * **Description :** Peut se connecter, voir la liste de tous les projets, et dans chaque projet, voir les jobs, l'historique des exécutions, les nœuds, et les rapports. Ne peut rien exécuter, modifier ou créer.
   * **Fichier :** `readonly_global.aclpolicy`
 
-<!-- end list -->
-
 ```yaml
 # Fichier: readonly_global.aclpolicy
 description: "Profil 2: Lecture seule globale sur tous les projets."
@@ -108,15 +104,13 @@ for:
 ### 3° Administrateur d'un projet
 
   * **Description :** Contrôle total sur **un seul** projet (ex: "WebApp"). Peut configurer le projet, gérer les nœuds, créer/modifier/exécuter tous les jobs, et voir l'historique de ce projet. Ne peut pas voir les autres projets (sauf s'ils ont un autre groupe).
-  * **Fichier :** `project_webapp_admin.aclpolicy` (N'oubliez pas de renommer le fichier et le groupe \!)
-
-<!-- end list -->
+  * **Fichier :** `project_webapp_admin.aclpolicy` (N'oubliez pas de renommer le fichier et le groupe !)
 
 ```yaml
 # Fichier: project_webapp_admin.aclpolicy
-description: "Profil 3: Admin du projet 'WebApp'."
+description: "Profil 3a: Liste des projets pour admin 'WebApp'."
 by:
-  group: grp_WebApp_admin # <-- Remplacer 'WebApp' par le nom du projet
+  group: grp_WebApp_admin # Remplacer 'WebApp' par le nom du projet
 
 # 1. Droit de voir la liste des projets pour pouvoir sélectionner le leur
 context:
@@ -124,10 +118,14 @@ context:
 for:
   system:
     - allow: [read] # Juste assez pour lister les projets
+---
+description: "Profil 3b: Admin du projet 'WebApp'."
+by:
+  group: grp_WebApp_admin # Remplacer 'WebApp' par le nom du projet
 
 # 2. Droits d'administration sur LEUR projet
 context:
-  project: 'WebApp' # <-- Remplacer 'WebApp' par le nom du projet
+  project: 'WebApp' # Remplacer 'WebApp' par le nom du projet
 for:
   project:
     - allow: [admin] # 'admin' donne tous les droits DANS ce projet
@@ -138,13 +136,11 @@ for:
   * **Description :** Le profil "classique". Peut voir les ressources du projet ("WebApp"), mais surtout créer, modifier, supprimer, exécuter et tuer les jobs de ce projet.
   * **Fichier :** `project_webapp_developer.aclpolicy`
 
-<!-- end list -->
-
 ```yaml
 # Fichier: project_webapp_developer.aclpolicy
-description: "Profil 4: Développeur sur le projet 'WebApp'."
+description: "Profil 4a: Liste des projets pour développeur 'WebApp'."
 by:
-  group: grp_WebApp_developer # <-- Remplacer 'WebApp'
+  group: grp_WebApp_developer # Remplacer 'WebApp'
 
 # 1. Droit de voir la liste des projets
 context:
@@ -152,10 +148,14 @@ context:
 for:
   system:
     - allow: [read]
+---
+description: "Profil 4b: Développeur sur le projet 'WebApp'."
+by:
+  group: grp_WebApp_developer # Remplacer 'WebApp'
 
 # 2. Droits spécifiques dans le projet
 context:
-  project: 'WebApp' # <-- Remplacer 'WebApp'
+  project: 'WebApp' # Remplacer 'WebApp'
 for:
   project:
     - allow: [read] # Droit de lecture de base (voir nœuds, historique...)
@@ -172,13 +172,11 @@ for:
   * **Description :** Identique au profil 2 (Lecture seule globale), mais limité à **un seul** projet (ex: "WebApp"). Utile pour un manager ou une équipe support qui a besoin de voir ce qui se passe sans risque d'agir.
   * **Fichier :** `project_webapp_readonly.aclpolicy`
 
-<!-- end list -->
-
 ```yaml
 # Fichier: project_webapp_readonly.aclpolicy
-description: "Profil 5: Lecture seule sur le projet 'WebApp'."
+description: "Profil 5a: Liste des projets en lecture seule pour 'WebApp'."
 by:
-  group: grp_WebApp_readonly # <-- Remplacer 'WebApp'
+  group: grp_WebApp_readonly # Remplacer 'WebApp'
 
 # 1. Droit de voir la liste des projets
 context:
@@ -186,10 +184,14 @@ context:
 for:
   system:
     - allow: [read]
+---
+description: "Profil 5b: Lecture seule sur le projet 'WebApp'."
+by:
+  group: grp_WebApp_readonly # Remplacer 'WebApp'
 
 # 2. Droit de lecture DANS le projet
 context:
-  project: 'WebApp' # <-- Remplacer 'WebApp'
+  project: 'WebApp' # Remplacer 'WebApp'
 for:
   project:
     - allow: [read] # 'read' couvre la lecture de tout (jobs, nœuds, etc.)

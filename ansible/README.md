@@ -13,31 +13,26 @@ Ce projet Ansible permet de déployer une stack complète incluant Java, MySQL, 
     *   Un utilisateur avec des privilèges `sudo` sans mot de passe.
     *   Python 2.x ou 3.x doit être installé (généralement présent par défaut).
 
-## Structure des Fichiers
+## Structure des Fichiers et Ordre de Déploiement
 
-Le répertoire `ansible/` est organisé comme suit :
+```mermaid
+flowchart LR
+    Site["playbooks/site.yml"] --> Java["Rôle java"]
+    Site --> MySQL["Rôle mysql"]
+    Site --> Rundeck["Rôle rundeck"]
+    Site --> Nginx["Rôle nginx"]
+    Site --> Keycloak["Rôle keycloak"]
+    Site --> MinIO["Rôle minio"]
+```
 
-```
-ansible/
-├── inventory/
-│   └── hosts           # Fichier d'inventaire pour définir vos serveurs cibles.
-├── playbooks/
-│   ├── site.yml        # Playbook principal pour déployer toute la stack.
-│   ├── java.yml        # Playbook pour installer Java uniquement.
-│   ├── mysql.yml       # Playbook pour installer MySQL uniquement.
-│   ├── rundeck.yml     # Playbook pour installer Rundeck et ses dépendances.
-│   ├── nginx.yml       # Playbook pour installer et configurer Nginx.
-│   ├── keycloak.yml    # Playbook pour déployer Keycloak via Docker.
-│   └── minio.yml       # Playbook pour déployer MinIO.
-├── roles/
-│   ├── java/           # Rôle pour l'installation de Java.
-│   ├── mysql/          # Rôle pour l'installation et la configuration de MySQL.
-│   ├── rundeck/        # Rôle pour l'installation et la configuration de Rundeck.
-│   ├── nginx/          # Rôle pour l'installation et la configuration de Nginx.
-│   ├── keycloak/       # Rôle pour le déploiement de Keycloak.
-│   └── minio/          # Rôle pour le déploiement de MinIO.
-└── README.md           # Ce fichier de documentation.
-```
+| Chemin (`ansible/`) | Rôle / Description |
+| :--- | :--- |
+| `ansible.cfg` | Configuration Ansible globale |
+| `inventory/hosts` | Fichier d'inventaire des serveurs cibles |
+| `playbooks/site.yml` | Playbook principal déployant toute la stack |
+| `playbooks/{java,mysql,rundeck,nginx,keycloak,minio}.yml` | Playbooks unitaires par composant |
+| `roles/{java,mysql,rundeck,nginx,keycloak,minio}/` | Rôles Ansible (tâches, défauts, modèles `.j2`, handlers) |
+| `README.md` | Ce fichier de documentation |
 
 ## Configuration
 

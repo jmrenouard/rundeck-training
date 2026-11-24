@@ -90,6 +90,13 @@ Les templates pour Windows se trouvent dans le répertoire `templates/windows`.
 
 ---
 
+## Webhooks, Stockage MinIO/S3 et Reporting Complémentaires (`64` templates YAML au total)
+
+- **Webhooks Linux (`linux/webhooks/`):** `job-linux-webhook-generic.yaml`, `job-linux-webhook-slack.yaml`, `job-linux-webhook-teams.yaml`
+- **Bases PostgreSQL & Sécurité Linux (`linux/backup/`, `linux/security/`):** `job-linux-postgres-backup.yaml`, `job-linux-postgres-restore.yaml`, `job-linux-security-listening-ports.yaml`, `job-linux-security-tls-check.yaml`
+- **Rundeck MinIO / Reporting (`rundeck/`):** [`minio/transfert-s3.yml`](rundeck/minio/transfert-s3.yml), `reporting/job-rundeck-reporting-html-execution-status.yaml`
+- **Ansible Linux & Windows complémentaires:** `linux/ansible/*.yaml`, `windows/maintenance/job-windows-maintenance-*.yaml`, `windows/reporting/job-windows-reporting-*.yaml`
+
 ## Anciens Templates
 
 Les templates génériques suivants sont également disponibles :
